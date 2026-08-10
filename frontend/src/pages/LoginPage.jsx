@@ -32,10 +32,41 @@ function LoginPage() {
   const [selectedCategory, setSelectedCategory] = useState('exploring')
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoginSucceeded(true)
+
+    try {
+      const response = await fetch(
+        'https://localhost:7000/api/auth/login',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          })
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.message || 'Invalid email or password')
+        return
+      }
+
+      localStorage.setItem('token', data.token)
+
+      setLoginSucceeded(true)
+
+    } catch (error) {
+      console.log(error)
+      alert('Unable to connect to server')
+    }
   }
+
 
   const handleContinue = () => {
     setLoginSucceeded(false)
@@ -182,11 +213,10 @@ function LoginPage() {
                   key={option.key}
                   type="button"
                   onClick={() => setSelectedCategory(option.key)}
-                  className={`rounded-3xl border px-5 py-6 text-left transition-all ${
-                    selectedCategory === option.key
-                      ? 'border-orange bg-orange-pill/20 shadow-lg'
-                      : 'border-beige-border bg-white/80 hover:border-orange/70 hover:bg-cream'
-                  }`}
+                  className={`rounded-3xl border px-5 py-6 text-left transition-all ${selectedCategory === option.key
+                    ? 'border-orange bg-orange-pill/20 shadow-lg'
+                    : 'border-beige-border bg-white/80 hover:border-orange/70 hover:bg-cream'
+                    }`}
                 >
                   <p className="text-base font-semibold text-brown">{option.title}</p>
                   <p className="mt-2 text-sm text-brown-light">{option.description}</p>
