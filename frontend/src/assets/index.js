@@ -1,0 +1,6 @@
+export { default as minervaLogo } from './logo/minerva-logo.png'
+export { default as heroStudent } from './images/hero-student.png'
+export { default as heroImageUrl } from './images/hero-student.png'
+export { default as journeyTelescope } from './images/journey-telescope.png'
+export { default as journeyCompass } from './images/journey-compass.png'
+export { default as journeyBackpack } from './images/journey-backpack.png'

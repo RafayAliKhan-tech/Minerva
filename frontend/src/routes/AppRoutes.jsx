@@ -1,0 +1,66 @@
+import { Routes, Route } from 'react-router-dom'
+import Layout from '../components/layout/Layout'
+import LandingPage from '../pages/LandingPage'
+import ExplorePage from '../pages/ExplorePage'
+import LoginPage from '../pages/LoginPage'
+import SignupPage from '../pages/SignupPage'
+
+// Exploring flow pages
+import ExploringIntro from '../pages/ExploringIntro'
+import ExploringActivity from '../pages/ExploringActivity'
+import ExploringAnalysis from '../pages/ExploringAnalysis'
+import ExploringResults from '../pages/ExploringResults'
+
+// Domain selection and assessment
+import DomainSelection from '../pages/DomainSelection'
+import DomainAssessment from '../pages/DomainAssessment'
+import DomainAnalysis from '../pages/DomainAnalysis'
+import DomainResults from '../pages/DomainResults'
+
+// Resume flow pages
+import ResumeUpload from '../pages/ResumeUpload'
+import ResumeAnalysis from '../pages/ResumeAnalysis'
+import ResumeInsights from '../pages/ResumeInsights'
+import ResumeAssessment from '../pages/ResumeAssessment'
+import ResumeResults from '../pages/ResumeResults'
+import CareerMatch from '../pages/CareerMatch'
+import SkillGap from '../pages/SkillGap'
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<LandingPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="signup" element={<SignupPage />} />
+
+        {/* I'm Exploring Flow */}
+        <Route path="explore/assessment" element={<ExploringIntro />} />
+        <Route path="explore/assessment/activity/:activityNum" element={<ExploringActivity />} />
+        <Route path="explore/assessment/analysis" element={<ExploringAnalysis />} />
+        <Route path="explore/assessment/results" element={<ExploringResults />} />
+
+        {/* I Have a Domain in Mind Flow */}
+        <Route path="explore/domain-selection" element={<DomainSelection />} />
+        <Route path="explore/domain-assessment/:domainId" element={<DomainAssessment />} />
+        <Route path="explore/domain-assessment/:domainId/:activityNum" element={<DomainAssessment />} />
+        <Route path="explore/domain-assessment/:domainId/analysis" element={<DomainAnalysis />} />
+        <Route path="explore/domain-assessment/:domainId/results" element={<DomainResults />} />
+
+        {/* My Resume Flow */}
+        <Route path="explore/resume" element={<ResumeUpload />} />
+        <Route path="explore/resume/analysis" element={<ResumeAnalysis />} />
+        <Route path="explore/resume/insights" element={<ResumeInsights />} />
+        <Route path="explore/resume/assessment/:activityNum" element={<ResumeAssessment />} />
+        <Route path="explore/resume/results" element={<ResumeResults />} />
+        <Route path="explore/resume/career-match" element={<CareerMatch />} />
+        <Route path="explore/resume/skill-gap/:careerId" element={<SkillGap />} />
+
+        {/* /explore is the category-based start page */}
+        <Route path="explore" element={<ExplorePage />} />
+      </Route>
+    </Routes>
+  )
+}
+
+export default AppRoutes
