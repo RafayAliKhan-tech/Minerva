@@ -6,6 +6,8 @@ import api from '../api/axiosInstance'
 function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [formMessage, setFormMessage] = useState('')
+  const [formError, setFormError] = useState('')
   const [profile, setProfile] = useState({ fullName: '', email: '' })
 
   useEffect(() => {
@@ -18,7 +20,9 @@ function ProfilePage() {
         // unwrap common shapes
         const payload = data.data || data
         if (mounted && payload) {
-          setProfile({ fullName: payload.fullName || payload.name || '', email: payload.email || '' })
+          const firstName = payload.firstName || payload.FirstName || ''
+          const lastName = payload.lastName || payload.LastName || ''
+          setProfile({ fullName: payload.fullName || payload.FullName || payload.displayName || payload.DisplayName || [firstName, lastName].filter(Boolean).join(' ') || payload.name || payload.userName || payload.UserName || '', email: payload.email || payload.Email || '' })
         }
       } catch (err) {
         console.error('Failed to load profile', err)
@@ -33,15 +37,16 @@ function ProfilePage() {
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
+    setFormMessage('')
+    setFormError('')
     try {
       const res = await api.put('/api/profile/updateprofile', profile)
       const data = res.data || {}
-      if (data && data.message) alert(data.message)
-      else alert('Profile updated')
+      setFormMessage(data?.message || 'Profile updated successfully.')
     } catch (err) {
       console.error(err)
-      const msg = err?.response?.data?.message || 'Failed to save profile'
-      alert(msg)
+      const msg = err?.response?.data?.message || 'Failed to save profile. Please try again.'
+      setFormError(msg)
     } finally {
       setSaving(false)
     }
@@ -79,6 +84,8 @@ function ProfilePage() {
             </div>
 
             <div>
+              {formError && <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{formError}</p>}
+              {formMessage && <p className="mb-3 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700" role="status">{formMessage}</p>}
               <Button type="submit" variant="dark" size="lg" className="w-full" disabled={saving}>
                 {saving ? 'Saving…' : 'Save Profile'}
               </Button>

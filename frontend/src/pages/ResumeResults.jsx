@@ -6,9 +6,12 @@ import Button from '../components/common/Button'
 import { ArrowRight } from 'lucide-react'
 import { inferResumeProfile, generateResumeResults } from '../data/resumeActivities'
 import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
+import { useAuth } from '../auth/AuthContext'
+import { saveLatestAssessment } from '../utils/userData'
 
 function ResumeResults() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const resumeFile = useMemo(() => {
     const raw = sessionStorage.getItem('resumeFile')
     return raw ? JSON.parse(raw) : null
@@ -30,6 +33,7 @@ function ResumeResults() {
           const server = await getAssessmentResult(attemptId)
           if (server && server.resumeResults) {
             setResults(server.resumeResults)
+            saveLatestAssessment(user, { type: 'resume', label: 'Resume readiness assessment', domain: 'Job readiness', score: Math.round(server.resumeResults.scores.reduce((sum, item) => sum + item.score, 0) / server.resumeResults.scores.length) })
             return
           }
         }
@@ -38,7 +42,9 @@ function ResumeResults() {
       }
 
       const answers = JSON.parse(sessionStorage.getItem('resumeResponses') || '{}')
-      setResults(generateResumeResults(profile.id, answers))
+      const generated = generateResumeResults(profile.id, answers)
+      setResults(generated)
+      saveLatestAssessment(user, { type: 'resume', label: 'Resume readiness assessment', domain: 'Job readiness', score: Math.round(generated.scores.reduce((sum, item) => sum + item.score, 0) / generated.scores.length) })
     })()
   }, [navigate, profile.id, resumeFile])
 

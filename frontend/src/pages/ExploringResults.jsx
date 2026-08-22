@@ -8,9 +8,12 @@ import { generateMindProfile } from '../data/exploringActivities'
 import { domains } from '../data/domainActivities'
 import { Sparkles, ArrowRight } from 'lucide-react'
 import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
+import { useAuth } from '../auth/AuthContext'
+import { saveLatestAssessment } from '../utils/userData'
 
 function ExploringResults() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [profile, setProfile] = useState(null)
 
   useEffect(() => {
@@ -21,6 +24,7 @@ function ExploringResults() {
           const server = await getAssessmentResult(attemptId)
           if (server && server.mindProfile) {
             setProfile(server.mindProfile)
+            saveLatestAssessment(user, { type: 'exploring', label: 'Exploration assessment', domain: server.mindProfile.potentialDomains?.[0]?.domain, score: server.mindProfile.potentialDomains?.[0]?.match })
             return
           }
         }
@@ -31,6 +35,7 @@ function ExploringResults() {
       const responses = JSON.parse(sessionStorage.getItem('exploringResponses') || '{}')
       const mindProfile = generateMindProfile(responses)
       setProfile(mindProfile)
+      saveLatestAssessment(user, { type: 'exploring', label: 'Exploration assessment', domain: mindProfile.potentialDomains?.[0]?.domain, score: mindProfile.potentialDomains?.[0]?.match })
     })()
   }, [])
 

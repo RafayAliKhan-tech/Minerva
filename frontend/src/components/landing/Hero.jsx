@@ -13,8 +13,8 @@ function Hero() {
               AI Career Compass
             </div>
             <h1 className="hero-title">
-              <span className="hero-title-line">Find your direction.</span>
-              <span className="hero-title-line hero-title-muted">Build your future.</span>
+              <span className="hero-title-line">Find your <span className="hero-title-break">direction.</span></span>
+              <span className="hero-title-line hero-title-muted">Build your <span className="hero-title-break">future.</span></span>
             </h1>
 
             <p className="hero-subtitle">

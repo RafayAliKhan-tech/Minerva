@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ArrowRight, UserRound, LogOut } from 'lucide-react'
+import { Menu, X, ArrowRight, LogOut } from 'lucide-react'
 import Logo from '../common/Logo'
 import Button from '../common/Button'
 import Container from '../common/Container'
 import { navLinks } from '../../data/navigation'
 import { useAuth } from '../../auth/AuthContext'
+import { getDisplayName } from '../../utils/userData'
 
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -62,7 +63,7 @@ function Navbar() {
       : 'bg-[#F5F5F5]/85 backdrop-blur-sm'
 
   const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
-  const displayName = user?.fullName || user?.name || user?.userName || user?.Email || user?.email || 'Minerva user'
+  const displayName = getDisplayName(user)
   const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'M'
 
   const linkClass = (active) =>
@@ -103,13 +104,12 @@ function Navbar() {
           <div className="hidden items-center gap-3 lg:flex">
             {isAuthenticated ? (
               <div className="relative">
-                <button type="button" onClick={() => setAccountOpen((open) => !open)} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1A1A] text-sm font-bold text-white shadow-sm" aria-label="Open account menu" aria-expanded={accountOpen}>
+                <button type="button" onClick={() => setAccountOpen((open) => !open)} className="navbar-avatar flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shadow-sm" aria-label="Open account menu" aria-expanded={accountOpen}>
                   {initials}
                 </button>
                 {accountOpen && <div className="absolute right-0 top-12 z-50 w-52 rounded-xl border border-[#E0E0E0] bg-white p-2 text-[#1A1A1A] shadow-lg">
                   <div className="border-b border-[#E0E0E0] px-3 py-2"><p className="text-xs uppercase tracking-wide text-[#707070]">Signed in as</p><p className="truncate text-sm font-semibold">{displayName}</p></div>
-                  <Link to="/profile" className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-[#F5F5F5]"><UserRound size={15} /> Profile</Link>
-                  <button type="button" onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50"><LogOut size={15} /> Logout</button>
+                  <button type="button" onClick={logout} className="account-logout flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-red-50"><LogOut size={15} /> Logout</button>
                 </div>}
               </div>
             ) : isLanding ? (
@@ -189,7 +189,7 @@ function Navbar() {
             ))}
           </ul>
           <div className="mt-6 flex flex-col gap-3 border-t border-[#E0E0E0] pt-6">
-            {isAuthenticated ? <button type="button" onClick={logout} className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold text-red-700"><LogOut size={16} /> Logout</button> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
+            {isAuthenticated ? <><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
           </div>
         </div>
       </div>

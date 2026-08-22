@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Layout from '../components/layout/Layout'
 import LandingPage from '../pages/LandingPage'
 import ExplorePage from '../pages/ExplorePage'
@@ -10,6 +11,7 @@ import RoadmapPage from '../pages/RoadmapPage'
 import ChatPage from '../pages/ChatPage'
 import MockInterviewPage from '../pages/MockInterviewPage'
 import InterviewResults from '../pages/InterviewResults'
+import AboutUs from '../pages/AboutUs'
 
 // Exploring flow pages
 import ExploringIntro from '../pages/ExploringIntro'
@@ -34,6 +36,12 @@ import SkillGap from '../pages/SkillGap'
 import ProtectedRoute from '../auth/ProtectedRoute'
 
 function AppRoutes() {
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [location.pathname])
+
   return (
     <Routes>
       <Route element={<Layout />}>
@@ -73,6 +81,7 @@ function AppRoutes() {
         <Route path="chat" element={<ChatPage />} />
         <Route path="mock-interview" element={<MockInterviewPage />} />
         <Route path="mock-interview/results" element={<InterviewResults />} />
+        <Route path="about" element={<AboutUs />} />
         </Route>
       </Route>
     </Routes>

@@ -7,11 +7,11 @@ export const footerLinks = {
     { label: 'Mock Interviews', href: '/mock-interview' },
   ],
   company: [
-    { label: 'About Us', href: '/#about' },
+    { label: 'About Us', href: '/about' },
     { label: 'Success Stories', href: '/#success-stories' },
-    { label: 'Careers', href: '/#about' },
-    { label: 'Blog', href: '/#about' },
-    { label: 'Press', href: '/#about' },
+    { label: 'Careers', href: '/about' },
+    { label: 'Blog', href: '/about' },
+    { label: 'Press', href: '/about' },
   ],
   support: [
     { label: 'Help Center', href: '/#about' },

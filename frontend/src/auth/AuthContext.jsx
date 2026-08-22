@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { getUserEmail } from '../utils/userData'
 
 const AuthContext = createContext(null)
 const TOKEN_KEY = 'token'
@@ -24,8 +25,6 @@ const removeStored = (key) => {
     // Storage can be unavailable in private browsing.
   }
 }
-
-const getUserEmail = (user) => user?.Email || user?.email || user?.userEmail || user?.emailAddress || ''
 
 function AuthProvider({ children }) {
   const [token, setToken] = useState(() => getStored(TOKEN_KEY))

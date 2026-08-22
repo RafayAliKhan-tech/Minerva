@@ -12,6 +12,8 @@ const variants = {
     'bg-transparent text-[#23211f] hover:text-[#c38d66]',
   dark:
     'bg-[#23211f] text-white hover:bg-[#1d1b1c]',
+  light:
+    'bg-[#f5f3ef] text-[#23211f] hover:bg-white shadow-md hover:shadow-lg',
 }
 
 const sizes = {

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import api from '../api/axiosInstance'
@@ -23,11 +23,18 @@ function LoginPage() {
   const [remember, setRemember] = useState(true)
   const [loginSucceeded, setLoginSucceeded] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('exploring')
+  const [formError, setFormError] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
   const { establishSession, hasCompletedOnboarding, completeOnboarding } = useAuth()
+
+  useEffect(() => {
+    if (location.state?.registeredEmail) setEmail(location.state.registeredEmail)
+  }, [location.state])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setFormError('')
     try {
       const res = await api.post('/api/auth/loginuser', { Email: email, Password: password })
       const payload = res.data || {}
@@ -36,11 +43,11 @@ function LoginPage() {
       else if (payload.data && payload.data.token) token = payload.data.token
       else if (payload.accessToken) token = payload.accessToken
       else if (typeof payload.data === 'string') token = payload.data
-      if (!token) { alert(payload.message || 'Invalid email or password'); return }
-      const user = payload.user || payload.data?.user || payload.profile || payload.data?.profile || { email }
+      if (!token) { setFormError(payload.message || 'Invalid email or password.'); return }
+      const user = payload.user || payload.data?.user || payload.profile || payload.data?.profile || (typeof payload.data === 'object' ? payload.data : null) || { email: email.trim() }
       const explicitlyNew = payload.isNewUser ?? payload.data?.isNewUser ?? payload.newUser ?? payload.data?.newUser
       establishSession(token, user, remember)
-      if (explicitlyNew === false || (!explicitlyNew && hasCompletedOnboarding(email))) {
+      if (explicitlyNew === false || (explicitlyNew !== true && hasCompletedOnboarding(email))) {
         navigate('/dashboard', { replace: true })
       } else {
         setLoginSucceeded(true)
@@ -48,9 +55,9 @@ function LoginPage() {
     } catch (error) {
       console.error('Login error:', error)
       const resp = error?.response
-      if (resp?.data?.message) alert(resp.data.message)
-      else if (resp) alert(`Login failed (${resp.status} ${resp.statusText})`)
-      else alert(error?.message || 'Unable to connect to server')
+      if (resp?.data?.message) setFormError(resp.data.message)
+      else if (resp) setFormError(`Login failed (${resp.status}). Please check your credentials.`)
+      else setFormError(error?.message || 'Unable to connect to server. Please try again.')
     }
   }
 
@@ -58,7 +65,7 @@ function LoginPage() {
     setLoginSucceeded(false)
     completeOnboarding(email)
     const targetRoute = { exploring: '/explore/assessment/activity/1', career: '/explore/domain-selection', jobhunting: '/explore/resume' }[selectedCategory]
-    navigate(targetRoute)
+    navigate(targetRoute, { state: { category: selectedCategory } })
   }
 
   return <section className="auth-stage"><Container className="auth-stage-inner">
@@ -67,8 +74,9 @@ function LoginPage() {
       <h1 className="auth-title">Log In to Continue<br /><span>Your AI Career Journey</span></h1>
       <p className="auth-description">Access your personalized roadmap, skill insights,<br className="hidden sm:block" /> and job matches — all in one place.</p>
       <form onSubmit={handleSubmit} className="auth-form">
-        <label className="auth-input"><UserRound /><input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /></label>
-        <label className="auth-input"><LockKeyhole /><input required type={showPwd ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" /><button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Hide password' : 'Show password'}>{showPwd ? <EyeOff /> : <Eye />}</button></label>
+        <label className="auth-input"><UserRound /><input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /></label>
+        <label className="auth-input"><LockKeyhole /><input required type={showPwd ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" /><button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Hide password' : 'Show password'}>{showPwd ? <EyeOff /> : <Eye />}</button></label>
+        {formError && <p className="auth-form-error" role="alert">{formError}</p>}
         <div className="auth-options"><label><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label><a href="#">Forgot password?</a></div>
         <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight}>Log In</Button>
       </form>

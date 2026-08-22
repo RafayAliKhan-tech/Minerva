@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, BriefcaseBusiness, ChartNoAxesCombined, MessageCircle, PlayCircle, Sparkles, Target } from 'lucide-react'
 import Container from '../components/common/Container'
+import { useAuth } from '../auth/AuthContext'
+import { getDisplayName, getLatestAssessment } from '../utils/userData'
 
 const journeyItems = [
   { label: 'Profile signal', value: 'Strong', detail: 'Your strengths are ready to use', icon: Sparkles },
@@ -10,12 +12,17 @@ const journeyItems = [
 ]
 
 function DashboardPage() {
+  const { user } = useAuth()
   const resume = useMemo(() => {
     const raw = sessionStorage.getItem('resumeFile')
     return raw ? JSON.parse(raw) : null
   }, [])
   const domain = sessionStorage.getItem('selectedDomain')
   const career = sessionStorage.getItem('selectedCareer') || 'frontend'
+  const latest = getLatestAssessment(user)
+  const displayName = getDisplayName(user)
+  const latestScore = latest?.score ?? null
+  const latestLabel = latest?.label || 'No assessment yet'
 
   return (
     <main className="dashboard-page">
@@ -23,7 +30,7 @@ function DashboardPage() {
         <div className="dashboard-heading">
           <div>
             <p className="dashboard-kicker">MINERVA COMMAND CENTER</p>
-            <h1>Your career, in motion.</h1>
+            <h1>{displayName}'s career, in motion.</h1>
             <p className="dashboard-subtitle">A living view of your profile, next steps, and opportunities.</p>
           </div>
           <Link className="dashboard-primary-action" to="/explore">Continue your journey <ArrowUpRight size={16} /></Link>
@@ -32,17 +39,17 @@ function DashboardPage() {
         <section className="dashboard-grid dashboard-top-grid">
           <article className="dashboard-card dashboard-profile-card">
             <div className="dashboard-card-top"><span>PROFILE SIGNAL</span><Sparkles size={18} /></div>
-            <div className="dashboard-score-ring"><strong>78%</strong><span>career fit</span></div>
-            <h2>{domain ? `${domain.replaceAll('-', ' ')} direction` : 'Your next direction'}</h2>
-            <p>Minerva sees a promising pattern across your answers, interests, and current skills.</p>
-            <Link to="/explore/domain-selection" className="dashboard-text-link">Refine profile <ArrowUpRight size={15} /></Link>
+            <div className="dashboard-score-ring"><strong>{latestScore === null ? '--' : `${latestScore}%`}</strong><span>latest result</span></div>
+            <h2>{latestLabel}</h2>
+            <p>{latest ? `Completed ${new Date(latest.completedAt).toLocaleDateString()}. Your latest assessment is saved to this account.` : 'Complete an assessment and your latest result will appear here.'}</p>
+            <Link to="/explore/domain-selection" className="dashboard-text-link">Explore domains <ArrowUpRight size={15} /></Link>
           </article>
           <article className="dashboard-card dashboard-focus-card">
             <div className="dashboard-card-top"><span>CURRENT FOCUS</span><Target size={18} /></div>
             <p className="dashboard-focus-label">Recommended target</p>
-            <h2>{career === 'fullstack' ? 'Full Stack Developer' : 'Frontend Developer'}</h2>
-            <div className="dashboard-progress"><span style={{ width: '64%' }} /></div>
-            <div className="dashboard-progress-meta"><span>Readiness</span><strong>64%</strong></div>
+            <h2>{latest?.domain || (career === 'fullstack' ? 'Full Stack Developer' : 'Frontend Developer')}</h2>
+            <div className="dashboard-progress"><span style={{ width: `${latestScore || 0}%` }} /></div>
+            <div className="dashboard-progress-meta"><span>Readiness</span><strong>{latestScore === null ? '--' : `${latestScore}%`}</strong></div>
             <Link to={`/explore/resume/skill-gap/${career}`} className="dashboard-text-link">View skill gap <ArrowUpRight size={15} /></Link>
           </article>
           <article className="dashboard-card dashboard-resume-card">

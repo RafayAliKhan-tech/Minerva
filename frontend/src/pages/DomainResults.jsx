@@ -6,10 +6,13 @@ import Button from '../components/common/Button'
 import { domains, generateDomainResult } from '../data/domainActivities'
 import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { useAuth } from '../auth/AuthContext'
+import { saveLatestAssessment } from '../utils/userData'
 
 function DomainResults() {
   const { domainId } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [domainData, setDomainData] = useState(null)
   const [results, setResults] = useState(null)
 
@@ -24,6 +27,7 @@ function DomainResults() {
           const server = await getAssessmentResult(attemptId)
           if (server && server.domainResult) {
             setResults(server.domainResult)
+            saveLatestAssessment(user, { type: 'domain', label: `${domain?.name || domainId} assessment`, domain: domain?.name || domainId, score: server.domainResult.domainFitPercentage })
             return
           }
         }
@@ -34,6 +38,7 @@ function DomainResults() {
       const responses = JSON.parse(sessionStorage.getItem('domainResponses') || '{}')
       const mockResults = generateDomainResult(domainId, responses)
       setResults(mockResults)
+      saveLatestAssessment(user, { type: 'domain', label: `${domain?.name || domainId} assessment`, domain: domain?.name || domainId, score: mockResults.domainFitPercentage })
     })()
   }, [domainId])
 
@@ -133,7 +138,7 @@ function DomainResults() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              to="/explore/roadmap"
+              to={{ pathname: '/explore/roadmap', state: { roadmapId: domainId, domain: domainData.name, score: results.domainFitPercentage, strengths: results.strengths, areasToImprove: results.areasToImprove } }}
               variant="dark"
               size="lg"
               icon={ArrowRight}
