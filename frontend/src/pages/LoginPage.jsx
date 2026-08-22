@@ -12,10 +12,6 @@ const categoryOptions = [
   { key: 'jobhunting', title: "I'm Job Hunting", description: 'You need fast opportunities, market-aligned skills, and interview prep.' },
 ]
 
-function SocialButtons() {
-  return <div className="auth-socials"><button type="button"><span className="google-mark">G</span> Google</button><button type="button"><span className="social-mark">in</span> LinkedIn</button><button type="button"><span className="social-mark">GH</span> GitHub</button></div>
-}
-
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -80,7 +76,6 @@ function LoginPage() {
         <div className="auth-options"><label><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label><a href="#">Forgot password?</a></div>
         <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight}>Log In</Button>
       </form>
-      <div className="auth-divider"><span>or continue with</span></div><SocialButtons />
       <p className="auth-switch">Don't have an account? <Button to="/signup" variant="ghost" size="sm" className="auth-link">Create account</Button></p>
     </div>
     <div className="auth-art"><img src="/login.png" alt="Minerva career guidance dashboard" /></div>

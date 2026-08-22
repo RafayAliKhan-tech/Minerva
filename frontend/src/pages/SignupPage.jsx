@@ -5,8 +5,6 @@ import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import api from '../api/axiosInstance'
 
-function SocialButton({ children, onClick, ariaLabel }) { return <button type="button" onClick={onClick} aria-label={ariaLabel} className="auth-social-button">{children}</button> }
-
 function SignupPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -47,7 +45,6 @@ function SignupPage() {
         <div className="auth-options"><label><input id="agree" type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label></div>
         {formError && <p className="auth-form-error" role="alert">{formError}</p>}
         <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight}>Create Account</Button>
-        <div className="auth-divider"><span>or continue with</span></div><div className="auth-socials"><SocialButton ariaLabel="Sign up with Google" onClick={() => setFormError('Social signup is not available yet. Please use your email and password.')}><span className="google-mark">G</span> Google</SocialButton><SocialButton ariaLabel="Sign up with LinkedIn" onClick={() => setFormError('Social signup is not available yet. Please use your email and password.')}><span className="social-mark">in</span> LinkedIn</SocialButton><SocialButton ariaLabel="Sign up with GitHub" onClick={() => setFormError('Social signup is not available yet. Please use your email and password.')}><span className="social-mark">GH</span> GitHub</SocialButton></div>
       </form><p className="auth-switch">Already have an account? <Button to="/login" variant="ghost" size="sm" className="auth-link">Log in</Button></p>
     </div><div className="auth-art"><img src="/register.png" alt="Minerva AI career journey dashboard" /></div>
   </Container></section>
