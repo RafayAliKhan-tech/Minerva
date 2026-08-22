@@ -3,15 +3,15 @@ import { ArrowRight } from 'lucide-react'
 
 const variants = {
   primary:
-    'bg-brown text-white hover:bg-brown/90 shadow-md hover:shadow-lg',
+    'bg-[#23211f] text-white hover:bg-[#1d1b1c] shadow-md hover:shadow-lg',
   secondary:
-    'bg-orange text-white hover:bg-orange-light shadow-md hover:shadow-lg',
+    'bg-[#c38d66] text-[#fdfaf8] hover:bg-[#b98157] shadow-md hover:shadow-lg',
   outline:
-    'border-2 border-brown/20 bg-transparent text-brown hover:border-brown/40 hover:bg-white/50',
+    'border border-[#d8cfc7] bg-transparent text-[#23211f] hover:border-[#c6b8ac] hover:bg-white/50',
   ghost:
-    'bg-transparent text-brown hover:text-orange',
+    'bg-transparent text-[#23211f] hover:text-[#c38d66]',
   dark:
-    'bg-brown text-white hover:bg-brown/90',
+    'bg-[#23211f] text-white hover:bg-[#1d1b1c]',
 }
 
 const sizes = {

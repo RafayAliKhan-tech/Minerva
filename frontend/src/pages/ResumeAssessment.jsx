@@ -14,6 +14,7 @@ import StatementInspector from '../components/assessment/StatementInspector'
 import ChoiceExplanation from '../components/assessment/ChoiceExplanation'
 import UIInspection from '../components/assessment/UIInspection'
 import { inferResumeProfile, getResumeActivities } from '../data/resumeActivities'
+import { readAttemptId, submitAssessment, startAssessment, saveAttemptId } from '../api/assessmentApi'
 
 const getInitialState = (activity, saved = {}) => {
   switch (activity?.type) {
@@ -135,6 +136,17 @@ function ResumeAssessment() {
     setTimeUp(false)
     setSaved(false)
     setActivityStart(Date.now())
+    ;(async () => {
+      try {
+        const attemptId = readAttemptId('resume')
+        if (!attemptId) {
+          const newAttempt = await startAssessment('resume', { profileId: profile.id })
+          if (newAttempt) saveAttemptId('resume', newAttempt)
+        }
+      } catch (e) {
+        // ignore
+      }
+    })()
   }, [activity?.id])
 
   useEffect(() => {
@@ -167,6 +179,16 @@ function ResumeAssessment() {
     responses[activity.id] = response
     sessionStorage.setItem('resumeResponses', JSON.stringify(responses))
     setSaved(true)
+
+    ;(async () => {
+      try {
+        const attemptId = readAttemptId('resume')
+        if (!attemptId) return
+        await submitAssessment(attemptId, [response])
+      } catch (e) {
+        console.error('submit resume answer failed', e)
+      }
+    })()
   }
 
   const setState = (patch) => {

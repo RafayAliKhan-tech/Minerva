@@ -13,7 +13,9 @@ import PromptDetector from '../components/assessment/PromptDetector'
 import StatementInspector from '../components/assessment/StatementInspector'
 import ChoiceExplanation from '../components/assessment/ChoiceExplanation'
 import UIInspection from '../components/assessment/UIInspection'
+import MultipleChoice from '../components/assessment/MultipleChoice'
 import { getDomainActivities, domains } from '../data/domainActivities'
+import { readAttemptId, submitAssessment, startAssessment, saveAttemptId } from '../api/assessmentApi'
 
 const getInitialState = (activity, saved = {}) => {
   switch (activity?.type) {
@@ -47,6 +49,8 @@ const getInitialState = (activity, saved = {}) => {
       return { selectedOption: saved.selectedOption || null, explanation: saved.explanation || '' }
     case 'ui-inspection':
       return { selectedAreas: saved.selectedAreas || [] }
+    case 'multiple-choice':
+      return { selectedOption: saved.selectedOption || null }
     default:
       return {}
   }
@@ -55,7 +59,8 @@ const getInitialState = (activity, saved = {}) => {
 const buildResponse = (activity, state, autoSubmitted, canContinue) => {
   const response = {
     activityId: activity.id,
-    selectedDomain: activity.domainId,
+    questionId: activity.question_id || activity.id,
+    selectedDomain: activity.domainId || activity.career,
     timeTaken: state.timeTaken,
     autoSubmitted,
     completed: !autoSubmitted || canContinue,
@@ -96,6 +101,9 @@ const buildResponse = (activity, state, autoSubmitted, canContinue) => {
   if (activity.type === 'ui-inspection') {
     response.selectedAreas = state.selectedAreas
   }
+  if (activity.type === 'multiple-choice') {
+    response.selectedOption = state.selectedOption
+  }
 
   return response
 }
@@ -123,6 +131,18 @@ function DomainAssessment() {
     setTimeUp(false)
     setSaved(false)
     setActivityStart(Date.now())
+    // ensure domain attempt started (best-effort)
+    ;(async () => {
+      try {
+        const attemptId = readAttemptId('domain')
+        if (!attemptId) {
+          const newAttempt = await startAssessment('domain', { domainId })
+          if (newAttempt) saveAttemptId('domain', newAttempt)
+        }
+      } catch (e) {
+        // ignore
+      }
+    })()
   }, [activity?.id])
 
   useEffect(() => {
@@ -149,6 +169,7 @@ function DomainAssessment() {
     if (activity.type === 'statement-inspector') return state.selectedOption !== null || timeUp
     if (activity.type === 'choice-explanation') return (state.selectedOption !== null && state.explanation?.trim()) || timeUp
     if (activity.type === 'ui-inspection') return (state.selectedAreas?.length || 0) >= 3 || timeUp
+    if (activity.type === 'multiple-choice') return state.selectedOption !== null || timeUp
     return false
   }, [activity, currentState, timeUp])
 
@@ -159,6 +180,17 @@ function DomainAssessment() {
     responses[activity.id] = response
     sessionStorage.setItem('domainResponses', JSON.stringify(responses))
     setSaved(true)
+
+    // send to backend if attempt exists (best-effort)
+    ;(async () => {
+      try {
+        const attemptId = readAttemptId('domain')
+        if (!attemptId) return
+        await submitAssessment(attemptId, [response])
+      } catch (e) {
+        console.error('submit domain answer failed', e)
+      }
+    })()
   }
 
   const handleNext = () => {
@@ -358,6 +390,16 @@ function DomainAssessment() {
             })
           }}
           isDisabled={timeUp}
+        />
+      )}
+
+      {activity.type === 'multiple-choice' && (
+        <MultipleChoice
+          question={activity}
+          selectedOption={currentState.selectedOption}
+          onOptionSelect={(selectedOption) => setState({ selectedOption })}
+          isAnswered={saved}
+          canAnswer={!timeUp}
         />
       )}
 

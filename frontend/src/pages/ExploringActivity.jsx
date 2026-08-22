@@ -7,7 +7,9 @@ import Button from '../components/common/Button'
 import LogicPuzzle from '../components/assessment/LogicPuzzle'
 import PriorityBoard from '../components/assessment/PriorityBoard'
 import UIInspection from '../components/assessment/UIInspection'
+import MultipleChoice from '../components/assessment/MultipleChoice'
 import { exploringActivities } from '../data/exploringActivities'
+import { readAttemptId, submitAssessment } from '../api/assessmentApi'
 
 function ExploringActivity() {
   const { activityNum } = useParams()
@@ -26,6 +28,7 @@ function ExploringActivity() {
   const [priorityChanges, setPriorityChanges] = useState(0)
 
   const [selectedAreas, setSelectedAreas] = useState([])
+  const [selectedOption, setSelectedOption] = useState(null)
 
   const [activityStart, setActivityStart] = useState(Date.now())
 
@@ -38,6 +41,7 @@ function ExploringActivity() {
     setPrioritySlots([null, null, null])
     setPriorityChanges(0)
     setSelectedAreas([])
+    setSelectedOption(null)
     setActivityStart(Date.now())
   }, [activity?.id])
 
@@ -63,17 +67,20 @@ function ExploringActivity() {
     if (activity.type === 'ui-inspection') {
       return selectedAreas.length >= 2 || timeUp
     }
+    if (activity.type === 'multiple-choice') {
+      return selectedOption !== null || timeUp
+    }
     return false
-  }, [activity, submitted, timeUp, prioritySlots, selectedAreas])
+  }, [activity, submitted, timeUp, prioritySlots, selectedAreas, selectedOption])
 
   const getTimeTaken = () => Math.max(0, Math.round((Date.now() - activityStart) / 1000))
 
   const saveResponse = (auto = false) => {
     if (!activity || saved) return
-
     const answers = JSON.parse(sessionStorage.getItem('exploringResponses') || '{}')
     const baseResponse = {
       activityId: activity.id,
+      questionId: activity.question_id || activity.id,
       category: 'exploring',
       timeTaken: getTimeTaken(),
       autoSubmitted: auto,
@@ -103,11 +110,29 @@ function ExploringActivity() {
         selectedAreas,
       }
     }
+    if (activity.type === 'multiple-choice') {
+      payload = {
+        ...baseResponse,
+        selectedOption,
+      }
+    }
 
     answers[activity.id] = payload
     sessionStorage.setItem('exploringResponses', JSON.stringify(answers))
     setSaved(true)
     setSubmitted(true)
+
+    // send to backend if attempt exists (best-effort)
+    ;(async () => {
+      try {
+        const attemptId = readAttemptId('exploring')
+        if (!attemptId) return
+        await submitAssessment(attemptId, [payload])
+      } catch (e) {
+        // best-effort save; don't block UX
+        console.error('submit exploring answer failed', e)
+      }
+    })()
   }
 
   const handleUseHint = () => {
@@ -238,6 +263,16 @@ function ExploringActivity() {
           selectedAreas={selectedAreas}
           onToggleArea={toggleArea}
           isDisabled={timeUp}
+        />
+      )}
+
+      {activity.type === 'multiple-choice' && (
+        <MultipleChoice
+          question={activity}
+          selectedOption={selectedOption}
+          onOptionSelect={setSelectedOption}
+          isAnswered={submitted}
+          canAnswer={!timeUp}
         />
       )}
 

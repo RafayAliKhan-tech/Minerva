@@ -7,16 +7,31 @@ import Button from '../components/common/Button'
 import { generateMindProfile } from '../data/exploringActivities'
 import { domains } from '../data/domainActivities'
 import { Sparkles, ArrowRight } from 'lucide-react'
+import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
 
 function ExploringResults() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
 
   useEffect(() => {
-    // Get responses from session storage
-    const responses = JSON.parse(sessionStorage.getItem('exploringResponses') || '{}')
-    const mindProfile = generateMindProfile(responses)
-    setProfile(mindProfile)
+    ;(async () => {
+      try {
+        const attemptId = readAttemptId('exploring')
+        if (attemptId) {
+          const server = await getAssessmentResult(attemptId)
+          if (server && server.mindProfile) {
+            setProfile(server.mindProfile)
+            return
+          }
+        }
+      } catch (e) {
+        console.error('fetch exploring result failed', e)
+      }
+
+      const responses = JSON.parse(sessionStorage.getItem('exploringResponses') || '{}')
+      const mindProfile = generateMindProfile(responses)
+      setProfile(mindProfile)
+    })()
   }, [])
 
   if (!profile) {
@@ -155,7 +170,7 @@ function ExploringResults() {
               Explore a Domain
             </Button>
             <Button
-              to="/"
+              to="/dashboard"
               variant="ghost"
               size="lg"
               className="flex-1"

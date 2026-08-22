@@ -4,6 +4,7 @@ import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import SkillBar from '../components/assessment/SkillBar'
 import Button from '../components/common/Button'
 import { domains, generateDomainResult } from '../data/domainActivities'
+import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 
 function DomainResults() {
@@ -15,10 +16,25 @@ function DomainResults() {
   useEffect(() => {
     const domain = domains.find((d) => d.id === domainId)
     setDomainData(domain)
+    ;(async () => {
+      // try server-side result first
+      try {
+        const attemptId = readAttemptId('domain')
+        if (attemptId) {
+          const server = await getAssessmentResult(attemptId)
+          if (server && server.domainResult) {
+            setResults(server.domainResult)
+            return
+          }
+        }
+      } catch (e) {
+        console.error('fetch domain result failed', e)
+      }
 
-    const responses = JSON.parse(sessionStorage.getItem('domainResponses') || '{}')
-    const mockResults = generateDomainResult(domainId, responses)
-    setResults(mockResults)
+      const responses = JSON.parse(sessionStorage.getItem('domainResponses') || '{}')
+      const mockResults = generateDomainResult(domainId, responses)
+      setResults(mockResults)
+    })()
   }, [domainId])
 
   if (!domainData || !results) {
@@ -117,7 +133,7 @@ function DomainResults() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              to="/explore/skill-gap"
+              to="/explore/roadmap"
               variant="dark"
               size="lg"
               icon={ArrowRight}

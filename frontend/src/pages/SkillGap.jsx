@@ -169,7 +169,7 @@ function SkillGap() {
           {/* CTA */}
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              to="/"
+              to="/explore/roadmap"
               variant="dark"
               size="lg"
               icon={ArrowRight}
@@ -177,7 +177,7 @@ function SkillGap() {
             >
               Build My Roadmap
             </Button>
-            <Button to="/" variant="ghost" size="lg" className="flex-1">
+            <Button to="/dashboard" variant="ghost" size="lg" className="flex-1">
               Back to Home
             </Button>
           </div>

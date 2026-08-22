@@ -5,6 +5,7 @@ import SkillBar from '../components/assessment/SkillBar'
 import Button from '../components/common/Button'
 import { ArrowRight } from 'lucide-react'
 import { inferResumeProfile, generateResumeResults } from '../data/resumeActivities'
+import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
 
 function ResumeResults() {
   const navigate = useNavigate()
@@ -17,13 +18,28 @@ function ResumeResults() {
   const [results, setResults] = useState(null)
 
   useEffect(() => {
-    if (!resumeFile) {
-      navigate('/explore/resume')
-      return
-    }
+    ;(async () => {
+      if (!resumeFile) {
+        navigate('/explore/resume')
+        return
+      }
 
-    const answers = JSON.parse(sessionStorage.getItem('resumeResponses') || '{}')
-    setResults(generateResumeResults(profile.id, answers))
+      try {
+        const attemptId = readAttemptId('resume')
+        if (attemptId) {
+          const server = await getAssessmentResult(attemptId)
+          if (server && server.resumeResults) {
+            setResults(server.resumeResults)
+            return
+          }
+        }
+      } catch (e) {
+        console.error('fetch resume result failed', e)
+      }
+
+      const answers = JSON.parse(sessionStorage.getItem('resumeResponses') || '{}')
+      setResults(generateResumeResults(profile.id, answers))
+    })()
   }, [navigate, profile.id, resumeFile])
 
   if (!resumeFile) {
@@ -123,7 +139,7 @@ function ResumeResults() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Button
-            onClick={() => navigate('/explore')}
+            onClick={() => navigate('/dashboard')}
             variant="ghost"
             size="lg"
             className="flex-1"
@@ -131,7 +147,7 @@ function ResumeResults() {
             Back to Home
           </Button>
           <Button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/explore/resume/career-match')}
             variant="dark"
             size="lg"
             icon={ArrowRight}

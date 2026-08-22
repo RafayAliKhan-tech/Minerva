@@ -4,13 +4,29 @@ function OptionCard({
   onClick,
   disabled = false,
   showLabel = true,
+  id,
+  text,
+  isSelected,
 }) {
+  const normalizedOption = option ?? {
+    id: id ?? 'option',
+    label: id ?? 'option',
+    title: text ?? 'Option',
+    description: '',
+  }
+
+  const normalizedSelected = selected ?? isSelected ?? false
+  const optionId = normalizedOption.id ?? id ?? 'option'
+  const optionLabel = normalizedOption.label ?? optionId
+  const optionTitle = normalizedOption.title ?? normalizedOption.text ?? text ?? optionId
+  const optionDescription = normalizedOption.description ?? normalizedOption.detail ?? ''
+
   return (
     <button
-      onClick={() => !disabled && onClick(option.id)}
+      onClick={() => !disabled && onClick?.(optionId)}
       disabled={disabled}
       className={`group relative flex flex-col gap-4 rounded-2xl border-2 p-6 text-left transition-all duration-200 sm:p-7 lg:p-8 ${
-        selected
+        normalizedSelected
           ? 'border-orange bg-orange-pill/50 shadow-md'
           : 'border-beige-border bg-white hover:border-orange/40 hover:bg-orange/5'
       } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
@@ -19,12 +35,12 @@ function OptionCard({
       <div className="flex items-start justify-between">
         <div
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-            selected
+            normalizedSelected
               ? 'border-orange bg-orange'
               : 'border-brown/20 bg-transparent group-hover:border-orange'
           }`}
         >
-          {selected && (
+          {normalizedSelected && (
             <svg className="h-3.5 w-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
             </svg>
@@ -32,7 +48,7 @@ function OptionCard({
         </div>
         {showLabel && (
           <span className="text-xs font-bold uppercase tracking-wider text-brown-light">
-            {option.label}
+            {optionLabel}
           </span>
         )}
       </div>
@@ -40,11 +56,11 @@ function OptionCard({
       {/* Content */}
       <div>
         <h3 className="font-serif text-lg font-semibold text-brown sm:text-xl">
-          {option.title}
+          {optionTitle}
         </h3>
-        {option.description && (
+        {optionDescription && (
           <p className="mt-2 text-sm text-brown-light sm:text-base">
-            {option.description}
+            {optionDescription}
           </p>
         )}
       </div>

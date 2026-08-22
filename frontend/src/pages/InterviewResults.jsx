@@ -1,0 +1,10 @@
+import { Link } from 'react-router-dom'
+import { ArrowRight, CheckCircle2, RotateCcw, Sparkles, Target } from 'lucide-react'
+import Container from '../components/common/Container'
+
+const feedback = [{ label: 'Clarity', score: 82, note: 'Your thinking is easy to follow.' }, { label: 'Evidence', score: 68, note: 'Add measurable outcomes to your examples.' }, { label: 'Role alignment', score: 78, note: 'Your strengths map well to the role.' }]
+
+function InterviewResults() {
+  return <main className="interview-results-page"><Container><Link to="/mock-interview" className="back-link"><RotateCcw size={15} /> Try another interview</Link><div className="results-heading"><div><p className="dashboard-kicker">INTERVIEW FEEDBACK</p><h1>Your confidence has a shape now.</h1><p>Here is the signal from your practice session, plus the next improvement with the highest return.</p></div><div className="results-score"><strong>76%</strong><span>overall readiness</span></div></div><section className="results-grid">{feedback.map((item) => <article className="result-metric" key={item.label}><div><span>{item.label}</span><strong>{item.score}%</strong></div><div className="dashboard-progress"><span style={{ width: `${item.score}%` }} /></div><p>{item.note}</p></article>)}</section><section className="interview-feedback-panel"><div><Target size={22} /><p className="dashboard-kicker">YOUR NEXT REP</p><h2>Make every answer land with evidence.</h2><p>Before your next application, prepare two project stories with a clear result: faster, simpler, more accessible, or more useful.</p></div><div className="feedback-checklist"><div><CheckCircle2 size={17} /> Situation in one sentence</div><div><CheckCircle2 size={17} /> Your specific contribution</div><div><CheckCircle2 size={17} /> A result someone can feel</div></div></section><div className="results-actions"><Link to="/explore/roadmap" className="dashboard-primary-action">Add this to my roadmap <ArrowRight size={16} /></Link><Link to="/chat" className="dashboard-outline-action"><Sparkles size={15} /> Ask Minerva for feedback</Link></div></Container></main>
+}
+export default InterviewResults

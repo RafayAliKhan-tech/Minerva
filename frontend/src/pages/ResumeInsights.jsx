@@ -119,7 +119,7 @@ function ResumeInsights() {
             >
               Start Job Assessment
             </Button>
-            <Button to="/" variant="ghost" size="lg" className="flex-1">
+            <Button to="/dashboard" variant="ghost" size="lg" className="flex-1">
               Back to Home
             </Button>
           </div>

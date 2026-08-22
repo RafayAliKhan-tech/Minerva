@@ -10,6 +10,7 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const isLanding = location.pathname === '/'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -48,19 +49,31 @@ function Navbar() {
     }
   }
 
+  const headerClass = isLanding
+    ? scrolled || mobileOpen
+      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm backdrop-blur-md'
+      : 'bg-transparent'
+    : scrolled || mobileOpen
+      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm backdrop-blur-md'
+      : 'bg-[#F5F5F5]/85 backdrop-blur-sm'
+
+  const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
+
+  const linkClass = (active) =>
+    isLanding
+      ? `rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors xl:px-4 ${
+          active ? 'text-[#1A1A1A]' : 'text-[#707070] hover:text-[#1A1A1A]'
+        }`
+      : `rounded-lg px-3 py-2 text-sm font-medium transition-colors xl:px-4 ${
+          active ? 'text-[#1A1A1A]' : 'text-[#707070] hover:text-[#1A1A1A]'
+        }`
+
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        scrolled || mobileOpen
-          ? 'border-b border-beige-border/60 bg-cream/95 shadow-sm backdrop-blur-md'
-          : 'bg-cream/80 backdrop-blur-sm'
-      }`}
-    >
+    <header className={`site-navbar fixed inset-x-0 top-0 z-50 transition-all duration-300 ${isLanding ? 'landing-navbar' : ''} ${navbarTheme} ${headerClass}`}>
       <Container>
         <nav className="flex h-16 items-center justify-between sm:h-20" aria-label="Main navigation">
           <Logo />
 
-          {/* Desktop nav */}
           <ul className="hidden items-center gap-1 lg:flex xl:gap-2">
             {navLinks.map((link) => (
               <li key={link.label}>
@@ -68,23 +81,12 @@ function Navbar() {
                   <a
                     href={link.href}
                     onClick={() => handleNavClick(link.href)}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:text-orange xl:px-4 ${
-                      isActive(link)
-                        ? 'text-orange underline decoration-orange decoration-2 underline-offset-8'
-                        : 'text-brown-light'
-                    }`}
+                    className={`nav-link ${linkClass(isActive(link))}`}
                   >
                     {link.label}
                   </a>
                 ) : (
-                  <Link
-                    to={link.href}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:text-orange xl:px-4 ${
-                      isActive(link)
-                        ? 'text-orange underline decoration-orange decoration-2 underline-offset-8'
-                        : 'text-brown-light'
-                    }`}
-                  >
+                  <Link to={link.href} className={`nav-link ${linkClass(isActive(link))}`}>
                     {link.label}
                   </Link>
                 )}
@@ -92,20 +94,30 @@ function Navbar() {
             ))}
           </ul>
 
-          {/* Desktop actions */}
           <div className="hidden items-center gap-3 lg:flex">
-            <Button to="/login" variant="ghost" size="sm">
-              Log In
-            </Button>
-            <Button to="/signup" variant="dark" size="sm" icon={ArrowRight}>
-              Get Started
-            </Button>
+            {isLanding ? (
+              <Link
+                to="/signup"
+                className="navbar-cta inline-flex items-center gap-2 rounded-full border border-[#E0E0E0] bg-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#1A1A1A] shadow-[0_8px_24px_rgba(26,26,26,0.06)] transition-transform hover:-translate-y-0.5"
+              >
+                Get Started
+                <ArrowRight size={14} />
+              </Link>
+            ) : (
+              <>
+                <Button to="/login" variant="ghost" size="sm">
+                  Log In
+                </Button>
+                <Button to="/signup" variant="light" size="sm" icon={ArrowRight}>
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
 
-          {/* Mobile menu button */}
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-lg p-2 text-brown transition-colors hover:bg-cream-dark lg:hidden"
+            className="inline-flex items-center justify-center rounded-lg p-2 text-[#1A1A1A] transition-colors hover:bg-[#ECECEC] lg:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
@@ -116,7 +128,6 @@ function Navbar() {
         </nav>
       </Container>
 
-      {/* Mobile drawer */}
       <div
         id="mobile-menu"
         className={`fixed inset-0 top-16 z-40 lg:hidden ${
@@ -125,14 +136,14 @@ function Navbar() {
         aria-hidden={!mobileOpen}
       >
         <div
-          className={`absolute inset-0 bg-brown/20 transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-[#1A1A1A]/20 transition-opacity duration-300 ${
             mobileOpen ? 'opacity-100' : 'opacity-0'
           }`}
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
         <div
-          className={`absolute inset-x-0 top-0 border-b border-beige-border bg-cream px-4 py-6 shadow-lg transition-all duration-300 sm:px-6 ${
+          className={`absolute inset-x-0 top-0 border-b border-[#E0E0E0] bg-[#F5F5F5] px-4 py-6 shadow-lg transition-all duration-300 sm:px-6 ${
             mobileOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
           }`}
         >
@@ -143,15 +154,15 @@ function Navbar() {
                   <a
                     href={link.href}
                     onClick={() => handleNavClick(link.href)}
-                    className="block rounded-lg px-4 py-3 text-base font-medium text-brown-light transition-colors hover:bg-cream-dark hover:text-orange"
+                    className="block rounded-lg px-4 py-3 text-sm font-medium text-[#707070] transition-colors hover:bg-[#ECECEC] hover:text-[#1A1A1A]"
                   >
                     {link.label}
                   </a>
                 ) : (
                   <Link
                     to={link.href}
-                    className={`block rounded-lg px-4 py-3 text-base font-medium transition-colors hover:bg-cream-dark hover:text-orange ${
-                      isActive(link) ? 'text-orange' : 'text-brown-light'
+                    className={`block rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-[#ECECEC] hover:text-[#1A1A1A] ${
+                      isActive(link) ? 'text-[#1A1A1A]' : 'text-[#707070]'
                     }`}
                   >
                     {link.label}
@@ -160,11 +171,11 @@ function Navbar() {
               </li>
             ))}
           </ul>
-          <div className="mt-6 flex flex-col gap-3 border-t border-beige-border pt-6">
+          <div className="mt-6 flex flex-col gap-3 border-t border-[#E0E0E0] pt-6">
             <Button to="/login" variant="outline" size="md" className="w-full">
               Log In
             </Button>
-            <Button to="/signup" variant="dark" size="md" icon={ArrowRight} className="w-full">
+            <Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">
               Get Started
             </Button>
           </div>

@@ -32,7 +32,7 @@ function SocialIcon({ name }) {
   return icons[name] || null
 }
 
-function Footer() {
+function Footer({ compact = false }) {
   const [email, setEmail] = useState('')
 
   const handleSubscribe = (e) => {
@@ -41,13 +41,12 @@ function Footer() {
   }
 
   return (
-    <footer className="border-t border-beige-border bg-cream-footer" id="about">
+    <footer className={`site-footer border-t border-[#E0E0E0] bg-[#F5F5F5]${compact ? ' auth-footer' : ''}`} id="about">
       <Container className="py-14 lg:py-16">
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
-          {/* Brand column */}
           <div className="lg:col-span-4">
             <Logo />
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-brown-light">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#707070]">
               Minerva uses AI to understand your strengths, interests, and goals — guiding you
               toward career paths that truly fit who you are.
             </p>
@@ -58,7 +57,7 @@ function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-beige-border bg-white text-brown-light transition-all hover:border-orange hover:text-orange"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E0E0E0] bg-white text-[#707070] transition-all hover:border-[#CFCFCF] hover:text-[#1A1A1A]"
                   aria-label={social.label}
                 >
                   <SocialIcon name={social.icon} />
@@ -67,10 +66,9 @@ function Footer() {
             </div>
           </div>
 
-          {/* Link columns */}
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5">
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-brown">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[#1A1A1A]">
                 Platform
               </h3>
               <ul className="space-y-3">
@@ -78,7 +76,7 @@ function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-brown-light transition-colors hover:text-orange"
+                      className="text-sm text-[#707070] transition-colors hover:text-[#1A1A1A]"
                     >
                       {link.label}
                     </a>
@@ -87,7 +85,7 @@ function Footer() {
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-brown">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[#1A1A1A]">
                 Company
               </h3>
               <ul className="space-y-3">
@@ -95,7 +93,7 @@ function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-brown-light transition-colors hover:text-orange"
+                      className="text-sm text-[#707070] transition-colors hover:text-[#1A1A1A]"
                     >
                       {link.label}
                     </a>
@@ -104,7 +102,7 @@ function Footer() {
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-brown">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[#1A1A1A]">
                 Support
               </h3>
               <ul className="space-y-3">
@@ -112,7 +110,7 @@ function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-brown-light transition-colors hover:text-orange"
+                      className="text-sm text-[#707070] transition-colors hover:text-[#1A1A1A]"
                     >
                       {link.label}
                     </a>
@@ -122,12 +120,11 @@ function Footer() {
             </div>
           </div>
 
-          {/* Newsletter */}
           <div className="lg:col-span-3">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-brown">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[#1A1A1A]">
               Stay Updated
             </h3>
-            <p className="mb-4 text-sm text-brown-light">
+            <p className="mb-4 text-sm text-[#707070]">
               Get career tips, product updates, and AI insights delivered to your inbox.
             </p>
             <form onSubmit={handleSubscribe} className="flex gap-2">
@@ -141,11 +138,11 @@ function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="flex-1 rounded-full border border-beige-border bg-white px-4 py-2.5 text-sm text-brown placeholder:text-brown-light/50 focus:border-orange focus:outline-none focus:ring-2 focus:ring-orange/20"
+                className="flex-1 rounded-full border border-[#E0E0E0] bg-white px-4 py-2.5 text-sm text-[#1A1A1A] placeholder:text-[#707070]/60 focus:border-[#CFCFCF] focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10"
               />
               <button
                 type="submit"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brown text-white transition-colors hover:bg-brown/90"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#1A1A1A] text-white transition-colors hover:bg-[#2A2A2A]"
                 aria-label="Subscribe to newsletter"
               >
                 <Send className="h-4 w-4" />
@@ -154,12 +151,9 @@ function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-beige-border pt-8 sm:flex-row">
-          <p className="text-sm text-brown-light">
+        <div className="mt-12 border-t border-[#E0E0E0] pt-8">
+          <p className="text-center text-sm text-[#707070] sm:text-left">
             &copy; {new Date().getFullYear()} Minerva. All rights reserved.
-          </p>
-          <p className="text-sm text-brown-light">
-            Made with <span className="text-orange" aria-label="love">&#9829;</span> for your future
           </p>
         </div>
       </Container>

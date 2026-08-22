@@ -2,9 +2,9 @@ export const footerLinks = {
   platform: [
     { label: 'Career Explorer', href: '/explore' },
     { label: 'AI Assessment', href: '/explore' },
-    { label: 'Skill Roadmap', href: '/explore' },
-    { label: 'Job Matching', href: '/explore' },
-    { label: 'Mock Interviews', href: '/explore' },
+    { label: 'Skill Roadmap', href: '/explore/roadmap' },
+    { label: 'Job Matching', href: '/explore/resume/career-match' },
+    { label: 'Mock Interviews', href: '/mock-interview' },
   ],
   company: [
     { label: 'About Us', href: '/#about' },

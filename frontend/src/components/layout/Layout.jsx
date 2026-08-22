@@ -1,15 +1,20 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
 import Footer from './Footer'
 
+const AUTH_ROUTES = ['/login', '/signup']
+
 function Layout({ showFooter = true }) {
+  const { pathname } = useLocation()
+  const isAuthPage = AUTH_ROUTES.includes(pathname)
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className={`page-shell${isAuthPage ? ' auth-page-shell' : ''}`}>
       <Navbar />
-      <main className="flex-1">
+      <main className={`page-main-content${isAuthPage ? ' auth-page-main' : ''}`}>
         <Outlet />
       </main>
-      {showFooter && <Footer />}
+      {showFooter && <Footer compact={isAuthPage} />}
     </div>
   )
 }

@@ -4,6 +4,12 @@ import LandingPage from '../pages/LandingPage'
 import ExplorePage from '../pages/ExplorePage'
 import LoginPage from '../pages/LoginPage'
 import SignupPage from '../pages/SignupPage'
+import ProfilePage from '../pages/ProfilePage'
+import DashboardPage from '../pages/DashboardPage'
+import RoadmapPage from '../pages/RoadmapPage'
+import ChatPage from '../pages/ChatPage'
+import MockInterviewPage from '../pages/MockInterviewPage'
+import InterviewResults from '../pages/InterviewResults'
 
 // Exploring flow pages
 import ExploringIntro from '../pages/ExploringIntro'
@@ -58,6 +64,12 @@ function AppRoutes() {
 
         {/* /explore is the category-based start page */}
         <Route path="explore" element={<ExplorePage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="explore/roadmap" element={<RoadmapPage />} />
+        <Route path="chat" element={<ChatPage />} />
+        <Route path="mock-interview" element={<MockInterviewPage />} />
+        <Route path="mock-interview/results" element={<InterviewResults />} />
       </Route>
     </Routes>
   )

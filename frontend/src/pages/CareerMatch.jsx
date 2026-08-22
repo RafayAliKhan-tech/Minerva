@@ -127,7 +127,7 @@ function CareerMatch() {
           </div>
 
           {/* CTA */}
-          <Button to="/" variant="ghost" size="lg" className="w-full">
+          <Button to="/dashboard" variant="ghost" size="lg" className="w-full">
             Back to Home
           </Button>
         </div>

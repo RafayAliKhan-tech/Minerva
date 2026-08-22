@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { Clock, CheckCircle2 } from 'lucide-react'
+import { startAssessment, saveAttemptId } from '../api/assessmentApi'
 
 function ExploringIntro() {
   const navigate = useNavigate()
@@ -13,9 +14,16 @@ function ExploringIntro() {
   const handleStart = () => {
     console.log('Start button clicked, navigating to activity 1')
     setIsStarting(true)
-    setTimeout(() => {
-      navigate('/explore/assessment/activity/1')
-    }, 300)
+    ;(async () => {
+      try {
+        const attemptId = await startAssessment('exploring')
+        if (attemptId) saveAttemptId('exploring', attemptId)
+      } catch (e) {
+        console.error('Failed to start assessment', e)
+      } finally {
+        setTimeout(() => navigate('/explore/assessment/activity/1'), 300)
+      }
+    })()
   }
 
   return (
