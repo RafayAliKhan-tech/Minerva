@@ -40,6 +40,16 @@ function Footer({ compact = false }) {
     setEmail('')
   }
 
+  if (compact) {
+    return (
+      <footer className="auth-footer border-t border-[#E0E0E0] bg-[#F5F5F5]">
+        <Container className="auth-footer-inner">
+          <p>&copy; {new Date().getFullYear()} Minerva. All rights reserved.</p>
+        </Container>
+      </footer>
+    )
+  }
+
   return (
     <footer className={`site-footer border-t border-[#E0E0E0] bg-[#F5F5F5]${compact ? ' auth-footer' : ''}`} id="about">
       <Container className="py-14 lg:py-16">
