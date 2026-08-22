@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import DomainCard from '../components/assessment/DomainCard'
 import Button from '../components/common/Button'
 import { Code2, Layout, Database, ArrowRight } from 'lucide-react'
+import { getAllCareers } from '../api/minervaApi'
 
 const careerMatches = [
   {
@@ -30,6 +32,28 @@ const careerMatches = [
 
 function CareerMatch() {
   const navigate = useNavigate()
+  const [careers, setCareers] = useState(careerMatches)
+
+  useEffect(() => {
+    let mounted = true
+    getAllCareers()
+      .then((data) => {
+        const serverCareers = Array.isArray(data) ? data : data?.careers
+        if (!mounted || !Array.isArray(serverCareers) || serverCareers.length === 0) return
+
+        setCareers(serverCareers.map((career, index) => ({
+          id: career.careerId || career.career_id || career.id || `career-${index}`,
+          name: career.careerName || career.career_name || career.name || 'Career path',
+          description: career.description || 'Explore this career path and its required skills.',
+          match: career.matchPercentage || career.match || null,
+          requiredSkills: career.requiredSkills || {},
+          icon: [Layout, Code2, Database][index % 3],
+        })))
+      })
+      .catch((error) => console.error('Failed to load careers', error))
+
+    return () => { mounted = false }
+  }, [])
 
   const handleSelectCareer = (careerId) => {
     sessionStorage.setItem('selectedCareer', careerId)
@@ -52,7 +76,7 @@ function CareerMatch() {
 
           {/* Career cards */}
           <div className="mb-12 space-y-4">
-            {careerMatches.map((career) => (
+            {careers.map((career) => (
               <div
                 key={career.id}
                 className="group flex flex-col gap-4 rounded-2xl border-2 border-beige-border bg-white p-6 hover:border-orange/40 hover:shadow-md transition-all duration-200 cursor-pointer sm:p-8"
@@ -71,7 +95,7 @@ function CareerMatch() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-orange text-lg">{career.match}%</p>
+                    <p className="font-bold text-orange text-lg">{career.match ? `${career.match}%` : 'Explore'}</p>
                     <p className="text-xs text-brown-light">Match</p>
                   </div>
                 </div>
@@ -82,15 +106,11 @@ function CareerMatch() {
                     Matching skills
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-journey-green px-3 py-1 text-xs font-medium text-journey-green-dark">
-                      ✓ HTML
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-journey-green px-3 py-1 text-xs font-medium text-journey-green-dark">
-                      ✓ CSS
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-journey-green px-3 py-1 text-xs font-medium text-journey-green-dark">
-                      ✓ JavaScript
-                    </span>
+                    {Object.keys(career.requiredSkills || {}).slice(0, 3).map((skill) => (
+                      <span key={skill} className="inline-flex items-center gap-1 rounded-full bg-journey-green px-3 py-1 text-xs font-medium text-journey-green-dark">
+                        ✓ {skill.replaceAll('_', ' ')}
+                      </span>
+                    ))}
                   </div>
                 </div>
 

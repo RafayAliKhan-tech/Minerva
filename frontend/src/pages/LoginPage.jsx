@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import api from '../api/axiosInstance'
+import { useAuth } from '../auth/AuthContext'
 
 const categoryOptions = [
   { key: 'exploring', title: "I'm Exploring", description: 'Just browsing career options and discovering what fits you best.' },
@@ -23,6 +24,7 @@ function LoginPage() {
   const [loginSucceeded, setLoginSucceeded] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('exploring')
   const navigate = useNavigate()
+  const { establishSession, hasCompletedOnboarding, completeOnboarding } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -35,8 +37,14 @@ function LoginPage() {
       else if (payload.accessToken) token = payload.accessToken
       else if (typeof payload.data === 'string') token = payload.data
       if (!token) { alert(payload.message || 'Invalid email or password'); return }
-      localStorage.setItem('token', token)
-      setLoginSucceeded(true)
+      const user = payload.user || payload.data?.user || payload.profile || payload.data?.profile || { email }
+      const explicitlyNew = payload.isNewUser ?? payload.data?.isNewUser ?? payload.newUser ?? payload.data?.newUser
+      establishSession(token, user, remember)
+      if (explicitlyNew === false || (!explicitlyNew && hasCompletedOnboarding(email))) {
+        navigate('/dashboard', { replace: true })
+      } else {
+        setLoginSucceeded(true)
+      }
     } catch (error) {
       console.error('Login error:', error)
       const resp = error?.response
@@ -48,6 +56,7 @@ function LoginPage() {
 
   const handleContinue = () => {
     setLoginSucceeded(false)
+    completeOnboarding(email)
     const targetRoute = { exploring: '/explore/assessment/activity/1', career: '/explore/domain-selection', jobhunting: '/explore/resume' }[selectedCategory]
     navigate(targetRoute)
   }

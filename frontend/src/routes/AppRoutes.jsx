@@ -31,6 +31,7 @@ import ResumeAssessment from '../pages/ResumeAssessment'
 import ResumeResults from '../pages/ResumeResults'
 import CareerMatch from '../pages/CareerMatch'
 import SkillGap from '../pages/SkillGap'
+import ProtectedRoute from '../auth/ProtectedRoute'
 
 function AppRoutes() {
   return (
@@ -39,6 +40,8 @@ function AppRoutes() {
         <Route index element={<LandingPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignupPage />} />
+
+        <Route element={<ProtectedRoute />}>
 
         {/* I'm Exploring Flow */}
         <Route path="explore/assessment" element={<ExploringIntro />} />
@@ -70,6 +73,7 @@ function AppRoutes() {
         <Route path="chat" element={<ChatPage />} />
         <Route path="mock-interview" element={<MockInterviewPage />} />
         <Route path="mock-interview/results" element={<InterviewResults />} />
+        </Route>
       </Route>
     </Routes>
   )

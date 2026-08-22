@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://minerva-backend-g4eq.onrender.com',
+  baseURL: (import.meta.env.VITE_API_BASE_URL || 'https://minerva-backend-f3e7.onrender.com').replace(/\/$/, ''),
   headers: {
     'Content-Type': 'application/json'
   }
@@ -11,7 +11,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
       if (token) config.headers.Authorization = `Bearer ${token}`
     } catch (e) {
       // ignore
@@ -28,6 +28,8 @@ api.interceptors.response.use(
     if (error?.response?.status === 401) {
       try {
         localStorage.removeItem('token')
+        sessionStorage.removeItem('token')
+        window.dispatchEvent(new Event('minerva:session-expired'))
       } catch (e) {}
       // redirect to login
       window.location.href = '/login'

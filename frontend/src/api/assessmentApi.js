@@ -8,22 +8,22 @@ const START_KEY_MAP = {
 
 export async function startAssessment(category, meta = {}) {
   const payload = { category, ...meta }
-  const res = await api.post('/assessment/start', payload)
+  const res = await api.post('/api/assessment/startassessment', payload)
   const body = res.data || {}
   const data = body.data || body
-  const attemptId = data?.attemptId || data?.attemptId || data?.id || data?.attempt || null
+  const attemptId = data?.assessmentId || data?.attemptId || data?.id || data?.attempt || null
   return attemptId
 }
 
 export async function submitAssessment(attemptId, answers) {
   const payload = { attemptId, answers }
-  const res = await api.post('/assessment/submit', payload)
+  const res = await api.post('/api/assessment/submitassessment', payload)
   const body = res.data || {}
   return body.data || body
 }
 
 export async function getAssessmentResult(attemptId) {
-  const res = await api.get(`/assessment/result?attemptId=${encodeURIComponent(attemptId)}`)
+  const res = await api.get(`/api/assessment/getassessmentresult/${encodeURIComponent(attemptId)}`)
   const body = res.data || {}
   return body.data || body
 }

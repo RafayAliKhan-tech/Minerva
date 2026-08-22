@@ -13,7 +13,7 @@ function ProfilePage() {
     const load = async () => {
       setLoading(true)
       try {
-        const res = await api.get('/profile')
+        const res = await api.get('/api/profile/getprofile')
         const data = res.data || {}
         // unwrap common shapes
         const payload = data.data || data
@@ -34,7 +34,7 @@ function ProfilePage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const res = await api.put('/profile', profile)
+      const res = await api.put('/api/profile/updateprofile', profile)
       const data = res.data || {}
       if (data && data.message) alert(data.message)
       else alert('Profile updated')
