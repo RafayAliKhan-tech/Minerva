@@ -1,5 +1,4 @@
 import { useLocation } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
 import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import { MapPin, Sparkles, Briefcase } from 'lucide-react'
@@ -24,22 +23,7 @@ const cards = [
 
 function ExplorePage() {
   const location = useLocation()
-  const navigate = useNavigate()
   const category = location.state?.category || 'exploring'
-
-  const handleStart = () => {
-    if (category === 'exploring') {
-      alert('No backend api found')
-      return
-    }
-    if (category === 'career') {
-      alert('No backend api found')
-      return
-    }
-    if (category === 'jobhunting') {
-      navigate('/explore/resume')
-    }
-  }
 
   const categoryLabels = {
     exploring: "I'm Exploring",
@@ -60,6 +44,12 @@ function ExplorePage() {
       'Pick the career you want to develop, then answer domain-specific challenges to validate your fit.',
     jobhunting:
       'Upload your resume first and Minerva will use it to shape a job-ready assessment.',
+  }
+
+  const startPaths = {
+    exploring: '/explore/assessment/activity/1',
+    career: '/explore/domain-selection',
+    jobhunting: '/explore/resume',
   }
 
   return (
@@ -119,7 +109,7 @@ function ExplorePage() {
           <Button to="/" variant="ghost" size="md" className="text-brown hover:text-orange">
             Back to Landing
           </Button>
-          <Button onClick={handleStart} variant="dark" size="md">
+          <Button to={startPaths[category]} variant="dark" size="md">
             {category === 'exploring' ? 'Start Exploring' : category === 'career' ? 'Choose my career' : 'Upload my resume'}
           </Button>
         </div>

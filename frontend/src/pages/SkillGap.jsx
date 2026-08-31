@@ -133,7 +133,21 @@ function SkillGap() {
   const data = skillGapData[careerId]
 
   const handleGenerateRoadmap = () => {
-    alert('No backend api found')
+    const roadmapId = `roadmap-${careerId}-${Date.now()}`
+    const careerTitle = data.title
+    
+    saveRoadmap(user, {
+      id: roadmapId,
+      domain: careerTitle,
+      domainId: careerId,
+      matchScore: 65,
+      profile: { skillsToLearn: data.skillsToLearn },
+      status: 'generated',
+      createdAt: new Date().toISOString(),
+      curriculum: generateSampleCurriculum(careerTitle, 65),
+    })
+    
+    navigate(`/roadmap-detail/${roadmapId}`)
   }
 
   if (!data) {

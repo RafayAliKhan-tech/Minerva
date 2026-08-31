@@ -194,11 +194,20 @@ function DomainAssessment() {
   }
 
   const handleNext = () => {
-    alert('No backend api found')
+    saveResponse(false)
+    if (activityIndex < activities.length - 1) {
+      navigate(`/explore/domain-assessment/${domainId}/${activityIndex + 2}`)
+    } else {
+      navigate(`/explore/domain-assessment/${domainId}/analysis`)
+    }
   }
 
   const handlePrevious = () => {
-    alert('No backend api found')
+    if (activityIndex > 0) {
+      navigate(`/explore/domain-assessment/${domainId}/${activityIndex}`)
+    } else {
+      navigate('/explore/domain-selection')
+    }
   }
 
   if (!domainData) {

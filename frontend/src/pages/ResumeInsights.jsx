@@ -111,7 +111,7 @@ function ResumeInsights() {
           {/* CTA */}
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              onClick={() => alert('No backend api found')}
+              to="/explore/resume/assessment/1"
               variant="dark"
               size="lg"
               icon={ArrowRight}

@@ -191,11 +191,22 @@ function ExploringActivity() {
   }
 
   const handleNext = () => {
-    alert('No backend api found')
+    if (!saved) {
+      saveResponse(false)
+    }
+    if (activityIndex < exploringActivities.length - 1) {
+      navigate(`/explore/assessment/activity/${activityIndex + 2}`)
+    } else {
+      navigate('/explore/assessment/analysis')
+    }
   }
 
   const handlePrevious = () => {
-    alert('No backend api found')
+    if (activityIndex > 0) {
+      navigate(`/explore/assessment/activity/${activityIndex}`)
+    } else {
+      navigate('/explore/assessment')
+    }
   }
 
   if (!activity) {

@@ -1,13 +1,26 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { Clock, CheckCircle2 } from 'lucide-react'
+import { startAssessment, saveAttemptId } from '../api/assessmentApi'
 
 function ExploringIntro() {
   const navigate = useNavigate()
+  const [isStarting, setIsStarting] = useState(false)
 
   const handleStart = () => {
-    alert('No backend api found')
+    setIsStarting(true)
+    ;(async () => {
+      try {
+        const attemptId = await startAssessment('exploring')
+        if (attemptId) saveAttemptId('exploring', attemptId)
+      } catch (e) {
+        console.error('Failed to start assessment', e)
+      } finally {
+        setTimeout(() => navigate('/explore/assessment/activity/1'), 300)
+      }
+    })()
   }
 
   return (

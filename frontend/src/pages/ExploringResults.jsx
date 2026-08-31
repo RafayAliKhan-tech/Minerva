@@ -218,7 +218,18 @@ function ExploringResults() {
               {profile.potentialDomains.map((domainMatch) => {
                 const domain = domains.find((d) => d.name === domainMatch.domain)
                 const handleGenerateRoadmap = () => {
-                  alert('No backend api found')
+                  const roadmapId = `roadmap-${domainMatch.domain}-${Date.now()}`
+                  saveRoadmap(user, {
+                    id: roadmapId,
+                    domain: domainMatch.domain,
+                    domainId: domain?.id,
+                    matchScore: domainMatch.match,
+                    profile: profile,
+                    status: 'generated',
+                    createdAt: new Date().toISOString(),
+                    curriculum: generateSampleCurriculum(domainMatch.domain, domainMatch.match),
+                  })
+                  navigate(`/roadmap-detail/${roadmapId}`)
                 }
                 return (
                   <div

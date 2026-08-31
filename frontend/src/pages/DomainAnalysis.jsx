@@ -26,7 +26,7 @@ function DomainAnalysis() {
   const steps = domainSteps[domainId] || domainSteps['default']
 
   const handleComplete = () => {
-    alert('No backend api found')
+    navigate(`/explore/domain-assessment/${domainId}/results`)
   }
 
   return (
