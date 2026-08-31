@@ -138,7 +138,7 @@ function DomainResults() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              to={{ pathname: '/explore/roadmap', state: { roadmapId: domainId, domain: domainData.name, score: results.domainFitPercentage, strengths: results.strengths, areasToImprove: results.areasToImprove } }}
+              onClick={() => alert('No backend api found')}
               variant="dark"
               size="lg"
               icon={ArrowRight}

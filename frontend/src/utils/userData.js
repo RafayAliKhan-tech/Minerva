@@ -26,3 +26,47 @@ export const getLatestAssessment = (user) => {
 }
 
 export const getRoadmapKey = (user, roadmapId = 'default') => `minervaRoadmap:${getUserKey(user)}:${roadmapId}`
+
+export const saveRoadmap = (user, roadmap) => {
+  try {
+    const key = `minervaRoadmaps:${getUserKey(user)}`
+    const existing = getRoadmaps(user) || []
+    const updated = existing.filter((r) => r.id !== roadmap.id)
+    updated.push(roadmap)
+    localStorage.setItem(key, JSON.stringify(updated))
+    return roadmap
+  } catch {
+    console.error('Failed to save roadmap')
+    return null
+  }
+}
+
+export const getRoadmaps = (user) => {
+  try {
+    const key = `minervaRoadmaps:${getUserKey(user)}`
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+export const getRoadmapById = (user, roadmapId) => {
+  try {
+    const roadmaps = getRoadmaps(user)
+    return roadmaps.find((r) => r.id === roadmapId)
+  } catch {
+    return null
+  }
+}
+
+export const deleteRoadmap = (user, roadmapId) => {
+  try {
+    const key = `minervaRoadmaps:${getUserKey(user)}`
+    const existing = getRoadmaps(user) || []
+    const updated = existing.filter((r) => r.id !== roadmapId)
+    localStorage.setItem(key, JSON.stringify(updated))
+  } catch {
+    console.error('Failed to delete roadmap')
+  }
+}

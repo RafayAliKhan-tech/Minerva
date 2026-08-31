@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, BriefcaseBusiness, ChartNoAxesCombined, MessageCircle, PlayCircle, Sparkles, Target } from 'lucide-react'
+import { ArrowUpRight, BriefcaseBusiness, ChartNoAxesCombined, MessageCircle, PlayCircle, Sparkles, Target, Zap, Trash2 } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
-import { getDisplayName, getLatestAssessment } from '../utils/userData'
+import { getDisplayName, getLatestAssessment, getRoadmaps, deleteRoadmap } from '../utils/userData'
 
 const journeyItems = [
   { label: 'Profile signal', value: 'Strong', detail: 'Your strengths are ready to use', icon: Sparkles },
@@ -13,6 +13,12 @@ const journeyItems = [
 
 function DashboardPage() {
   const { user } = useAuth()
+  const [roadmaps, setRoadmaps] = useState([])
+  
+  useEffect(() => {
+    setRoadmaps(getRoadmaps(user))
+  }, [user])
+
   const resume = useMemo(() => {
     const raw = sessionStorage.getItem('resumeFile')
     return raw ? JSON.parse(raw) : null
@@ -23,6 +29,11 @@ function DashboardPage() {
   const displayName = getDisplayName(user)
   const latestScore = latest?.score ?? null
   const latestLabel = latest?.label || 'No assessment yet'
+
+  const handleDeleteRoadmap = (roadmapId) => {
+    deleteRoadmap(user, roadmapId)
+    setRoadmaps(getRoadmaps(user))
+  }
 
   return (
     <main className="dashboard-page">
@@ -64,6 +75,50 @@ function DashboardPage() {
         <section className="dashboard-grid dashboard-signal-grid">
           {journeyItems.map(({ label, value, detail, icon: Icon }) => <article className="dashboard-signal" key={label}><Icon size={19} /><span>{label}</span><strong>{value}</strong><p>{detail}</p></article>)}
         </section>
+
+        {roadmaps.length > 0 && (
+          <>
+            <section className="dashboard-section-heading"><div><p className="dashboard-kicker">YOUR ROADMAPS</p><h2>Personalized learning paths.</h2></div></section>
+            <section className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+              {roadmaps.map((roadmap) => (
+                <article key={roadmap.id} className="dashboard-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="dashboard-card-top">
+                    <span>{roadmap.domain}</span>
+                    <Zap size={18} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1a1a1a', marginBottom: '0.5rem' }}>
+                      {roadmap.domain} Roadmap
+                    </h3>
+                    <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem' }}>
+                      Match Score: <strong>{roadmap.matchScore}%</strong>
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: '#999', marginBottom: '1rem' }}>
+                      {roadmap.curriculum?.phases?.length || 0} phases • {roadmap.curriculum?.weeks || 0} weeks
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                    <button
+                      onClick={() => handleDeleteRoadmap(roadmap.id)}
+                      style={{
+                        padding: '0.75rem',
+                        backgroundColor: '#f5f5f5',
+                        border: '1px solid #ddd',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Trash2 size={16} color="#666" />
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </section>
+          </>
+        )}
 
         <section className="dashboard-section-heading"><div><p className="dashboard-kicker">READY WHEN YOU ARE</p><h2>Choose your next move.</h2></div></section>
         <section className="dashboard-grid dashboard-action-grid">

@@ -3,19 +3,49 @@ import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import FileUpload from '../components/assessment/FileUpload'
 import Button from '../components/common/Button'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Loader } from 'lucide-react'
+import { uploadResume } from '../api/minervaApi'
 
 function ResumeUpload() {
   const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleFileSelect = (file) => {
     setSelectedFile(file)
+    setError(null)
   }
 
-  const handleAnalyze = () => {
-    if (selectedFile) {
+  const handleAnalyze = async () => {
+    if (!selectedFile) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+
+      const result = await uploadResume(formData)
+
       // Store file info in session
+      sessionStorage.setItem(
+        'resumeFile',
+        JSON.stringify({
+          name: selectedFile.name,
+          size: selectedFile.size,
+          type: selectedFile.type,
+          analysis: result,
+        })
+      )
+
+      navigate('/explore/resume/analysis')
+    } catch (err) {
+      console.error('Resume upload failed:', err)
+      setError('Failed to upload resume. Please try again.')
+      
+      // Fallback - still proceed with local file info
       sessionStorage.setItem(
         'resumeFile',
         JSON.stringify({
@@ -24,7 +54,10 @@ function ResumeUpload() {
           type: selectedFile.type,
         })
       )
+      
       navigate('/explore/resume/analysis')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -47,6 +80,13 @@ function ResumeUpload() {
             <FileUpload onFileSelect={handleFileSelect} />
           </div>
 
+          {/* Error message */}
+          {error && (
+            <div className="mb-8 rounded-2xl bg-red-50 p-4 border border-red-200">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
           {/* Info */}
           <div className="mb-12 rounded-2xl bg-orange-pill p-6">
             <p className="text-sm text-brown">
@@ -62,11 +102,11 @@ function ResumeUpload() {
               onClick={handleAnalyze}
               variant="dark"
               size="lg"
-              icon={ArrowRight}
-              disabled={!selectedFile}
+              icon={loading ? Loader : ArrowRight}
+              disabled={!selectedFile || loading}
               className="flex-1"
             >
-              Analyze My Resume
+              {loading ? 'Uploading...' : 'Analyze My Resume'}
             </Button>
             <Button to="/" variant="ghost" size="lg" className="flex-1">
               Back to Home

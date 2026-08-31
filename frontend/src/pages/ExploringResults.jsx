@@ -6,10 +6,97 @@ import DomainCard from '../components/assessment/DomainCard'
 import Button from '../components/common/Button'
 import { generateMindProfile } from '../data/exploringActivities'
 import { domains } from '../data/domainActivities'
-import { Sparkles, ArrowRight } from 'lucide-react'
+import { Sparkles, ArrowRight, Zap } from 'lucide-react'
 import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
 import { useAuth } from '../auth/AuthContext'
-import { saveLatestAssessment } from '../utils/userData'
+import { saveLatestAssessment, saveRoadmap, getRoadmaps } from '../utils/userData'
+
+const generateSampleCurriculum = (domain, matchScore) => {
+  const curriculumByDomain = {
+    'UI/UX Design': {
+      weeks: 12,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'Design Fundamentals', topics: ['Color Theory', 'Typography', 'Layout Principles'], status: 'upcoming' },
+        { week: 2, title: 'Wireframing Basics', topics: ['Low Fidelity', 'User Flow', 'Information Architecture'], status: 'upcoming' },
+        { week: 3, title: 'Prototyping Tools', topics: ['Figma', 'Adobe XD', 'Sketch'], status: 'upcoming' },
+        { week: 4, title: 'User Research', topics: ['User Testing', 'Interviews', 'Personas'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'UI/UX Design Masterclass', platform: 'Udemy' },
+        { type: 'project', title: 'Redesign Personal Portfolio', difficulty: 'Beginner' },
+        { type: 'practice', title: 'Daily Design Challenge', platform: 'Dribbble' },
+      ]
+    },
+    'Development': {
+      weeks: 16,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'JavaScript Fundamentals', topics: ['Variables', 'Functions', 'DOM'], status: 'upcoming' },
+        { week: 2, title: 'React Basics', topics: ['Components', 'State', 'Props'], status: 'upcoming' },
+        { week: 3, title: 'Backend Basics', topics: ['Node.js', 'Express', 'REST APIs'], status: 'upcoming' },
+        { week: 4, title: 'Database', topics: ['SQL', 'MongoDB', 'Data Modeling'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'Full Stack Web Development', platform: 'Coursera' },
+        { type: 'project', title: 'Build a Todo App', difficulty: 'Beginner' },
+        { type: 'practice', title: 'LeetCode Problems', platform: 'LeetCode' },
+      ]
+    },
+    'Data Analytics': {
+      weeks: 12,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'Data Basics', topics: ['Statistics', 'Probability', 'Excel'], status: 'upcoming' },
+        { week: 2, title: 'Python for Data', topics: ['Pandas', 'NumPy', 'Data Cleaning'], status: 'upcoming' },
+        { week: 3, title: 'Data Visualization', topics: ['Matplotlib', 'Tableau', 'Power BI'], status: 'upcoming' },
+        { week: 4, title: 'SQL & Databases', topics: ['SQL Queries', 'Database Design'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'Data Analytics Bootcamp', platform: 'Google Career Certificates' },
+        { type: 'project', title: 'Analyze Public Dataset', difficulty: 'Beginner' },
+        { type: 'practice', title: 'Kaggle Competitions', platform: 'Kaggle' },
+      ]
+    },
+    'Artificial Intelligence': {
+      weeks: 20,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'Math Foundations', topics: ['Linear Algebra', 'Calculus', 'Statistics'], status: 'upcoming' },
+        { week: 2, title: 'Python Advanced', topics: ['OOP', 'Data Structures', 'Algorithms'], status: 'upcoming' },
+        { week: 3, title: 'Machine Learning', topics: ['Supervised Learning', 'Unsupervised Learning', 'Scikit-learn'], status: 'upcoming' },
+        { week: 4, title: 'Deep Learning', topics: ['Neural Networks', 'TensorFlow', 'PyTorch'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'Machine Learning Specialization', platform: 'Coursera' },
+        { type: 'project', title: 'Build a Classification Model', difficulty: 'Intermediate' },
+        { type: 'practice', title: 'Research Papers', platform: 'ArXiv' },
+      ]
+    },
+    'Cybersecurity': {
+      weeks: 14,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'Security Basics', topics: ['Encryption', 'Authentication', 'Firewalls'], status: 'upcoming' },
+        { week: 2, title: 'Network Security', topics: ['TCP/IP', 'VPN', 'Intrusion Detection'], status: 'upcoming' },
+        { week: 3, title: 'Ethical Hacking', topics: ['Penetration Testing', 'Vulnerability Assessment'], status: 'upcoming' },
+        { week: 4, title: 'Compliance & Risk', topics: ['GDPR', 'ISO 27001', 'Risk Management'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'Cybersecurity Fundamentals', platform: 'CompTIA Security+' },
+        { type: 'project', title: 'Build a Secure App', difficulty: 'Intermediate' },
+        { type: 'practice', title: 'HackTheBox', platform: 'HackTheBox' },
+      ]
+    }
+  }
+
+  return curriculumByDomain[domain] || {
+    weeks: 12,
+    level: 'Beginner',
+    phases: [],
+    resources: []
+  }
+}
 
 function ExploringResults() {
   const navigate = useNavigate()
@@ -130,26 +217,38 @@ function ExploringResults() {
             <div className="space-y-4">
               {profile.potentialDomains.map((domainMatch) => {
                 const domain = domains.find((d) => d.name === domainMatch.domain)
+                const handleGenerateRoadmap = () => {
+                  alert('No backend api found')
+                }
                 return (
                   <div
                     key={domainMatch.domain}
-                    className="flex items-center justify-between rounded-xl border border-beige-border bg-cream-dark p-4"
+                    className="rounded-xl border border-beige-border bg-cream-dark p-6 hover:shadow-md transition-shadow"
                   >
-                    <div className="flex items-center gap-4">
-                      {domain && domain.icon && (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-pill text-orange">
-                          {<domain.icon className="h-6 w-6" aria-hidden="true" />}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        {domain && domain.icon && (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-pill text-orange">
+                            {<domain.icon className="h-6 w-6" aria-hidden="true" />}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-brown">{domainMatch.domain}</p>
+                          <p className="text-xs text-brown-light">Based on your signals</p>
                         </div>
-                      )}
-                      <div>
-                        <p className="font-semibold text-brown">{domainMatch.domain}</p>
-                        <p className="text-xs text-brown-light">Based on your signals</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-orange">{domainMatch.match}%</p>
+                        <p className="text-xs text-brown-light">Match</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-orange">{domainMatch.match}%</p>
-                      <p className="text-xs text-brown-light">Match</p>
-                    </div>
+                    <button
+                      onClick={handleGenerateRoadmap}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange to-orange-dark text-white rounded-lg font-semibold hover:shadow-md transition-all duration-200 group"
+                    >
+                      <Zap className="h-4 w-4" aria-hidden="true" />
+                      Generate Roadmap
+                    </button>
                   </div>
                 )
               })}

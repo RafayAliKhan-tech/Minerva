@@ -14,7 +14,7 @@ function ExploringAnalysis() {
   const navigate = useNavigate()
 
   const handleComplete = () => {
-    navigate('/explore/assessment/results')
+    alert('No backend api found')
   }
 
   return (

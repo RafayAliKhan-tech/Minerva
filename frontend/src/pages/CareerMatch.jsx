@@ -56,8 +56,7 @@ function CareerMatch() {
   }, [])
 
   const handleSelectCareer = (careerId) => {
-    sessionStorage.setItem('selectedCareer', careerId)
-    navigate(`/explore/resume/skill-gap/${careerId}`)
+    alert('No backend api found')
   }
 
   return (

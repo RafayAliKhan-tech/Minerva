@@ -1,8 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import SkillBar from '../components/assessment/SkillBar'
 import Button from '../components/common/Button'
-import { CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
+import { CheckCircle2, AlertCircle, ArrowRight, Zap } from 'lucide-react'
+import { saveRoadmap } from '../utils/userData'
 
 const skillGapData = {
   frontend: {
@@ -51,11 +53,88 @@ const skillGapData = {
   },
 }
 
+const generateSampleCurriculum = (domain, matchScore = 65) => {
+  const curriculumByDomain = {
+    'Frontend Developer': {
+      weeks: 12,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'React Fundamentals', topics: ['Components', 'Props', 'State'], status: 'upcoming' },
+        { week: 2, title: 'Hooks & State Management', topics: ['useState', 'useEffect', 'Custom Hooks'], status: 'upcoming' },
+        { week: 3, title: 'Styling & Responsive Design', topics: ['CSS-in-JS', 'Tailwind', 'Media Queries'], status: 'upcoming' },
+        { week: 4, title: 'API Integration', topics: ['Fetch API', 'Axios', 'Error Handling'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'React Complete Course', platform: 'Udemy' },
+        { type: 'project', title: 'Build E-commerce UI', difficulty: 'Intermediate' },
+        { type: 'practice', title: 'LeetCode JavaScript', platform: 'LeetCode' },
+      ]
+    },
+    'Full Stack Developer': {
+      weeks: 16,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'Node.js & Express', topics: ['Server Setup', 'Routing', 'Middleware'], status: 'upcoming' },
+        { week: 2, title: 'Database Design', topics: ['SQL', 'MongoDB', 'Schema Design'], status: 'upcoming' },
+        { week: 3, title: 'Authentication', topics: ['JWT', 'OAuth', 'Sessions'], status: 'upcoming' },
+        { week: 4, title: 'Deployment', topics: ['Vercel', 'Heroku', 'Docker'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'Full Stack Bootcamp', platform: 'Coursera' },
+        { type: 'project', title: 'Build Social App', difficulty: 'Advanced' },
+        { type: 'practice', title: 'GitHub Projects', platform: 'GitHub' },
+      ]
+    },
+    'UI/UX Developer': {
+      weeks: 12,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'Design Tools', topics: ['Figma Basics', 'Components', 'Prototyping'], status: 'upcoming' },
+        { week: 2, title: 'UX Principles', topics: ['User Research', 'Personas', 'Wireframing'], status: 'upcoming' },
+        { week: 3, title: 'Visual Design', topics: ['Color Theory', 'Typography', 'Layouts'], status: 'upcoming' },
+        { week: 4, title: 'Accessibility', topics: ['WCAG', 'Color Contrast', 'Screen Readers'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'Google UX Design Certificate', platform: 'Coursera' },
+        { type: 'project', title: 'Redesign Website', difficulty: 'Beginner' },
+        { type: 'practice', title: 'Daily UI Challenge', platform: 'Dribbble' },
+      ]
+    },
+    'ui-developer': {
+      weeks: 12,
+      level: matchScore > 70 ? 'Intermediate' : matchScore > 40 ? 'Beginner' : 'Basic',
+      phases: [
+        { week: 1, title: 'Design Tools', topics: ['Figma Basics', 'Components', 'Prototyping'], status: 'upcoming' },
+        { week: 2, title: 'UX Principles', topics: ['User Research', 'Personas', 'Wireframing'], status: 'upcoming' },
+        { week: 3, title: 'Visual Design', topics: ['Color Theory', 'Typography', 'Layouts'], status: 'upcoming' },
+        { week: 4, title: 'Accessibility', topics: ['WCAG', 'Color Contrast', 'Screen Readers'], status: 'upcoming' },
+      ],
+      resources: [
+        { type: 'course', title: 'Google UX Design Certificate', platform: 'Coursera' },
+        { type: 'project', title: 'Redesign Website', difficulty: 'Beginner' },
+        { type: 'practice', title: 'Daily UI Challenge', platform: 'Dribbble' },
+      ]
+    },
+  }
+
+  return curriculumByDomain[domain] || {
+    weeks: 12,
+    level: 'Beginner',
+    phases: [],
+    resources: []
+  }
+}
+
 function SkillGap() {
   const { careerId } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const data = skillGapData[careerId]
+
+  const handleGenerateRoadmap = () => {
+    alert('No backend api found')
+  }
 
   if (!data) {
     return (
@@ -169,13 +248,13 @@ function SkillGap() {
           {/* CTA */}
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              to="/explore/roadmap"
+              onClick={handleGenerateRoadmap}
               variant="dark"
               size="lg"
-              icon={ArrowRight}
+              icon={Zap}
               className="flex-1"
             >
-              Build My Roadmap
+              Generate Personalized Roadmap
             </Button>
             <Button to="/dashboard" variant="ghost" size="lg" className="flex-1">
               Back to Home

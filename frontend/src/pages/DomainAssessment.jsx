@@ -194,20 +194,11 @@ function DomainAssessment() {
   }
 
   const handleNext = () => {
-    saveResponse(false)
-    if (activityIndex < activities.length - 1) {
-      navigate(`/explore/domain-assessment/${domainId}/${activityIndex + 2}`)
-    } else {
-      navigate(`/explore/domain-assessment/${domainId}/analysis`)
-    }
+    alert('No backend api found')
   }
 
   const handlePrevious = () => {
-    if (activityIndex > 0) {
-      navigate(`/explore/domain-assessment/${domainId}/${activityIndex}`)
-    } else {
-      navigate('/explore/domain-selection')
-    }
+    alert('No backend api found')
   }
 
   if (!domainData) {

@@ -11,10 +11,7 @@ function DomainSelection() {
 
   const handleContinue = () => {
     if (!selectedDomain) return
-
-    sessionStorage.setItem('selectedDomain', selectedDomain)
-    sessionStorage.setItem('domainResponses', '{}')
-    navigate(`/explore/domain-assessment/${selectedDomain}`)
+    alert('No backend api found')
   }
 
   return (

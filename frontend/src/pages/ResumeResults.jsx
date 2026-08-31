@@ -1,165 +1,172 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { ArrowRight, Loader } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
-import SkillBar from '../components/assessment/SkillBar'
 import Button from '../components/common/Button'
-import { ArrowRight } from 'lucide-react'
-import { inferResumeProfile, generateResumeResults } from '../data/resumeActivities'
-import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
+import SkillBar from '../components/assessment/SkillBar'
 import { useAuth } from '../auth/AuthContext'
+import { submitRoute3, getRoute3Result } from '../api/minervaApi'
 import { saveLatestAssessment } from '../utils/userData'
 
 function ResumeResults() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const resumeFile = useMemo(() => {
-    const raw = sessionStorage.getItem('resumeFile')
-    return raw ? JSON.parse(raw) : null
-  }, [])
-
-  const profile = useMemo(() => inferResumeProfile(resumeFile), [resumeFile])
+  const location = useLocation()
   const [results, setResults] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    ;(async () => {
-      if (!resumeFile) {
-        navigate('/explore/resume')
+    loadResults()
+  }, [])
+
+  const loadResults = async () => {
+    try {
+      const attemptId = sessionStorage.getItem('route3AttemptId')
+      const answers = JSON.parse(sessionStorage.getItem('route3Answers') || '{}')
+
+      if (!attemptId) {
+        setError('No assessment found. Please start again.')
+        setLoading(false)
         return
       }
 
+      // Submit answers to backend
       try {
-        const attemptId = readAttemptId('resume')
-        if (attemptId) {
-          const server = await getAssessmentResult(attemptId)
-          if (server && server.resumeResults) {
-            setResults(server.resumeResults)
-            saveLatestAssessment(user, { type: 'resume', label: 'Resume readiness assessment', domain: 'Job readiness', score: Math.round(server.resumeResults.scores.reduce((sum, item) => sum + item.score, 0) / server.resumeResults.scores.length) })
-            return
-          }
-        }
-      } catch (e) {
-        console.error('fetch resume result failed', e)
+        await submitRoute3({
+          attemptId,
+          answers,
+          userId: user?.email || user?.Email,
+        })
+      } catch (submitErr) {
+        console.error('Submit failed:', submitErr)
+        // Continue to get results even if submit fails
       }
 
-      const answers = JSON.parse(sessionStorage.getItem('resumeResponses') || '{}')
-      const generated = generateResumeResults(profile.id, answers)
-      setResults(generated)
-      saveLatestAssessment(user, { type: 'resume', label: 'Resume readiness assessment', domain: 'Job readiness', score: Math.round(generated.scores.reduce((sum, item) => sum + item.score, 0) / generated.scores.length) })
-    })()
-  }, [navigate, profile.id, resumeFile])
+      // Get results from backend
+      const result = await getRoute3Result(attemptId)
 
-  if (!resumeFile) {
-    return null
+      if (result) {
+        setResults({
+          attemptId,
+          skillGaps: result.skillGaps || [],
+          overallScore: result.overallScore || 0,
+          recommendations: result.recommendations || [],
+          targetRole: result.targetRole || 'Your Target Role',
+          message: result.message || 'Review your skill gaps below.',
+        })
+
+        saveLatestAssessment(user, {
+          type: 'resume',
+          label: 'Resume & Role Assessment',
+          domain: result.targetRole || 'Job Ready',
+          score: result.overallScore || 0,
+        })
+      } else {
+        setResults({
+          attemptId,
+          skillGaps: [],
+          overallScore: 65,
+          recommendations: ['Continue learning'],
+          targetRole: 'Your Target Role',
+          message: 'Assessment complete.',
+        })
+      }
+    } catch (err) {
+      console.error('Failed to load results:', err)
+      setError('Failed to load assessment results. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (!results) {
+  if (loading) {
     return (
-      <AssessmentLayout onBack={() => navigate('/explore/resume/assessment/1')} showProgress={false}>
-        <p className="text-center text-brown-light">Loading results...</p>
+      <AssessmentLayout onBack={() => navigate(-1)} showProgress={false}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <Loader size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
+          <p>Evaluating your assessment...</p>
+        </div>
       </AssessmentLayout>
     )
   }
 
-  return (
-    <AssessmentLayout
-      onBack={() => navigate('/explore/resume/assessment/1')}
-      showProgress={false}
-      title="Your Job Readiness"
-      subtitle="Review your score, skill gap, and recommended roles based on your resume and assessment."
-    >
-      <div className="space-y-10">
-        <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8">
-          <p className="text-sm font-semibold uppercase tracking-wider text-orange">Your job readiness</p>
-          <h2 className="mt-4 text-5xl font-bold text-orange">{Math.round(results.scores.reduce((sum, item) => sum + item.score, 0) / results.scores.length)}%</h2>
-          <p className="mt-4 text-base text-brown-light">{results.fitMessage}</p>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl border border-journey-green bg-journey-green/10 p-8">
-            <h3 className="text-xl font-semibold text-brown mb-6">Your strongest career signals</h3>
-            <div className="space-y-3">
-              {results.signals.map((signal) => (
-                <div key={signal} className="rounded-2xl border border-journey-green bg-white p-4 text-brown">
-                  {signal}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-beige-border bg-white p-8">
-            <h3 className="text-xl font-semibold text-brown mb-6">Skills you already have</h3>
-            <div className="space-y-4">
-              {results.skills.map((skill) => (
-                <div key={skill} className="rounded-2xl bg-cream-dark p-4 text-brown">
-                  {skill}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-beige-border bg-white p-8">
-          <h3 className="text-xl font-semibold text-brown mb-6">Your current readiness scores</h3>
-          <div className="space-y-4">
-            {results.scores.map((score) => (
-              <SkillBar key={score.name} skill={score.name} percentage={score.score} size="md" />
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl border border-journey-green bg-journey-green/10 p-8">
-            <h3 className="text-xl font-semibold text-brown mb-6">You already have</h3>
-            <ul className="space-y-3 text-brown-light">
-              {results.skills.map((skill) => (
-                <li key={skill} className="flex items-center gap-3">
-                  <span className="text-orange">✓</span>
-                  {skill}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8">
-            <h3 className="text-xl font-semibold text-brown mb-6">You should strengthen</h3>
-            <ul className="space-y-3 text-brown-light">
-              {results.gap.map((item) => (
-                <li key={item} className="flex items-center gap-3">
-                  <span className="text-orange">⚠</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-beige-border bg-white p-8">
-          <h3 className="text-xl font-semibold text-brown mb-6">Jobs you could target</h3>
-          <div className="grid gap-3">
-            {results.jobs.map((job) => (
-              <div key={job} className="rounded-2xl border border-beige-border bg-cream-dark p-4 text-brown">
-                {job}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Button
-            onClick={() => navigate('/dashboard')}
-            variant="ghost"
-            size="lg"
-            className="flex-1"
-          >
-            Back to Home
+  if (error) {
+    return (
+      <AssessmentLayout onBack={() => navigate(-1)} showProgress={false}>
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-8">
+          <p style={{ color: '#dc2626', marginBottom: '1rem' }}>{error}</p>
+          <Button onClick={() => navigate('/explore/resume')} variant="dark" size="lg">
+            Start Over
           </Button>
+        </div>
+      </AssessmentLayout>
+    )
+  }
+
+  if (!results) {
+    return null
+  }
+
+  return (
+    <AssessmentLayout onBack={() => navigate(-1)} showProgress={false}>
+      <div className="space-y-10">
+        {/* Score Card */}
+        <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8">
+          <p className="text-sm font-semibold uppercase tracking-wider text-orange">Your Readiness</p>
+          <h2 className="mt-4 text-5xl font-bold text-orange">{results.overallScore}%</h2>
+          <p className="mt-4 text-base text-brown-light">{results.message}</p>
+        </div>
+
+        {/* Skill Gaps */}
+        {results.skillGaps && results.skillGaps.length > 0 && (
+          <div className="rounded-3xl border border-beige-border bg-white p-8">
+            <h3 className="text-xl font-semibold text-brown mb-6">Skills to Develop</h3>
+            <div className="space-y-4">
+              {results.skillGaps.map((gap, idx) => (
+                <SkillBar
+                  key={idx}
+                  skill={gap.name}
+                  percentage={gap.level || 0}
+                  size="md"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {results.recommendations && results.recommendations.length > 0 && (
+          <div className="rounded-3xl border border-journey-green bg-journey-green/10 p-8">
+            <h3 className="text-xl font-semibold text-brown mb-6">Next Steps</h3>
+            <div className="space-y-3">
+              {results.recommendations.map((rec, idx) => (
+                <div key={idx} className="rounded-2xl border border-journey-green bg-white p-4 text-brown">
+                  {rec}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CTA */}
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Button
-            onClick={() => navigate('/explore/resume/career-match')}
+            to={`/explore/resume/skill-gap/${results.targetRole?.toLowerCase().replace(/\s+/g, '-') || 'default'}`}
             variant="dark"
             size="lg"
             icon={ArrowRight}
             className="flex-1"
           >
-            Explore Recommended Jobs →
+            View Full Skill Gap
+          </Button>
+          <Button
+            to="/dashboard"
+            variant="ghost"
+            size="lg"
+            className="flex-1"
+          >
+            Back to Dashboard
           </Button>
         </div>
       </div>
