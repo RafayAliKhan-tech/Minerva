@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, RotateCcw, Sparkles, Target, Loader } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
-import { getRoute3Result } from '../api/minervaApi'
+import { getInterviewResult } from '../api/minervaApi'
 
 function InterviewResults() {
   const navigate = useNavigate()
@@ -24,32 +24,44 @@ function InterviewResults() {
 
   const fetchResults = async () => {
     try {
-      const attemptId = sessionStorage.getItem('attemptId')
+      const attemptId = sessionStorage.getItem('attemptId') || sessionStorage.getItem('interviewAttemptId')
       if (!attemptId) {
         setLoading(false)
         return
       }
 
-      const result = await getRoute3Result(attemptId)
-      
-      if (result?.feedback) {
+      const raw = await getInterviewResult(attemptId)
+      const result = raw?.result || raw?.data || raw || {}
+
+      if (Array.isArray(result.feedback)) {
         setFeedback(result.feedback)
-      }
-      
-      if (result?.overallScore) {
-        setOverallScore(result.overallScore)
+      } else if (Array.isArray(result.metrics)) {
+        setFeedback(result.metrics)
+      } else if (result.scoreBreakdown && typeof result.scoreBreakdown === 'object') {
+        const mapped = Object.entries(result.scoreBreakdown).map(([label, score]) => ({
+          label,
+          score: Number(score) || 0,
+          note: 'Based on your interview response.'
+        }))
+        if (mapped.length) setFeedback(mapped)
       }
 
-      if (result?.nextStep) {
-        setNextStep(result.nextStep)
-      }
+      const nextOverallScore =
+        result.overallScore ??
+        result.score ??
+        result.totalScore ??
+        result.averageScore ??
+        result.result?.overallScore ??
+        76
+      setOverallScore(Number(nextOverallScore) || 76)
 
-      if (result?.details) {
-        setNextStepDetails(result.details)
-      }
+      const nextStepValue = result.nextStep || result.recommendation || result.nextAction || 'Make every answer land with evidence.'
+      const nextStepDetailValue = result.details || result.nextStepDetails || result.feedbackSummary || 'Before your next application, prepare two project stories with a clear result: faster, simpler, more accessible, or more useful.'
+
+      setNextStep(nextStepValue)
+      setNextStepDetails(nextStepDetailValue)
     } catch (error) {
       console.error('Failed to fetch interview results:', error)
-      // Use defaults already set
     } finally {
       setLoading(false)
     }

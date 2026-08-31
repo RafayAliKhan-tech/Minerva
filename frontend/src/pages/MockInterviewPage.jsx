@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, Mic2, Sparkles, Loader } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
-import { startRoute3, submitRoute3 } from '../api/minervaApi'
+import { startInterview, submitInterview } from '../api/minervaApi'
 
 const defaultQuestions = [
   { prompt: 'Tell me about a project where you solved a difficult problem.', hint: 'Use the situation, your action, and the measurable result.' },
@@ -25,19 +25,29 @@ function MockInterviewPage() {
 
   useEffect(() => {
     initializeInterview()
-  }, [])
+  }, [role])
 
   const initializeInterview = async () => {
     try {
       setLoading(true)
-      const result = await startRoute3({
+      const userId = user?.email || user?.Email || user?.id || 'guest-user'
+      const result = await startInterview({
+        userId,
+        targetRole: role,
         roleTarget: role,
-        userId: user?.email || user?.Email,
+        userProfile: {
+          displayName: user?.name || user?.fullName || user?.email || 'User',
+        },
       })
-      setAttemptId(result?.attemptId || `attempt-${Date.now()}`)
+
+      const nextAttemptId = result?.attemptId || result?.id || result?.attempt_id || `attempt-${Date.now()}`
+      setAttemptId(nextAttemptId)
+      sessionStorage.setItem('interviewAttemptId', nextAttemptId)
     } catch (error) {
       console.error('Failed to initialize interview:', error)
-      setAttemptId(`attempt-${Date.now()}`)
+      const fallbackAttemptId = `attempt-${Date.now()}`
+      setAttemptId(fallbackAttemptId)
+      sessionStorage.setItem('interviewAttemptId', fallbackAttemptId)
     } finally {
       setLoading(false)
     }
@@ -60,18 +70,27 @@ function MockInterviewPage() {
   const submitAnswers = async (finalAnswers) => {
     try {
       setAttempting(true)
-      
-      await submitRoute3({
-        attemptId: attemptId,
+
+      const payload = {
+        attemptId,
+        userId: user?.email || user?.Email || user?.id || 'guest-user',
+        targetRole: role,
         roleTarget: role,
-        answers: finalAnswers.map((ans, idx) => ({
-          question: questions[idx].prompt,
+        responses: finalAnswers.map((ans, idx) => ({
+          question: questions[idx]?.prompt || `Question ${idx + 1}`,
           answer: ans,
         })),
-        userId: user?.email || user?.Email,
-      })
+        answers: finalAnswers.map((ans, idx) => ({
+          question: questions[idx]?.prompt || `Question ${idx + 1}`,
+          answer: ans,
+        })),
+        userProfile: {
+          displayName: user?.name || user?.fullName || user?.email || 'User',
+        },
+      }
 
-      // Store for results page
+      await submitInterview(payload)
+
       sessionStorage.setItem('interviewAnswers', JSON.stringify(finalAnswers))
       sessionStorage.setItem('interviewRole', role)
       sessionStorage.setItem('attemptId', attemptId)
@@ -79,12 +98,11 @@ function MockInterviewPage() {
       navigate('/mock-interview/results')
     } catch (error) {
       console.error('Failed to submit interview:', error)
-      
-      // Still proceed with fallback
+
       sessionStorage.setItem('interviewAnswers', JSON.stringify(finalAnswers))
       sessionStorage.setItem('interviewRole', role)
       sessionStorage.setItem('attemptId', attemptId)
-      
+
       navigate('/mock-interview/results')
     } finally {
       setAttempting(false)

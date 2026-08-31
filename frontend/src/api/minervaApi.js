@@ -52,6 +52,16 @@ export const sendChatMessage = (payload) =>
 export const getChatHistory = (conversationId) =>
   api.get(`/api/chat/getchathistory/${encodeURIComponent(conversationId)}`).then(unwrap)
 
+// Mock interview endpoints
+export const startInterview = (payload) =>
+  api.post('/api/interview/startinterview', payload).then(unwrap)
+
+export const submitInterview = (payload) =>
+  api.post('/api/interview/submitinterview', payload).then(unwrap)
+
+export const getInterviewResult = (attemptId) =>
+  api.get(`/api/interview/getinterviewresult/${encodeURIComponent(attemptId)}`).then(unwrap)
+
 export default {
   // Auth
   registerUser,
@@ -82,4 +92,8 @@ export default {
   // Chat
   sendChatMessage,
   getChatHistory,
+  // Mock interview
+  startInterview,
+  submitInterview,
+  getInterviewResult,
 }
