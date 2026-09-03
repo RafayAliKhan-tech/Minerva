@@ -14,16 +14,6 @@ function MultipleChoice({
 
   return (
     <div className="space-y-6">
-      {/* Question Title */}
-      <div className="space-y-3">
-        <h2 className="font-serif text-2xl font-semibold text-brown sm:text-3xl">
-          {question.title}
-        </h2>
-        <p className="text-base text-brown-light">
-          {question.instruction}
-        </p>
-      </div>
-
       {/* Options */}
       <div className="space-y-3 sm:space-y-4">
         {question.options && question.options.length > 0 ? (

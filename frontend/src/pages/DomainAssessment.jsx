@@ -14,8 +14,7 @@ import StatementInspector from '../components/assessment/StatementInspector'
 import ChoiceExplanation from '../components/assessment/ChoiceExplanation'
 import UIInspection from '../components/assessment/UIInspection'
 import MultipleChoice from '../components/assessment/MultipleChoice'
-import { getDomainActivities, domains } from '../data/domainActivities'
-import { readAttemptId, submitAssessment, startAssessment, saveAttemptId } from '../api/assessmentApi'
+import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
 
 const getInitialState = (activity, saved = {}) => {
   switch (activity?.type) {
@@ -58,8 +57,8 @@ const getInitialState = (activity, saved = {}) => {
 
 const buildResponse = (activity, state, autoSubmitted, canContinue) => {
   const response = {
-    activityId: activity.id,
-    questionId: activity.question_id || activity.id,
+    activityId: activity.activityId || activity.id,
+    questionId: activity.questionId || activity.question_id || activity.activityId || activity.id,
     selectedDomain: activity.domainId || activity.career,
     timeTaken: state.timeTaken,
     autoSubmitted,
@@ -112,8 +111,9 @@ function DomainAssessment() {
   const { domainId, activityNum } = useParams()
   const navigate = useNavigate()
 
-  const domainData = domains.find((d) => d.id === domainId)
-  const activities = getDomainActivities(domainId)
+  const { questions, selectedCareer, loadQuestions, error, isLoading } = useJourney2Assessment()
+    const careerName = selectedCareer?.career_name || selectedCareer?.careerName || selectedCareer?.name || domainId
+  const activities = questions
 
   const activityIndex = Math.max(0, Math.min(activities.length - 1, parseInt(activityNum || '1', 10) - 1))
   const activity = activities[activityIndex]
@@ -124,26 +124,15 @@ function DomainAssessment() {
   const [activityStart, setActivityStart] = useState(Date.now())
 
   useEffect(() => {
+    if (!questions.length && !error) loadQuestions(domainId).catch(() => null)
     if (!activity) return
-    const responses = JSON.parse(sessionStorage.getItem('domainResponses') || '{}')
+    const responses = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
     const saved = responses[activity.id] || {}
     setCurrentState(getInitialState(activity, saved))
     setTimeUp(false)
     setSaved(false)
     setActivityStart(Date.now())
-    // ensure domain attempt started (best-effort)
-    ;(async () => {
-      try {
-        const attemptId = readAttemptId('domain')
-        if (!attemptId) {
-          const newAttempt = await startAssessment('domain', { domainId })
-          if (newAttempt) saveAttemptId('domain', newAttempt)
-        }
-      } catch (e) {
-        // ignore
-      }
-    })()
-  }, [activity?.id])
+  }, [activity?.activityId, domainId, questions.length, error])
 
   useEffect(() => {
     if (!activity || !timeUp || saved) return
@@ -176,21 +165,10 @@ function DomainAssessment() {
   const saveResponse = (auto = false) => {
     if (!activity || saved) return
     const response = buildResponse(activity, { ...currentState, timeTaken: getTimeTaken() }, auto, canContinue)
-    const responses = JSON.parse(sessionStorage.getItem('domainResponses') || '{}')
+    const responses = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
     responses[activity.id] = response
-    sessionStorage.setItem('domainResponses', JSON.stringify(responses))
+    sessionStorage.setItem('journey2Responses', JSON.stringify(responses))
     setSaved(true)
-
-    // send to backend if attempt exists (best-effort)
-    ;(async () => {
-      try {
-        const attemptId = readAttemptId('domain')
-        if (!attemptId) return
-        await submitAssessment(attemptId, [response])
-      } catch (e) {
-        console.error('submit domain answer failed', e)
-      }
-    })()
   }
 
   const handleNext = () => {
@@ -210,30 +188,29 @@ function DomainAssessment() {
     }
   }
 
-  if (!domainData) {
+  if (!activity || error || isLoading) {
     return (
-      <AssessmentLayout onBack={() => navigate('/explore/domain-selection')}>
-        <p className="text-center text-brown-light">Domain not found.</p>
+      <AssessmentLayout
+        onBack={() => navigate('/explore/domain-selection')}
+          title={careerName}
+          subtitle="Your questions are loaded from the Journey 2 backend."
+      >
+        <div className="rounded-3xl border border-beige-border bg-white p-12 text-center text-brown-light shadow-sm">
+            <p>{error || (isLoading ? 'Loading questions...' : 'No backend questions are available for this career.')}</p>
+          <div className="mt-8">
+            <Button onClick={() => navigate('/explore/domain-selection')} variant="dark" size="md">
+                Choose another career
+            </Button>
+          </div>
+        </div>
       </AssessmentLayout>
     )
   }
 
-  if (!activity) {
+  if (!questions.length) {
     return (
-      <AssessmentLayout
-        onBack={() => navigate('/explore/domain-selection')}
-        title={domainData.name}
-        subtitle="This domain is coming soon. Pick another area or return later for more activities."
-      >
-        <div className="rounded-3xl border border-beige-border bg-white p-12 text-center text-brown-light shadow-sm">
-          <p className="text-xl font-semibold text-brown">Coming Soon</p>
-          <p className="mt-4">We are building domain-specific activities for {domainData.name}. Please select another career path or check back soon.</p>
-          <div className="mt-8">
-            <Button onClick={() => navigate('/explore/domain-selection')} variant="dark" size="md">
-              Choose another domain
-            </Button>
-          </div>
-        </div>
+      <AssessmentLayout onBack={() => navigate('/explore/domain-selection')}>
+        <p className="text-center text-brown-light">Domain not found.</p>
       </AssessmentLayout>
     )
   }
@@ -246,7 +223,7 @@ function DomainAssessment() {
       onBack={handlePrevious}
       currentStep={activityIndex + 1}
       totalSteps={activities.length}
-      title={activity.title}
+        title={careerName}
       subtitle={activity.description}
     >
       <div className="mb-6 flex justify-end">

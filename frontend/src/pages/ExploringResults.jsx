@@ -4,12 +4,26 @@ import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import SkillBar from '../components/assessment/SkillBar'
 import DomainCard from '../components/assessment/DomainCard'
 import Button from '../components/common/Button'
-import { generateMindProfile } from '../data/exploringActivities'
 import { domains } from '../data/domainActivities'
 import { Sparkles, ArrowRight, Zap } from 'lucide-react'
-import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
+import { generateRoadmap, getJourney1Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
 import { saveLatestAssessment, saveRoadmap, getRoadmaps } from '../utils/userData'
+
+const extractJourney1Profile = (payload) => {
+  const data = payload?.data ?? payload
+  const profile = data?.mindProfile || data?.profile || data?.result?.mindProfile || data?.result?.profile || data?.assessmentResult?.mindProfile || data?.assessmentResult?.profile || null
+
+  if (profile && (profile.potentialDomains || profile.insights || profile.analyticalThinking !== undefined)) {
+    return profile
+  }
+
+  if (data?.potentialDomains || data?.insights || data?.analyticalThinking !== undefined) {
+    return data
+  }
+
+  return null
+}
 
 const generateSampleCurriculum = (domain, matchScore) => {
   const curriculumByDomain = {
@@ -102,29 +116,60 @@ function ExploringResults() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [profile, setProfile] = useState(null)
+  const [journey1Result, setJourney1Result] = useState(null)
+  const [resultError, setResultError] = useState('')
 
   useEffect(() => {
     ;(async () => {
-      try {
-        const attemptId = readAttemptId('exploring')
-        if (attemptId) {
-          const server = await getAssessmentResult(attemptId)
-          if (server && server.mindProfile) {
-            setProfile(server.mindProfile)
-            saveLatestAssessment(user, { type: 'exploring', label: 'Exploration assessment', domain: server.mindProfile.potentialDomains?.[0]?.domain, score: server.mindProfile.potentialDomains?.[0]?.match })
-            return
-          }
-        }
-      } catch (e) {
-        console.error('fetch exploring result failed', e)
+      const assessmentId = sessionStorage.getItem('journey1AssessmentId')
+
+      if (!assessmentId) {
+        setResultError('No Journey 1 assessment result is available yet. Please complete the assessment again.')
+        return
       }
 
-      const responses = JSON.parse(sessionStorage.getItem('exploringResponses') || '{}')
-      const mindProfile = generateMindProfile(responses)
-      setProfile(mindProfile)
-      saveLatestAssessment(user, { type: 'exploring', label: 'Exploration assessment', domain: mindProfile.potentialDomains?.[0]?.domain, score: mindProfile.potentialDomains?.[0]?.match })
+      try {
+        const server = await getJourney1Result(assessmentId)
+        const mindProfile = extractJourney1Profile(server)
+
+        if (!mindProfile) {
+          throw new Error('Journey 1 response did not include a valid profile payload.')
+        }
+
+        setProfile(mindProfile)
+        setJourney1Result(server)
+        setResultError('')
+        saveLatestAssessment(user, {
+          type: 'exploring',
+          label: 'Exploration assessment',
+          domain: mindProfile.potentialDomains?.[0]?.domain,
+          score: mindProfile.potentialDomains?.[0]?.match,
+          source: 'journey1',
+          assessmentId,
+        })
+      } catch (e) {
+        console.error('fetch exploring result failed from Journey 1', e)
+        setProfile(null)
+        setResultError('We could not load your Journey 1 result from the backend. Please try again or start the assessment over.')
+      }
     })()
-  }, [])
+  }, [user])
+
+  if (resultError) {
+    return (
+      <AssessmentLayout onBack={() => navigate('/explore/assessment')} showProgress={false}>
+        <div className="rounded-3xl border border-red-200 bg-white p-8 shadow-card sm:p-12">
+          <h1 className="font-serif text-3xl font-semibold text-brown sm:text-4xl">Journey 1 result unavailable</h1>
+          <p className="mt-4 text-base text-brown-light">{resultError}</p>
+          <div className="mt-8">
+            <Button onClick={() => navigate('/explore/assessment')} variant="dark" size="lg">
+              Restart the assessment
+            </Button>
+          </div>
+        </div>
+      </AssessmentLayout>
+    )
+  }
 
   if (!profile) {
     return (
@@ -192,7 +237,7 @@ function ExploringResults() {
               Your Strongest Signals
             </h2>
             <div className="space-y-3">
-              {profile.insights.map((insight, index) => (
+              {(profile.insights || []).map((insight, index) => (
                 <div
                   key={index}
                   className="flex gap-3 rounded-xl border border-beige-border bg-cream-dark p-4"
@@ -215,21 +260,61 @@ function ExploringResults() {
               Potential CS Domains
             </h2>
             <div className="space-y-4">
-              {profile.potentialDomains.map((domainMatch) => {
+              {(profile.potentialDomains || []).map((domainMatch) => {
                 const domain = domains.find((d) => d.name === domainMatch.domain)
-                const handleGenerateRoadmap = () => {
-                  const roadmapId = `roadmap-${domainMatch.domain}-${Date.now()}`
-                  saveRoadmap(user, {
-                    id: roadmapId,
+                const handleGenerateRoadmap = async () => {
+                  const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
+                  if (!realAssessmentId || !journey1Result) {
+                    setResultError('Your backend Journey 1 result is not available. Please complete the assessment again.')
+                    return
+                  }
+                  const payload = {
+                    assessmentId: realAssessmentId,
                     domain: domainMatch.domain,
-                    domainId: domain?.id,
+                    domainId: domain?.id || domainMatch.domain,
                     matchScore: domainMatch.match,
-                    profile: profile,
-                    status: 'generated',
-                    createdAt: new Date().toISOString(),
-                    curriculum: generateSampleCurriculum(domainMatch.domain, domainMatch.match),
-                  })
-                  navigate(`/roadmap-detail/${roadmapId}`)
+                    strengths: profile.insights || [],
+                    areasToImprove: profile.potentialDomains
+                      ?.filter((item) => item.domain !== domainMatch.domain)
+                      ?.map((item) => `${item.domain} (${item.match}%)`) || [],
+                    journey1Result,
+                  }
+
+                  try {
+                    const created = await generateRoadmap(payload)
+                    const responseData = created?.data || created?.roadmap || created || {}
+                    const roadmapId = responseData.id || responseData.roadmapId || responseData.roadmap_id
+
+                    if (!roadmapId) {
+                      throw new Error('The backend did not return a valid roadmapId.')
+                    }
+
+                    const savedRoadmap = {
+                      id: roadmapId,
+                      domain: responseData.domain || domainMatch.domain,
+                      domainId: responseData.domainId || payload.domainId,
+                      matchScore: Number(responseData.matchScore ?? payload.matchScore),
+                      strengths: responseData.strengths || payload.strengths,
+                      areasToImprove: responseData.areasToImprove || payload.areasToImprove,
+                      curriculum: responseData.curriculum || responseData.milestones || generateSampleCurriculum(domainMatch.domain, domainMatch.match),
+                      status: 'generated',
+                      createdAt: new Date().toISOString(),
+                    }
+
+                    saveRoadmap(user, savedRoadmap)
+                    navigate(`/roadmap-detail/${roadmapId}`, {
+                      state: {
+                        ...savedRoadmap,
+                        returnTo: {
+                          pathname: '/explore/assessment/results',
+                          state: { fromJourney1: true },
+                        },
+                      },
+                    })
+                  } catch (error) {
+                    console.error('Roadmap generation failed for exploring result', error)
+                    setResultError('We could not generate your roadmap from the Journey 1 result because the backend rejected the request. Please try again.')
+                  }
                 }
                 return (
                   <div

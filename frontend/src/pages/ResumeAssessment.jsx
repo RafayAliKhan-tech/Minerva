@@ -1,57 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Loader } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
-import { useAuth } from '../auth/AuthContext'
+import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 
 function ResumeAssessment() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const [questions, setQuestions] = useState([])
+  const { questions, error } = useRoute3Assessment()
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState({})
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Get questions from sessionStorage (set by ResumeAnalysis)
-    const storedQuestions = sessionStorage.getItem('route3Questions')
-    if (storedQuestions) {
-      try {
-        setQuestions(JSON.parse(storedQuestions))
-      } catch (e) {
-        console.error('Failed to parse questions:', e)
-        setQuestions([
-          { id: '1', prompt: 'Tell us about your primary technical skill', type: 'text' },
-          { id: '2', prompt: 'What is your current role or title?', type: 'text' },
-          { id: '3', prompt: 'How many years of experience do you have?', type: 'text' },
-        ])
-      }
-    } else {
-      setQuestions([
-        { id: '1', prompt: 'Tell us about your primary technical skill', type: 'text' },
-        { id: '2', prompt: 'What is your current role or title?', type: 'text' },
-        { id: '3', prompt: 'How many years of experience do you have?', type: 'text' },
-      ])
-    }
-    setLoading(false)
-  }, [])
-
-  if (loading) {
-    return (
-      <AssessmentLayout onBack={() => navigate('/explore/resume/analysis')}>
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <Loader size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
-          <p>Loading assessment...</p>
-        </div>
-      </AssessmentLayout>
-    )
-  }
+  if (error) return <AssessmentLayout onBack={() => navigate('/explore/resume/analysis')}><p className="text-center text-red-600">{error}</p></AssessmentLayout>
 
   if (!questions.length) {
     return (
       <AssessmentLayout onBack={() => navigate('/explore/resume/analysis')}>
-        <p style={{ textAlign: 'center', color: '#666' }}>No assessment questions available</p>
+        <p style={{ textAlign: 'center', color: '#666' }}>No backend assessment questions available.</p>
       </AssessmentLayout>
     )
   }
@@ -67,11 +31,12 @@ function ResumeAssessment() {
   }
 
   const handleNext = () => {
+    const nextAnswers = { ...answers, [question.questionId || question.id]: answers[question.questionId || question.id] }
     if (!isLastQuestion) {
       setCurrentQuestion(currentQuestion + 1)
     } else {
       // Store answers and navigate to results
-      sessionStorage.setItem('route3Answers', JSON.stringify(answers))
+      sessionStorage.setItem('route3Answers', JSON.stringify(nextAnswers))
       navigate('/explore/resume/results')
     }
   }
@@ -94,16 +59,23 @@ function ResumeAssessment() {
 
           {/* Input */}
           <div className="mb-12">
-            <textarea
-              value={answers[question.id] || ''}
-              onChange={(e) => handleAnswer(e.target.value)}
-              placeholder="Your answer here..."
-              className="w-full rounded-xl border border-beige-border p-4 min-h-32 focus:outline-none focus:border-orange"
-              style={{
-                borderColor: answers[question.id] ? '#f4a460' : '#e8ddd1',
-                fontFamily: 'inherit',
-              }}
-            />
+            {question.options?.length > 0 ? (
+              <div className="space-y-3">
+                {question.options.map((option) => {
+                  const optionId = option.id ?? option.value
+                  const optionText = option.text ?? option.label ?? option.value
+                  return <button key={optionId} type="button" onClick={() => handleAnswer(optionId)} className={`w-full rounded-xl border p-4 text-left transition-colors ${answers[question.id] === optionId ? 'border-orange bg-orange-pill/30' : 'border-beige-border bg-white hover:border-orange/50'}`}>{optionText}</button>
+                })}
+              </div>
+            ) : (
+              <textarea
+                value={answers[question.id] || ''}
+                onChange={(e) => handleAnswer(e.target.value)}
+                placeholder="Your answer here..."
+                className="w-full rounded-xl border border-beige-border p-4 min-h-32 focus:outline-none focus:border-orange"
+                style={{ borderColor: answers[question.id] ? '#f4a460' : '#e8ddd1', fontFamily: 'inherit' }}
+              />
+            )}
           </div>
 
           {/* CTA */}

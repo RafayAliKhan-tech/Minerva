@@ -1,71 +1,59 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, CheckCircle2, RotateCcw, Sparkles, Target, Loader } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { ArrowRight, RotateCcw, Sparkles, Loader } from 'lucide-react'
 import Container from '../components/common/Container'
-import { useAuth } from '../auth/AuthContext'
 import { getInterviewResult } from '../api/minervaApi'
+import { apiErrorMessage, extractInterviewResult } from '../api/backendContract'
+
+const ATTEMPT_KEY = 'minervaInterviewAttemptId'
 
 function InterviewResults() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const [feedback, setFeedback] = useState([
-    { label: 'Clarity', score: 82, note: 'Your thinking is easy to follow.' },
-    { label: 'Evidence', score: 68, note: 'Add measurable outcomes to your examples.' },
-    { label: 'Role alignment', score: 78, note: 'Your strengths map well to the role.' }
-  ])
+  const location = useLocation()
+  const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [overallScore, setOverallScore] = useState(76)
-  const [nextStep, setNextStep] = useState('Make every answer land with evidence.')
-  const [nextStepDetails, setNextStepDetails] = useState('Before your next application, prepare two project stories with a clear result: faster, simpler, more accessible, or more useful.')
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    fetchResults()
-  }, [])
-
-  const fetchResults = async () => {
+  const attemptId = location.state?.attemptId || (() => {
     try {
-      const attemptId = sessionStorage.getItem('attemptId') || sessionStorage.getItem('interviewAttemptId')
-      if (!attemptId) {
-        setLoading(false)
-        return
+      return sessionStorage.getItem(ATTEMPT_KEY) || ''
+    } catch {
+      return ''
+    }
+  })()
+
+  const loadResult = async () => {
+    if (!attemptId) {
+      setLoading(false)
+      setError('No backend attempt ID is available. Complete a mock interview first.')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    try {
+      const response = await getInterviewResult(attemptId)
+      console.log('Interview result response:', response)
+      if (response?.status === false) {
+        throw new Error(response?.message || 'The interview result API rejected this request.')
       }
 
-      const raw = await getInterviewResult(attemptId)
-      const result = raw?.result || raw?.data || raw || {}
-
-      if (Array.isArray(result.feedback)) {
-        setFeedback(result.feedback)
-      } else if (Array.isArray(result.metrics)) {
-        setFeedback(result.metrics)
-      } else if (result.scoreBreakdown && typeof result.scoreBreakdown === 'object') {
-        const mapped = Object.entries(result.scoreBreakdown).map(([label, score]) => ({
-          label,
-          score: Number(score) || 0,
-          note: 'Based on your interview response.'
-        }))
-        if (mapped.length) setFeedback(mapped)
+      const parsed = extractInterviewResult(response)
+      if (parsed.scores == null && parsed.total == null && parsed.feedback == null) {
+        throw new Error('The interview result API returned an empty or invalid evaluation.')
       }
-
-      const nextOverallScore =
-        result.overallScore ??
-        result.score ??
-        result.totalScore ??
-        result.averageScore ??
-        result.result?.overallScore ??
-        76
-      setOverallScore(Number(nextOverallScore) || 76)
-
-      const nextStepValue = result.nextStep || result.recommendation || result.nextAction || 'Make every answer land with evidence.'
-      const nextStepDetailValue = result.details || result.nextStepDetails || result.feedbackSummary || 'Before your next application, prepare two project stories with a clear result: faster, simpler, more accessible, or more useful.'
-
-      setNextStep(nextStepValue)
-      setNextStepDetails(nextStepDetailValue)
-    } catch (error) {
-      console.error('Failed to fetch interview results:', error)
+      setResult(parsed)
+    } catch (requestError) {
+      setResult(null)
+      setError(apiErrorMessage(requestError, 'Unable to load the interview result.'))
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadResult()
+  }, [attemptId])
 
   if (loading) {
     return (
@@ -73,12 +61,16 @@ function InterviewResults() {
         <Container>
           <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
             <Loader size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
-            <p>Analyzing your interview...</p>
+            <p>Loading backend interview result...</p>
           </div>
         </Container>
       </main>
     )
   }
+
+  const feedbackItems = Array.isArray(result?.feedback) ? result.feedback : []
+  const scores = Array.isArray(result?.scores) ? result.scores : []
+  const rows = Math.max(feedbackItems.length, scores.length)
 
   return (
     <main className="interview-results-page">
@@ -87,61 +79,64 @@ function InterviewResults() {
           <RotateCcw size={15} /> Try another interview
         </Link>
 
-        <div className="results-heading">
-          <div>
-            <p className="dashboard-kicker">INTERVIEW FEEDBACK</p>
-            <h1>Your confidence has a shape now.</h1>
-            <p>Here is the signal from your practice session, plus the next improvement with the highest return.</p>
+        {error && (
+          <div className="api-error-banner" role="alert">
+            <p>{error}</p>
+            {attemptId ? <button type="button" onClick={loadResult}>Retry</button> : null}
           </div>
-          <div className="results-score">
-            <strong>{overallScore}%</strong>
-            <span>overall readiness</span>
-          </div>
-        </div>
+        )}
 
-        <section className="results-grid">
-          {feedback.map((item) => (
-            <article className="result-metric" key={item.label}>
+        {!error && result && (
+          <>
+            <div className="results-heading">
               <div>
-                <span>{item.label}</span>
-                <strong>{item.score}%</strong>
+                <p className="dashboard-kicker">AI MOCK INTERVIEW RESULT</p>
+                <h1>Your evaluation from the backend.</h1>
+                <p>Scores and feedback are rendered exactly as returned by the interview result API.</p>
               </div>
-              <div className="dashboard-progress">
-                <span style={{ width: `${item.score}%` }} />
+              <div className="results-score">
+                <strong>{result.total == null ? '--' : result.total} / 10</strong>
+                <span>total score</span>
               </div>
-              <p>{item.note}</p>
-            </article>
-          ))}
-        </section>
+            </div>
 
-        <section className="interview-feedback-panel">
-          <div>
-            <Target size={22} />
-            <p className="dashboard-kicker">YOUR NEXT REP</p>
-            <h2>{nextStep}</h2>
-            <p>{nextStepDetails}</p>
-          </div>
-          <div className="feedback-checklist">
-            <div>
-              <CheckCircle2 size={17} /> Situation in one sentence
-            </div>
-            <div>
-              <CheckCircle2 size={17} /> Your specific contribution
-            </div>
-            <div>
-              <CheckCircle2 size={17} /> A result someone can feel
-            </div>
-          </div>
-        </section>
+            {result.total == null && (
+              <p className="api-error-banner" role="alert">The backend result did not include a total score.</p>
+            )}
 
-        <div className="results-actions">
-          <Link to="/explore/roadmap" className="dashboard-primary-action">
-            Add this to my roadmap <ArrowRight size={16} />
-          </Link>
-          <Link to="/chat" className="dashboard-outline-action">
-            <Sparkles size={15} /> Ask Minerva for feedback
-          </Link>
-        </div>
+            <section className="interview-result-list">
+              {rows === 0 && (
+                <p className="api-empty-state">The backend result did not include per-question scores or feedback.</p>
+              )}
+              {Array.from({ length: rows }, (_, index) => {
+                const score = scores[index]
+                const feedback = feedbackItems[index]
+                const feedbackText = typeof feedback === 'string'
+                  ? feedback
+                  : (feedback?.text || feedback?.feedback || feedback?.comment || JSON.stringify(feedback))
+                return (
+                  <article className="interview-result-item" key={`result-${index}`}>
+                    <div className="interview-result-item-head">
+                      <h2>Question {index + 1}</h2>
+                      <strong>Score: {score == null ? '--' : score} / 2</strong>
+                    </div>
+                    <p>Feedback:</p>
+                    <p>{feedbackText || 'No feedback was returned for this answer.'}</p>
+                  </article>
+                )
+              })}
+            </section>
+
+            <div className="results-actions">
+              <button type="button" className="dashboard-primary-action" onClick={() => navigate('/mock-interview')}>
+                Practice again <ArrowRight size={16} />
+              </button>
+              <Link to="/chat" className="dashboard-outline-action">
+                <Sparkles size={15} /> Ask Minerva
+              </Link>
+            </div>
+          </>
+        )}
       </Container>
     </main>
   )

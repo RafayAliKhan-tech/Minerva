@@ -1,164 +1,104 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import SkillBar from '../components/assessment/SkillBar'
 import Button from '../components/common/Button'
-import { domains, generateDomainResult } from '../data/domainActivities'
-import { readAttemptId, getAssessmentResult } from '../api/assessmentApi'
-import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Zap } from 'lucide-react'
+import { generateRoadmap, getJourney2Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
-import { saveLatestAssessment } from '../utils/userData'
+import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
+import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
+
+const unwrap = (payload) => payload?.data ?? payload?.result ?? payload
+const getProfile = (payload) => {
+  const data = unwrap(payload)
+  return data?.result || data?.profile || data?.assessmentResult || data
+}
+const getMatches = (profile) => profile?.potentialDomains || profile?.careerMatches || profile?.matches || profile?.domains || []
+const getName = (match) => match?.domain || match?.career || match?.careerName || match?.name || match?.label || 'Selected career'
+const getScore = (match) => Number(match?.match ?? match?.score ?? match?.percentage ?? match?.fit ?? 0)
 
 function DomainResults() {
   const { domainId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [domainData, setDomainData] = useState(null)
-  const [results, setResults] = useState(null)
+  const { selectedCareer, error: contextError } = useJourney2Assessment()
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
 
   useEffect(() => {
-    const domain = domains.find((d) => d.id === domainId)
-    setDomainData(domain)
-    ;(async () => {
-      // try server-side result first
+    const loadResult = async () => {
       try {
-        const attemptId = readAttemptId('domain')
-        if (attemptId) {
-          const server = await getAssessmentResult(attemptId)
-          if (server && server.domainResult) {
-            setResults(server.domainResult)
-            saveLatestAssessment(user, { type: 'domain', label: `${domain?.name || domainId} assessment`, domain: domain?.name || domainId, score: server.domainResult.domainFitPercentage })
-            return
-          }
-        }
-      } catch (e) {
-        console.error('fetch domain result failed', e)
+        const careerId = selectedCareer?.career_id || selectedCareer?.careerId || selectedCareer?.id || domainId
+        const backendResult = await getJourney2Result(careerId)
+        if (!backendResult || backendResult.status === false) throw new Error(backendResult?.message || 'The Journey 2 API returned no result.')
+        const profile = getProfile(backendResult)
+        if (!profile || typeof profile !== 'object') throw new Error('The Journey 2 result response is invalid.')
+        setResult(backendResult)
+        const matches = getMatches(profile)
+        saveLatestAssessment(user, {
+          type: 'domain',
+          label: `${selectedCareer?.career_name || selectedCareer?.careerName || domainId} assessment`,
+          domain: selectedCareer?.career_name || selectedCareer?.careerName || domainId,
+          score: getScore(matches[0]),
+          source: 'journey2',
+          careerId,
+        })
+      } catch (resultError) {
+        setError(resultError?.response?.data?.message || resultError?.response?.data?.error || resultError.message || contextError || 'Unable to load your Journey 2 result.')
       }
+    }
+    loadResult()
+  }, [user, selectedCareer, domainId, contextError])
 
-      const responses = JSON.parse(sessionStorage.getItem('domainResponses') || '{}')
-      const mockResults = generateDomainResult(domainId, responses)
-      setResults(mockResults)
-      saveLatestAssessment(user, { type: 'domain', label: `${domain?.name || domainId} assessment`, domain: domain?.name || domainId, score: mockResults.domainFitPercentage })
-    })()
-  }, [domainId])
+  if (error) return <AssessmentLayout onBack={() => navigate('/explore/domain-selection')} showProgress={false}><div className="rounded-3xl border border-red-200 bg-white p-8 shadow-card"><h1 className="font-serif text-3xl font-semibold text-brown">Journey 2 result unavailable</h1><p className="mt-4 text-brown-light">{error}</p><Button onClick={() => navigate('/explore/domain-selection')} variant="dark" size="lg" className="mt-8">Start again</Button></div></AssessmentLayout>
+  if (!result) return <AssessmentLayout onBack={() => navigate('/explore/domain-selection')} showProgress={false}><p className="text-center text-brown-light">Loading backend result...</p></AssessmentLayout>
 
-  if (!domainData || !results) {
-    return (
-      <AssessmentLayout onBack={() => navigate('/explore/domain-selection')}>
-        <p className="text-center text-brown-light">Loading results...</p>
-      </AssessmentLayout>
-    )
+  const profile = getProfile(result)
+  const matches = getMatches(profile)
+  const traits = profile.scores || profile.skills || []
+  const insights = profile.insights || profile.recommendations || profile.strengths || []
+  const careerName = selectedCareer?.career_name || selectedCareer?.careerName || selectedCareer?.name || domainId
+  const careerId = selectedCareer?.career_id || selectedCareer?.careerId || selectedCareer?.id || domainId
+
+  const handleBuildRoadmap = async (match = matches[0] || {}) => {
+    setIsGenerating(true)
+    setError('')
+    try {
+      const created = await generateRoadmap({
+        career: careerId,
+        careerId,
+        domain: getName(match),
+        domainId: careerId,
+        journey2Result: result,
+        result,
+      })
+      const roadmap = unwrap(created)
+      const roadmapId = roadmap?.roadmapId || roadmap?.roadmap_id || roadmap?.id
+      if (!roadmapId) throw new Error('The roadmap API did not return a valid roadmap ID.')
+      const saved = { ...roadmap, id: roadmapId, domain: roadmap.domain || getName(match), domainId: careerId, source: 'journey2', status: roadmap.status || 'generated' }
+      sessionStorage.setItem('journey2RoadmapId', String(roadmapId))
+      saveRoadmap(user, saved)
+      navigate(`/roadmap-detail/${roadmapId}`, { state: { ...saved, returnTo: { pathname: `/explore/domain-assessment/${careerId}/results` } } })
+    } catch (roadmapError) {
+      setError(roadmapError?.response?.data?.message || roadmapError?.response?.data?.error || roadmapError.message || 'Unable to generate your roadmap.')
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
-  const DomainIcon = domainData.icon
-
-  return (
-    <AssessmentLayout onBack={() => navigate('/explore/domain-selection')} showProgress={false}>
-      <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
-        <div className="max-w-3xl">
-          <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-pill text-orange">
-              <DomainIcon className="h-8 w-8" aria-hidden="true" />
-            </div>
-            <div>
-              <h1 className="font-serif text-3xl font-semibold text-brown sm:text-4xl">
-                Your {domainData.name} Fit
-              </h1>
-              <p className="mt-2 text-sm text-brown-light">Domain assessment results</p>
-            </div>
-          </div>
-
-          <div className="mb-8 h-px bg-beige-border" />
-
-          <div className="mb-12 rounded-2xl border border-orange-pill bg-orange-pill/30 p-8">
-            <div className="text-center">
-              <p className="text-sm font-semibold uppercase tracking-wider text-orange">
-                Your {domainData.name} Fit
-              </p>
-              <p className="mt-4 font-serif text-6xl font-bold text-orange">
-                {results.domainFitPercentage}%
-              </p>
-              <p className="mt-4 text-base text-brown-light">{results.insight}</p>
-            </div>
-          </div>
-
-          <div className="mb-12 space-y-6">
-            <h2 className="font-serif text-2xl font-semibold text-brown">Your {domainData.name} Strengths</h2>
-            {results.scores.map((score) => (
-              <SkillBar
-                key={score.name}
-                skill={score.name}
-                percentage={score.score}
-                size="md"
-              />
-            ))}
-          </div>
-
-          <div className="mb-12">
-            <h2 className="font-serif text-2xl font-semibold text-brown mb-6">Your Strengths</h2>
-            <div className="space-y-3">
-              {results.strengths.map((strength, index) => (
-                <div
-                  key={index}
-                  className="flex gap-3 rounded-xl border border-journey-green bg-journey-green/20 p-4"
-                >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-journey-green-dark text-white mt-0.5">
-                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                  </div>
-                  <p className="text-base text-brown">{strength}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-12">
-            <h2 className="font-serif text-2xl font-semibold text-brown mb-6">
-              Skills You Should Strengthen
-            </h2>
-            <div className="space-y-3">
-              {results.areasToImprove.map((area, index) => (
-                <div
-                  key={index}
-                  className="flex gap-3 rounded-xl border border-orange-pill bg-orange-pill/30 p-4"
-                >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange text-white mt-0.5 text-sm font-bold">
-                    ⚠
-                  </div>
-                  <p className="text-base text-brown">{area}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-12 rounded-2xl bg-orange-pill p-6">
-            <p className="text-sm text-brown">
-              <span className="font-semibold">Next Step:</span> Build your roadmap based on your technical fit and skill gap.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              to={{ pathname: '/explore/roadmap', state: { roadmapId: domainId, domain: domainData.name, score: results.domainFitPercentage, strengths: results.strengths, areasToImprove: results.areasToImprove } }}
-              variant="dark"
-              size="lg"
-              icon={ArrowRight}
-              className="flex-1"
-            >
-              Build My Roadmap
-            </Button>
-            <Button
-              to="/"
-              variant="ghost"
-              size="lg"
-              className="flex-1"
-            >
-              Back to Home
-            </Button>
-          </div>
-        </div>
-      </div>
-    </AssessmentLayout>
-  )
+  return <AssessmentLayout onBack={() => navigate('/explore/domain-selection')} showProgress={false}>
+    <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12">
+      <h1 className="font-serif text-4xl font-semibold text-brown">Your {careerName} result</h1>
+      <p className="mt-4 text-base text-brown-light">This result was generated by the Journey 2 backend.</p>
+      {matches.length > 0 && <section className="mt-10"><h2 className="font-serif text-2xl font-semibold text-brown">Career matches</h2><div className="mt-5 space-y-4">{matches.map((match, index) => <div key={`${getName(match)}-${index}`} className="rounded-xl border border-beige-border bg-cream-dark p-5"><div className="flex items-center justify-between"><strong className="text-brown">{getName(match)}</strong><span className="font-bold text-orange">{getScore(match)}%</span></div><button type="button" onClick={() => handleBuildRoadmap(match)} disabled={isGenerating} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-orange px-4 py-2 font-semibold text-white disabled:opacity-60"><Zap size={15} />{isGenerating ? 'Generating...' : 'Generate roadmap'}</button></div>)}</div></section>}
+      {traits.length > 0 && <section className="mt-10"><h2 className="font-serif text-2xl font-semibold text-brown">Backend scores</h2><div className="mt-5 space-y-4">{traits.map((trait, index) => <SkillBar key={`${trait.name || trait.label || index}`} skill={trait.name || trait.label} percentage={Number(trait.score ?? trait.percentage ?? 0)} size="md" />)}</div></section>}
+      {insights.length > 0 && <section className="mt-10"><h2 className="font-serif text-2xl font-semibold text-brown">Insights</h2><div className="mt-5 space-y-3">{insights.map((insight, index) => <div key={index} className="flex gap-3 rounded-xl border border-journey-green bg-journey-green/20 p-4"><CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-journey-green-dark" /><p className="text-brown">{typeof insight === 'string' ? insight : insight.text || insight.description || insight.title}</p></div>)}</div></section>}
+      {error && <p className="mt-8 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
+      <Button onClick={() => handleBuildRoadmap()} disabled={isGenerating || !matches.length} variant="dark" size="lg" icon={ArrowRight} className="mt-10">{isGenerating ? 'Generating roadmap...' : 'Generate roadmap'}</Button>
+    </div>
+  </AssessmentLayout>
 }
 
 export default DomainResults

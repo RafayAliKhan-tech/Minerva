@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowUpRight, BriefcaseBusiness, ChartNoAxesCombined, MessageCircle, PlayCircle, Sparkles, Target, Zap, Trash2 } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
@@ -13,6 +13,7 @@ const journeyItems = [
 
 function DashboardPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [roadmaps, setRoadmaps] = useState([])
   
   useEffect(() => {
@@ -29,6 +30,18 @@ function DashboardPage() {
   const displayName = getDisplayName(user)
   const latestScore = latest?.score ?? null
   const latestLabel = latest?.label || 'No assessment yet'
+
+  const latestResultRoute = (() => {
+    if (!latest) return '/explore'
+
+    if (latest.type === 'exploring') return '/explore/assessment/results'
+    if (latest.type === 'domain') {
+      const currentDomain = sessionStorage.getItem('selectedDomain') || latest.domainId || null
+      return currentDomain ? `/explore/domain-assessment/${currentDomain}/results` : '/explore/domain-selection'
+    }
+    if (latest.type === 'resume') return '/explore/resume/results'
+    return '/explore'
+  })()
 
   const handleDeleteRoadmap = (roadmapId) => {
     deleteRoadmap(user, roadmapId)
@@ -53,7 +66,11 @@ function DashboardPage() {
             <div className="dashboard-score-ring"><strong>{latestScore === null ? '--' : `${latestScore}%`}</strong><span>latest result</span></div>
             <h2>{latestLabel}</h2>
             <p>{latest ? `Completed ${new Date(latest.completedAt).toLocaleDateString()}. Your latest assessment is saved to this account.` : 'Complete an assessment and your latest result will appear here.'}</p>
-            <Link to="/explore/domain-selection" className="dashboard-text-link">Explore domains <ArrowUpRight size={15} /></Link>
+            {latest ? (
+              <Link to={latestResultRoute} className="dashboard-text-link" style={{ marginTop: '0.9rem' }}>View Result <ArrowUpRight size={15} /></Link>
+            ) : (
+              <Link to="/explore/domain-selection" className="dashboard-text-link">Explore domains <ArrowUpRight size={15} /></Link>
+            )}
           </article>
           <article className="dashboard-card dashboard-focus-card">
             <div className="dashboard-card-top"><span>CURRENT FOCUS</span><Target size={18} /></div>
@@ -87,18 +104,41 @@ function DashboardPage() {
                     <Zap size={18} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1a1a1a', marginBottom: '0.5rem' }}>
-                      {roadmap.domain} Roadmap
-                    </h3>
-                    <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem' }}>
-                      Match Score: <strong>{roadmap.matchScore}%</strong>
-                    </p>
-                    <p style={{ fontSize: '0.75rem', color: '#999', marginBottom: '1rem' }}>
-                      {roadmap.curriculum?.phases?.length || 0} phases • {roadmap.curriculum?.weeks || 0} weeks
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/roadmap-detail/${roadmap.id}`, { state: roadmap })}
+                      style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                    >
+                      <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1a1a1a', marginBottom: '0.5rem' }}>
+                        {roadmap.domain} Roadmap
+                      </h3>
+                      <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem' }}>
+                        Match Score: <strong>{roadmap.matchScore}%</strong>
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#999', marginBottom: '1rem' }}>
+                        {roadmap.curriculum?.phases?.length || 0} phases • {roadmap.curriculum?.weeks || 0} weeks
+                      </p>
+                    </button>
                   </div>
                   <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
                     <button
+                      type="button"
+                      onClick={() => navigate(`/roadmap-detail/${roadmap.id}`, { state: roadmap })}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        backgroundColor: '#23211f',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                    >
+                      Open route
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleDeleteRoadmap(roadmap.id)}
                       style={{
                         padding: '0.75rem',

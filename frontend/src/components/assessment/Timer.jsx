@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { Clock } from 'lucide-react'
 
 function Timer({ duration, onTimeUp, isActive = true }) {
-  const [timeLeft, setTimeLeft] = useState(duration)
+  const safeDuration = Number.isFinite(Number(duration)) ? Number(duration) : 60
+  const [timeLeft, setTimeLeft] = useState(safeDuration)
+
+  useEffect(() => {
+    setTimeLeft(safeDuration)
+  }, [safeDuration])
 
   useEffect(() => {
     if (!isActive) return

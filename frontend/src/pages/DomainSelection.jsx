@@ -1,20 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
-import DomainCard from '../components/assessment/DomainCard'
 import Button from '../components/common/Button'
-import { domains } from '../data/domainActivities'
+import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
 
 function DomainSelection() {
   const navigate = useNavigate()
-  const [selectedDomain, setSelectedDomain] = useState(null)
+  const { careers, loadCareers, error, isLoading } = useJourney2Assessment()
+  const [selectedCareer, setSelectedCareer] = useState(null)
+
+  useEffect(() => {
+    if (!careers.length) loadCareers().catch(() => null)
+  }, [careers.length])
 
   const handleContinue = () => {
-    if (!selectedDomain) return
+    if (!selectedCareer) return
 
-    sessionStorage.setItem('selectedDomain', selectedDomain)
-    sessionStorage.setItem('domainResponses', '{}')
-    navigate(`/explore/domain-assessment/${selectedDomain}`)
+    const careerId = selectedCareer.career_id || selectedCareer.careerId || selectedCareer.id
+    sessionStorage.setItem('journey2CareerId', careerId)
+    sessionStorage.removeItem('journey2AssessmentId')
+    sessionStorage.removeItem('journey2Result')
+    sessionStorage.setItem('journey2Responses', '{}')
+    navigate(`/explore/domain-assessment/${careerId}`)
   }
 
   return (
@@ -26,18 +33,16 @@ function DomainSelection() {
     >
       <div className="max-w-4xl">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-          {domains.map((domain) => {
-            const Icon = domain.icon
+          {isLoading && <p className="text-center text-brown-light">Loading careers...</p>}
+          {error && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
+          {!isLoading && !error && careers.map((career) => {
+            const careerId = career.career_id || career.careerId || career.id
+            const careerName = career.career_name || career.careerName || career.name
             return (
-              <DomainCard
-                key={domain.id}
-                icon={Icon}
-                name={domain.name}
-                description={domain.description}
-                isSelectable={true}
-                isSelected={selectedDomain === domain.id}
-                onClick={() => setSelectedDomain(domain.id)}
-              />
+              <button key={careerId} type="button" onClick={() => setSelectedCareer(career)} className={`rounded-2xl border-2 bg-white p-6 text-left transition-all sm:p-7 lg:p-8 ${selectedCareer === career ? 'border-orange bg-orange-pill/50 shadow-md' : 'border-beige-border hover:border-orange/40 hover:shadow-md'}`}>
+                <h3 className="font-serif text-lg font-semibold text-brown sm:text-xl">{careerName}</h3>
+                <p className="mt-2 text-sm text-brown-light">{careerId}</p>
+              </button>
             )
           })}
         </div>
@@ -47,15 +52,15 @@ function DomainSelection() {
             <p className="text-sm text-brown-light">
               No domain is selected by default. Pick one to continue.
             </p>
-            {selectedDomain === null && (
-              <p className="mt-3 text-sm text-red-600">Please select a domain before continuing.</p>
+            {!selectedCareer && !error && !isLoading && (
+              <p className="mt-3 text-sm text-red-600">Please select a career before continuing.</p>
             )}
           </div>
           <Button
             onClick={handleContinue}
             variant="dark"
             size="lg"
-            disabled={!selectedDomain}
+            disabled={!selectedCareer || isLoading || Boolean(error)}
           >
             Continue →
           </Button>

@@ -1,21 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
-import ActivityHeader from '../components/assessment/ActivityHeader'
 import Timer from '../components/assessment/Timer'
 import Button from '../components/common/Button'
 import LogicPuzzle from '../components/assessment/LogicPuzzle'
 import PriorityBoard from '../components/assessment/PriorityBoard'
 import UIInspection from '../components/assessment/UIInspection'
 import MultipleChoice from '../components/assessment/MultipleChoice'
-import { exploringActivities } from '../data/exploringActivities'
-import { readAttemptId, submitAssessment } from '../api/assessmentApi'
+import { useJourney1Assessment } from '../auth/Journey1AssessmentContext'
 
 function ExploringActivity() {
   const { activityNum } = useParams()
   const navigate = useNavigate()
+  const { questions, error, isLoading, loadQuestions } = useJourney1Assessment()
   const activityIndex = parseInt(activityNum, 10) - 1
-  const activity = exploringActivities[activityIndex]
+  const activity = questions[activityIndex]
 
   const [timeUp, setTimeUp] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -28,9 +27,15 @@ function ExploringActivity() {
   const [priorityChanges, setPriorityChanges] = useState(0)
 
   const [selectedAreas, setSelectedAreas] = useState([])
-  const [selectedOption, setSelectedOption] = useState(null)
+  const [selectedOptions, setSelectedOptions] = useState({})
 
   const [activityStart, setActivityStart] = useState(Date.now())
+
+  useEffect(() => {
+    if (!questions.length && !error && !isLoading) {
+      loadQuestions().catch(() => null)
+    }
+  }, [questions.length, error, isLoading])
 
   useEffect(() => {
     setTimeUp(false)
@@ -41,9 +46,8 @@ function ExploringActivity() {
     setPrioritySlots([null, null, null])
     setPriorityChanges(0)
     setSelectedAreas([])
-    setSelectedOption(null)
     setActivityStart(Date.now())
-  }, [activity?.id])
+  }, [activity?.questionId, activity?.id])
 
   useEffect(() => {
     if (!activity || !timeUp || saved) {
@@ -55,6 +59,9 @@ function ExploringActivity() {
   const poolCards = useMemo(() => {
     return activity?.cards?.filter((card) => !prioritySlots.includes(card.id)) || []
   }, [activity, prioritySlots])
+
+  const currentQuestionId = activity?.questionId || activity?.question_id || activity?.id
+  const selectedOption = currentQuestionId ? selectedOptions[currentQuestionId] ?? null : null
 
   const canContinue = useMemo(() => {
     if (!activity) return false
@@ -117,22 +124,10 @@ function ExploringActivity() {
       }
     }
 
-    answers[activity.id] = payload
+    answers[currentQuestionId] = payload
     sessionStorage.setItem('exploringResponses', JSON.stringify(answers))
     setSaved(true)
     setSubmitted(true)
-
-    // send to backend if attempt exists (best-effort)
-    ;(async () => {
-      try {
-        const attemptId = readAttemptId('exploring')
-        if (!attemptId) return
-        await submitAssessment(attemptId, [payload])
-      } catch (e) {
-        // best-effort save; don't block UX
-        console.error('submit exploring answer failed', e)
-      }
-    })()
   }
 
   const handleUseHint = () => {
@@ -194,7 +189,7 @@ function ExploringActivity() {
     if (!saved) {
       saveResponse(false)
     }
-    if (activityIndex < exploringActivities.length - 1) {
+    if (activityIndex < questions.length - 1) {
       navigate(`/explore/assessment/activity/${activityIndex + 2}`)
     } else {
       navigate('/explore/assessment/analysis')
@@ -212,27 +207,28 @@ function ExploringActivity() {
   if (!activity) {
     return (
       <AssessmentLayout onBack={() => navigate('/explore/assessment')} showProgress={false}>
-        <p className="text-center text-brown-light">Activity not found</p>
+        <div className="text-center">
+          <p className="text-brown-light">{isLoading ? 'Loading Journey 1 questions...' : error || 'Journey 1 questions are not loaded.'}</p>
+          <Button onClick={() => navigate('/explore/assessment')} variant="dark" size="md" className="mt-6">Load questions</Button>
+        </div>
       </AssessmentLayout>
     )
   }
 
   const isFirstActivity = activityIndex === 0
-  const isLastActivity = activityIndex === exploringActivities.length - 1
+  const isLastActivity = activityIndex === questions.length - 1
 
   return (
     <AssessmentLayout
       onBack={handlePrevious}
       currentStep={activityIndex + 1}
-      totalSteps={exploringActivities.length}
+      totalSteps={questions.length}
       title={activity.title}
       subtitle={activity.description}
     >
       <div className="mb-6 flex justify-end">
         <Timer duration={activity.duration} onTimeUp={() => setTimeUp(true)} isActive={!submitted} />
       </div>
-
-      <ActivityHeader title={activity.title} subtitle={activity.description} step={activityIndex + 1} totalSteps={exploringActivities.length} />
 
       {activity.type === 'logic-puzzle' && (
         <LogicPuzzle
@@ -270,7 +266,7 @@ function ExploringActivity() {
         <MultipleChoice
           question={activity}
           selectedOption={selectedOption}
-          onOptionSelect={setSelectedOption}
+          onOptionSelect={(optionId) => setSelectedOptions((current) => ({ ...current, [currentQuestionId]: optionId }))}
           isAnswered={submitted}
           canAnswer={!timeUp}
         />

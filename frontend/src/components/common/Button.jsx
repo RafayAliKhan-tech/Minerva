@@ -31,6 +31,7 @@ function Button({
   className = '',
   icon: Icon,
   iconPosition = 'right',
+  type = 'button',
   ...props
 }) {
   const classes = `inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ${variants[variant]} ${sizes[size]} ${className}`
@@ -60,7 +61,7 @@ function Button({
   }
 
   return (
-    <button type="button" className={classes} {...props}>
+    <button type={type} className={classes} {...props}>
       {content}
     </button>
   )

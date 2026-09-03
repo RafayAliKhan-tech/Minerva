@@ -1,7 +1,8 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import { MapPin, Sparkles, Briefcase } from 'lucide-react'
+import { useJourney1Assessment } from '../auth/Journey1AssessmentContext'
 
 const cards = [
   {
@@ -23,6 +24,8 @@ const cards = [
 
 function ExplorePage() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { loadQuestions, isLoading, error } = useJourney1Assessment()
   const category = location.state?.category || 'exploring'
 
   const categoryLabels = {
@@ -50,6 +53,21 @@ function ExplorePage() {
     exploring: '/explore/assessment/activity/1',
     career: '/explore/domain-selection',
     jobhunting: '/explore/resume',
+  }
+
+  const handleStart = async () => {
+    if (category !== 'exploring') {
+      navigate(startPaths[category])
+      return
+    }
+    try {
+      sessionStorage.removeItem('journey1AssessmentId')
+      sessionStorage.removeItem('exploringResponses')
+      await loadQuestions()
+      navigate(startPaths.exploring)
+    } catch {
+      // The context error is rendered below; do not enter the assessment.
+    }
   }
 
   return (
@@ -109,9 +127,10 @@ function ExplorePage() {
           <Button to="/" variant="ghost" size="md" className="text-brown hover:text-orange">
             Back to Landing
           </Button>
-          <Button to={startPaths[category]} variant="dark" size="md">
+          <Button onClick={handleStart} variant="dark" size="md" disabled={category === 'exploring' && isLoading}>
             {category === 'exploring' ? 'Start Exploring' : category === 'career' ? 'Choose my career' : 'Upload my resume'}
           </Button>
+          {category === 'exploring' && error && <p className="mt-4 text-sm text-red-700" role="alert">{error}</p>}
         </div>
       </div>
     </Container>

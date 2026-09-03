@@ -20,6 +20,7 @@ function LoginPage() {
   const [loginSucceeded, setLoginSucceeded] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('exploring')
   const [formError, setFormError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { establishSession, hasCompletedOnboarding, completeOnboarding } = useAuth()
@@ -30,6 +31,8 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
     setFormError('')
     try {
       const res = await api.post('/api/auth/loginuser', { Email: email, Password: password })
@@ -49,11 +52,12 @@ function LoginPage() {
         setLoginSucceeded(true)
       }
     } catch (error) {
-      console.error('Login error:', error)
       const resp = error?.response
       if (resp?.data?.message) setFormError(resp.data.message)
       else if (resp) setFormError(`Login failed (${resp.status}). Please check your credentials.`)
       else setFormError(error?.message || 'Unable to connect to server. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -66,15 +70,18 @@ function LoginPage() {
 
   return <section className="auth-stage"><Container className="auth-stage-inner">
     <div className="auth-form-column">
-      <p className="auth-eyebrow">Welcome back</p>
-      <h1 className="auth-title">Log In to Continue<br /><span>Your AI Career Journey</span></h1>
-      <p className="auth-description">Access your personalized roadmap, skill insights,<br className="hidden sm:block" /> and job matches — all in one place.</p>
+      <p className="auth-eyebrow">MINERVA CAREER COMPASS</p>
+      <h1 className="auth-title">Welcome Back</h1>
+      <p className="auth-description">Pick up where you left off and keep building your career direction.</p>
+      
       <form onSubmit={handleSubmit} className="auth-form">
         <label className="auth-input"><UserRound /><input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /></label>
         <label className="auth-input"><LockKeyhole /><input required type={showPwd ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" /><button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Hide password' : 'Show password'}>{showPwd ? <EyeOff /> : <Eye />}</button></label>
         {formError && <p className="auth-form-error" role="alert">{formError}</p>}
         <div className="auth-options"><label><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label><a href="#">Forgot password?</a></div>
-        <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight}>Log In</Button>
+        <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight} disabled={isSubmitting} aria-busy={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Log In'}
+        </Button>
       </form>
       <p className="auth-switch">Don't have an account? <Button to="/signup" variant="ghost" size="sm" className="auth-link">Create account</Button></p>
     </div>

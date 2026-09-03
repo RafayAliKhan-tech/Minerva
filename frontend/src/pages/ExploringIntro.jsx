@@ -3,22 +3,25 @@ import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { Clock, CheckCircle2 } from 'lucide-react'
-import { startAssessment, saveAttemptId } from '../api/assessmentApi'
+import { useJourney1Assessment } from '../auth/Journey1AssessmentContext'
 
 function ExploringIntro() {
   const navigate = useNavigate()
+  const { loadQuestions, error } = useJourney1Assessment()
   const [isStarting, setIsStarting] = useState(false)
 
   const handleStart = () => {
     setIsStarting(true)
     ;(async () => {
       try {
-        const attemptId = await startAssessment('exploring')
-        if (attemptId) saveAttemptId('exploring', attemptId)
+        sessionStorage.removeItem('journey1AssessmentId')
+        await loadQuestions()
+        navigate('/explore/assessment/activity/1')
       } catch (e) {
-        console.error('Failed to start assessment', e)
+        setIsStarting(false)
+        return
       } finally {
-        setTimeout(() => navigate('/explore/assessment/activity/1'), 300)
+        setIsStarting(false)
       }
     })()
   }
@@ -111,6 +114,7 @@ function ExploringIntro() {
               Back to Home
             </Button>
           </div>
+          {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
         </div>
       </div>
     </AssessmentLayout>

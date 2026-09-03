@@ -103,15 +103,18 @@ function Navbar() {
 
           <div className="hidden items-center gap-3 lg:flex">
             {isAuthenticated ? (
-              <div className="relative">
-                <button type="button" onClick={() => setAccountOpen((open) => !open)} className="navbar-avatar flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shadow-sm" aria-label="Open account menu" aria-expanded={accountOpen}>
-                  {initials}
-                </button>
-                {accountOpen && <div className="absolute right-0 top-12 z-50 w-52 rounded-xl border border-[#E0E0E0] bg-white p-2 text-[#1A1A1A] shadow-lg">
-                  <div className="border-b border-[#E0E0E0] px-3 py-2"><p className="text-xs uppercase tracking-wide text-[#707070]">Signed in as</p><p className="truncate text-sm font-semibold">{displayName}</p></div>
-                  <button type="button" onClick={logout} className="account-logout flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-red-50"><LogOut size={15} /> Logout</button>
-                </div>}
-              </div>
+              <>
+                <Button to="/dashboard" variant="light" size="sm">Dashboard</Button>
+                <div className="relative">
+                  <button type="button" onClick={() => setAccountOpen((open) => !open)} className="navbar-avatar flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shadow-sm" aria-label="Open account menu" aria-expanded={accountOpen}>
+                    {initials}
+                  </button>
+                  {accountOpen && <div className="absolute right-0 top-12 z-50 w-52 rounded-xl border border-[#E0E0E0] bg-white p-2 text-[#1A1A1A] shadow-lg">
+                    <div className="border-b border-[#E0E0E0] px-3 py-2"><p className="text-xs uppercase tracking-wide text-[#707070]">Signed in as</p><p className="truncate text-sm font-semibold">{displayName}</p></div>
+                    <button type="button" onClick={logout} className="account-logout flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-red-50"><LogOut size={15} /> Logout</button>
+                  </div>}
+                </div>
+              </>
             ) : isLanding ? (
               <Link
                 to="/signup"
@@ -189,7 +192,7 @@ function Navbar() {
             ))}
           </ul>
           <div className="mt-6 flex flex-col gap-3 border-t border-[#E0E0E0] pt-6">
-            {isAuthenticated ? <><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
+            {isAuthenticated ? <><Button to="/dashboard" variant="light" size="md" className="w-full">Dashboard</Button><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
           </div>
         </div>
       </div>

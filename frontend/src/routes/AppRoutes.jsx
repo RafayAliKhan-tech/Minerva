@@ -34,6 +34,7 @@ import ResumeResults from '../pages/ResumeResults'
 import CareerMatch from '../pages/CareerMatch'
 import SkillGap from '../pages/SkillGap'
 import ProtectedRoute from '../auth/ProtectedRoute'
+import PublicOnlyRoute from '../auth/PublicOnlyRoute'
 
 function AppRoutes() {
   const location = useLocation()
@@ -46,8 +47,10 @@ function AppRoutes() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<LandingPage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="signup" element={<SignupPage />} />
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="signup" element={<SignupPage />} />
+        </Route>
 
         <Route element={<ProtectedRoute />}>
 
@@ -78,6 +81,7 @@ function AppRoutes() {
         <Route path="profile" element={<ProfilePage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="explore/roadmap" element={<RoadmapPage />} />
+        <Route path="roadmap-detail/:roadmapId" element={<RoadmapPage />} />
         <Route path="chat" element={<ChatPage />} />
         <Route path="mock-interview" element={<MockInterviewPage />} />
         <Route path="mock-interview/results" element={<InterviewResults />} />
