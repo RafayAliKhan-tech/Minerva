@@ -2,7 +2,6 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import Layout from '../components/layout/Layout'
 import LandingPage from '../pages/LandingPage'
-import ExplorePage from '../pages/ExplorePage'
 import LoginPage from '../pages/LoginPage'
 import SignupPage from '../pages/SignupPage'
 import ProfilePage from '../pages/ProfilePage'
@@ -11,7 +10,6 @@ import RoadmapPage from '../pages/RoadmapPage'
 import ChatPage from '../pages/ChatPage'
 import MockInterviewPage from '../pages/MockInterviewPage'
 import InterviewResults from '../pages/InterviewResults'
-import AboutUs from '../pages/AboutUs'
 
 // Exploring flow pages
 import ExploringIntro from '../pages/ExploringIntro'
@@ -76,8 +74,6 @@ function AppRoutes() {
         <Route path="explore/resume/career-match" element={<CareerMatch />} />
         <Route path="explore/resume/skill-gap/:careerId" element={<SkillGap />} />
 
-        {/* /explore is the category-based start page */}
-        <Route path="explore" element={<ExplorePage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="explore/roadmap" element={<RoadmapPage />} />
@@ -85,7 +81,6 @@ function AppRoutes() {
         <Route path="chat" element={<ChatPage />} />
         <Route path="mock-interview" element={<MockInterviewPage />} />
         <Route path="mock-interview/results" element={<InterviewResults />} />
-        <Route path="about" element={<AboutUs />} />
         </Route>
       </Route>
     </Routes>

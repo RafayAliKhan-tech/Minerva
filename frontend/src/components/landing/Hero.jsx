@@ -1,4 +1,4 @@
-import { ArrowRight, Play } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function Hero() {
@@ -27,24 +27,6 @@ function Hero() {
                 Start Your Journey
                 <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" />
               </Link>
-              <a href="#how-it-works" className="secondary-cta">
-                <span className="play-button" aria-hidden="true">
-                  <Play size={13} fill="currentColor" strokeWidth={0} />
-                </span>
-                See How It Works
-              </a>
-            </div>
-
-            <div className="hero-proof">
-              <div className="avatar-group" aria-label="students">
-                <span className="avatar avatar-one" />
-                <span className="avatar avatar-two" />
-                <span className="avatar avatar-three" />
-                <span className="avatar avatar-four" />
-                <span className="avatar avatar-five" />
-              </div>
-              <span className="hero-proof-count">+5K</span>
-              <span className="hero-proof-text">Helping students make confident career decisions</span>
             </div>
           </div>
 

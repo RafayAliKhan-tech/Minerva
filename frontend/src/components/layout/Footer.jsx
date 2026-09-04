@@ -62,16 +62,13 @@ function Footer({ compact = false }) {
             </p>
             <div className="mt-6 flex items-center gap-3">
               {socialLinks.map((social) => (
-                <a
+                <span
                   key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E0E0E0] bg-white text-[#707070] transition-all hover:border-[#CFCFCF] hover:text-[#1A1A1A]"
                   aria-label={social.label}
                 >
                   <SocialIcon name={social.icon} />
-                </a>
+                </span>
               ))}
             </div>
           </div>
@@ -84,12 +81,7 @@ function Footer({ compact = false }) {
               <ul className="space-y-3">
                 {footerLinks.platform.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-[#707070] transition-colors hover:text-[#1A1A1A]"
-                    >
-                      {link.label}
-                    </a>
+                    <span className="text-sm text-[#707070]">{link.label}</span>
                   </li>
                 ))}
               </ul>
@@ -101,12 +93,7 @@ function Footer({ compact = false }) {
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-[#707070] transition-colors hover:text-[#1A1A1A]"
-                    >
-                      {link.label}
-                    </a>
+                    <span className="text-sm text-[#707070]">{link.label}</span>
                   </li>
                 ))}
               </ul>
@@ -118,12 +105,7 @@ function Footer({ compact = false }) {
               <ul className="space-y-3">
                 {footerLinks.support.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-[#707070] transition-colors hover:text-[#1A1A1A]"
-                    >
-                      {link.label}
-                    </a>
+                    <span className="text-sm text-[#707070]">{link.label}</span>
                   </li>
                 ))}
               </ul>

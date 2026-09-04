@@ -336,8 +336,7 @@ a {
   margin-top: 24px;
 }
 
-.primary-cta,
-.secondary-cta {
+.primary-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -360,75 +359,8 @@ a {
   text-transform: uppercase;
 }
 
-.secondary-cta {
-  color: #e4e0dc;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.secondary-cta:hover,
 .primary-cta:hover {
   transform: translateY(-2px);
-}
-
-.play-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f2f0ed;
-  box-shadow: 0 6px 16px rgba(26, 26, 26, 0.06);
-}
-
-.play-button svg {
-  width: 16px;
-  height: 16px;
-}
-
-.hero-proof {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 26px;
-  color: #aaa49e;
-  font-size: 0.92rem;
-}
-
-.avatar-group {
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-}
-
-.avatar {
-  width: 28px;
-  height: 28px;
-  margin-left: -7px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #c8c8c8, #8a8a8a);
-}
-
-.avatar:first-child {
-  margin-left: 0;
-}
-
-.avatar-two {
-  background: linear-gradient(135deg, #d4d4d4, #9a9a9a);
-}
-
-.avatar-three {
-  background: linear-gradient(135deg, #bcbcbc, #7a7a7a);
-}
-
-.avatar-four {
-  background: linear-gradient(135deg, #e0e0e0, #a0a0a0);
 }
 
 .hero-visual {
@@ -1425,11 +1357,6 @@ a {
     width: 100%;
   }
 
-  .secondary-cta {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
   .hero-visual {
     min-height: 360px;
   }
@@ -1498,7 +1425,6 @@ a {
 
 .landing-page-shell .hero-title-muted,
 .landing-page-shell .hero-subtitle,
-.landing-page-shell .hero-proof,
 .landing-page-shell .path-intro p,
 .landing-page-shell .eyebrow,
 .landing-page-shell .step-text p,
@@ -1839,7 +1765,6 @@ a {
 
 .dashboard-card,
 .dashboard-action-card,
-.dashboard-signal,
 .roadmap-milestone,
 .roadmap-aside,
 .chat-shell,
@@ -1882,13 +1807,7 @@ a {
 .dashboard-resume-card .dashboard-outline-action { margin-top: 26px; }
 .dashboard-section-heading { margin: 82px 0 20px; align-items: end; }
 .dashboard-section-heading h2 { margin: 7px 0 0; color: #f5f1ec; font-size: clamp(1.7rem, 3vw, 2.6rem); letter-spacing: -0.045em; }
-.dashboard-signal-grid { grid-template-columns: repeat(3, 1fr); }
-.dashboard-signal { display: grid; grid-template-columns: 28px 1fr auto; gap: 8px 10px; padding: 18px; }
-.dashboard-signal svg { grid-row: span 2; color: #d7b58f; }
-.dashboard-signal span { color: #918a83; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; }
-.dashboard-signal strong { color: #f5f1ec; font-size: 1rem; }
-.dashboard-signal p { grid-column: 2 / -1; margin: 0; color: #aaa49e; font-size: 0.82rem; }
-.dashboard-action-grid { grid-template-columns: repeat(3, 1fr); }
+.dashboard-action-grid { grid-template-columns: repeat(2, 1fr); }
 .dashboard-action-card { position: relative; min-height: 174px; padding: 22px; color: #f5f1ec; text-decoration: none; transition: transform 0.25s ease, border-color 0.25s ease; }
 .dashboard-action-card:hover { transform: translateY(-5px); border-color: rgba(215, 181, 143, 0.52); }
 .dashboard-action-card svg:first-child { color: #d7b58f; }
@@ -2023,7 +1942,7 @@ a {
 @media (max-width: 800px) {
   .dashboard-page, .roadmap-page, .chat-page, .interview-page, .interview-results-page { padding-top: 92px; }
   .dashboard-heading, .roadmap-heading, .chat-heading, .interview-heading, .results-heading, .dashboard-section-heading { display: grid; align-items: start; }
-  .dashboard-top-grid, .dashboard-signal-grid, .dashboard-action-grid, .results-grid { grid-template-columns: 1fr; }
+  .dashboard-top-grid, .dashboard-action-grid, .results-grid { grid-template-columns: 1fr; }
   .roadmap-layout, .interview-layout, .interview-feedback-panel, .chat-shell { grid-template-columns: 1fr; }
   .chat-sidebar { border-right: 0; border-bottom: 1px solid rgba(245, 240, 234, 0.1); }
   .chat-shell { min-height: 700px; }

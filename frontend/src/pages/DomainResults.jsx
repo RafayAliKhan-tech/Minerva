@@ -88,46 +88,23 @@ function DomainResults() {
     setIsGenerating(true)
     setError('')
     try {
-      const currentSkillProfile = profile.skills || profile.scores || []
-      const assessmentId = sessionStorage.getItem('journey2AssessmentId')
       const matchScore = getScore(match)
       const strengths = getArray(profile.strengths || profile.strong_areas || profile.strongAreas)
       const areasToImprove = getArray(profile.weaknesses || profile.weak_areas || profile.weakAreas || profile.moderate_areas || profile.moderateAreas)
-      const roadmapPayload = {
-        journey: 2,
-        weekly_hours: 5,
-        journey_output: result,
-        assessmentId,
-        career: careerId,
-        careerId,
-        careerName,
-        domain: getName(match) === 'Selected career' ? careerName : getName(match),
-        domainId: careerId,
-        matchScore,
-        strengths,
-        areasToImprove,
-        journey2Result: result,
-      }
-      const created = await generateRoadmap({
-        ...roadmapPayload,
-        journey_output: { ...result, career: careerId, careerName, current_skill_profile: currentSkillProfile },
-      })
+      const created = await generateRoadmap({ journey: 2, weekly_hours: 5, journey_output: result })
       console.groupCollapsed('[Journey2] Roadmap response')
-      console.debug('request payload:', roadmapPayload)
       console.debug('raw response:', created)
       console.debug('unwrapped response:', unwrap(created))
       console.groupEnd()
       const roadmap = getRoadmapPayload(created)
       const roadmapId = roadmap?.roadmapId || roadmap?.roadmap_id || roadmap?.id || roadmap?.Id
-      console.debug('[Journey2] Extracted roadmap:', roadmap, 'roadmapId:', roadmapId)
       if (!roadmapId) throw new Error('The roadmap API did not return a valid roadmap ID.')
       const saved = { ...roadmap, id: roadmapId, domain: roadmap.domain || getName(match), domainId: careerId, source: 'journey2', status: roadmap.status || 'generated' }
       sessionStorage.setItem('journey2RoadmapId', String(roadmapId))
       saveRoadmap(user, saved)
       navigate(`/roadmap-detail/${roadmapId}`, { state: { ...saved, returnTo: { pathname: `/explore/domain-assessment/${careerId}/results` } } })
     } catch (roadmapError) {
-      console.error('[Journey2] Roadmap generation failed:', roadmapError)
-      console.debug('[Journey2] Roadmap error response:', roadmapError?.response?.data)
+      console.error('[Journey2] Roadmap generation failed:', roadmapError, roadmapError?.response?.data)
       setError(roadmapError?.response?.data?.message || roadmapError?.response?.data?.error || roadmapError.message || 'Unable to generate your roadmap.')
     } finally {
       setIsGenerating(false)

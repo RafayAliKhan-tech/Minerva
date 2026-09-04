@@ -111,20 +111,28 @@ export function Journey2AssessmentProvider({ children }) {
     const careerId = selectedCareer.career_id || selectedCareer.careerId || selectedCareer.id
     const stored = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
     const answers = {}
+    const missingAnswers = []
     questions.forEach((question) => {
       const response = stored[question.activityId] || stored[question.questionId] || stored[question.id]
-      if (!response) return
+      if (!response) {
+        missingAnswers.push(question.questionId)
+        return
+      }
       const answer = response.selectedOption ?? response.selectedLine ?? response.explanation ?? response.answer ?? response.canvasItems ?? response.assignedFixes ?? response.selectedCells ?? response.selectedAreas
       if (answer !== undefined && answer !== null && answer !== '') {
         answers[question.questionId] = typeof answer === 'string' ? answer : JSON.stringify(answer)
+      } else {
+        missingAnswers.push(question.questionId)
       }
     })
-    if (Object.keys(answers).length !== questions.length) throw new Error('Please answer every Journey 2 question before submitting.')
+    if (missingAnswers.length) {
+      throw new Error(`Please answer every Journey 2 question before submitting. Missing: ${missingAnswers.join(', ')}`)
+    }
 
     setIsLoading(true)
     setError('')
     try {
-      const submission = await submitJourney2({ career: careerId, answers })
+      const submission = await submitJourney2({ Career: String(careerId), Answers: answers })
       const assessmentId = submission?.assessmentId || submission?.assessment_id || submission?.resultId || submission?.result_id || submission?.id || submission?.data?.assessmentId
       if (!assessmentId && submission?.status === false) throw new Error(submission.message || 'Journey 2 submission was rejected.')
       if (assessmentId) sessionStorage.setItem('journey2AssessmentId', String(assessmentId))

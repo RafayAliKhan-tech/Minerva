@@ -35,7 +35,7 @@ function ResumeInsights() {
   ]
 
   return (
-    <AssessmentLayout onBack={() => navigate('/explore')} showProgress={false}>
+    <AssessmentLayout onBack={() => navigate('/dashboard')} showProgress={false}>
       <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
         <div className="max-w-3xl">
           {/* Header */}

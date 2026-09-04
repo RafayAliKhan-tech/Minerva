@@ -1,15 +1,9 @@
 import { useMemo, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowUpRight, BriefcaseBusiness, ChartNoAxesCombined, MessageCircle, PlayCircle, Sparkles, Telescope, Compass, Target, Zap, Trash2 } from 'lucide-react'
+import { ArrowUpRight, BriefcaseBusiness, MessageCircle, PlayCircle, Telescope, Compass, Zap, Trash2 } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
-import { getDisplayName, getJourneyAssessment, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
-
-const journeyItems = [
-  { label: 'Profile signal', value: 'Strong', detail: 'Your strengths are ready to use', icon: Sparkles },
-  { label: 'Skills in motion', value: '6 / 10', detail: 'Keep building your target stack', icon: ChartNoAxesCombined },
-  { label: 'Career direction', value: 'Frontend', detail: 'Based on your latest activity', icon: Target },
-]
+import { getJourneyAssessment, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
 
 function DashboardPage() {
   const { user } = useAuth()
@@ -33,7 +27,6 @@ function DashboardPage() {
   const exploring = getJourneyAssessment(user, 'exploring')
   const careerInMind = getJourneyAssessment(user, 'domain')
   const resumeAssessment = getJourneyAssessment(user, 'resume')
-  const displayName = getDisplayName(user)
 
   const journeyCards = [
     {
@@ -82,10 +75,9 @@ function DashboardPage() {
         <div className="dashboard-heading">
           <div>
             <p className="dashboard-kicker">MINERVA COMMAND CENTER</p>
-            <h1>{displayName}'s career, in motion.</h1>
+            <h1>Your career, in motion.</h1>
             <p className="dashboard-subtitle">A living view of your profile, next steps, and opportunities.</p>
           </div>
-          <Link className="dashboard-primary-action" to="/explore">Continue your journey <ArrowUpRight size={16} /></Link>
         </div>
 
         <section className="dashboard-grid dashboard-top-grid">
@@ -100,11 +92,6 @@ function DashboardPage() {
               </Link>
             </article>
           ))}
-        </section>
-
-        <section className="dashboard-section-heading"><div><p className="dashboard-kicker">YOUR SIGNALS</p><h2>Small moves. Clear direction.</h2></div><Link to="/explore/roadmap" className="dashboard-text-link">Open full roadmap <ArrowUpRight size={15} /></Link></section>
-        <section className="dashboard-grid dashboard-signal-grid">
-          {journeyItems.map(({ label, value, detail, icon: Icon }) => <article className="dashboard-signal" key={label}><Icon size={19} /><span>{label}</span><strong>{value}</strong><p>{detail}</p></article>)}
         </section>
 
         {roadmaps.length > 0 && (
@@ -178,7 +165,6 @@ function DashboardPage() {
         <section className="dashboard-grid dashboard-action-grid">
           <Link to="/chat" className="dashboard-action-card"><MessageCircle size={22} /><span>Ask Minerva</span><p>Talk through a decision with your profile context in view.</p><ArrowUpRight size={16} /></Link>
           <Link to="/mock-interview" className="dashboard-action-card"><PlayCircle size={22} /><span>Practice an interview</span><p>Build confidence with a role-specific mock interview.</p><ArrowUpRight size={16} /></Link>
-          <Link to="/explore/roadmap" className="dashboard-action-card"><ChartNoAxesCombined size={22} /><span>Build momentum</span><p>Turn your skill gaps into a practical weekly plan.</p><ArrowUpRight size={16} /></Link>
         </section>
       </Container>
     </main>
