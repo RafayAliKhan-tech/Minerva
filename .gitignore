@@ -34,3 +34,8 @@ build-verify*/
 *.njsproj
 *.sln
 *.sw?
+
+# Vercel / Railway CLI local artifacts
+.vercel/
+.vercel-tmp/
+.rw-tmp/
