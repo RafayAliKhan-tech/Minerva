@@ -206,19 +206,20 @@ function ExploringResults() {
     try {
       setResultError('')
       const created = await generateRoadmap(payload)
-      const responseData = created?.data?.data || created?.data || created?.roadmap || created || {}
-      const roadmapId = responseData.id || responseData.roadmapId || responseData.roadmap_id
+      const raw = created?.result || created || {}
+      const responseData = Array.isArray(raw) && raw.length > 0 ? raw[0] : (typeof raw === 'object' ? raw : {})
+      const roadmapId = responseData.roadmap_id || responseData.roadmapId || responseData.id || created?.roadmap_id || created?.roadmapId || 'default'
 
       if (!roadmapId) throw new Error('The backend did not return a valid roadmapId.')
 
       const savedRoadmap = {
         id: roadmapId,
-        domain: responseData.domain || careerName,
-        domainId: responseData.domainId || payload.domainId,
+        domain: responseData.career || responseData.domain || careerName,
+        domainId: responseData.domainId || payload.domainId || careerMatch.id,
         matchScore: Number(responseData.matchScore ?? payload.matchScore),
-        strengths: responseData.strengths || payload.strengths,
-        areasToImprove: responseData.areasToImprove || payload.areasToImprove,
-        curriculum: responseData.curriculum || responseData.milestones,
+        strengths: responseData.strengths || payload.strengths || [],
+        areasToImprove: responseData.areasToImprove || payload.areasToImprove || payload.weak_areas || [],
+        curriculum: responseData.curriculum || { phases: responseData.phases || [], weeks: responseData.timeline?.total_duration_weeks || 12 },
         status: 'generated',
         createdAt: new Date().toISOString(),
       }

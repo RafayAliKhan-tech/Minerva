@@ -179,7 +179,7 @@ function MockInterviewPage() {
     try {
       const payload = {
         attemptId,
-        answers: nextAnswers.map((item) => item.answer),
+        answers: nextAnswers.map((item) => ({ id: item.questionId, answer: item.answer })),
       }
 
       if (questions.length !== 5 || nextAnswers.length !== 5) {

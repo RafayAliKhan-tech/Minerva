@@ -15,30 +15,35 @@ const fallbackMilestones = [
 const normalizeMilestones = (source) => {
   if (!source) return fallbackMilestones
 
-  const phases = Array.isArray(source) ? source : source.phases || source.curriculum?.phases || source.milestones || source.roadmap?.phases || []
+  const phases = Array.isArray(source) ? source : source.phases || source.curriculum?.phases || source.milestones || source.roadmap?.phases || (source.result && !Array.isArray(source.result) ? source.result.phases : null) || []
   if (phases.length === 0) return fallbackMilestones
 
   return phases.map((phase, index) => {
-    const items = phase.tasks || phase.topics || phase.lessons || []
+    const items = phase.tasks || phase.objectives || phase.topics || phase.lessons || phase.resources || []
     return {
       phase: String(index + 1).padStart(2, '0'),
-      title: phase.title || phase.name || `Phase ${index + 1}`,
-      detail: phase.detail || phase.description || 'Focused milestone for your growth.',
+      title: phase.title || phase.name || ('Phase ' + (index + 1)),
+      detail: phase.detail || phase.description || ('Phase ' + (index + 1) + ' learning objectives'),
       tasks: Array.isArray(items) ? items.map((item) => typeof item === 'string' ? item : item.title || item.name || item.label || 'Milestone task') : [],
     }
   })
 }
 
 const normalizeRoadmap = (raw, fallbackState = {}) => {
-  const data = raw?.data || raw?.result || raw?.roadmap || raw || {}
-  const domain = data.domain || data.domainName || fallbackState.domain || 'Your roadmap'
+  const rawResult = raw?.result
+  const roadmapData = (rawResult && typeof rawResult === 'object' && !Array.isArray(rawResult)) ? rawResult
+    : (Array.isArray(rawResult) && rawResult.length > 0 ? rawResult[0] : null)
+
+  const data = roadmapData || raw?.data || raw?.roadmap || raw || {}
+  const domain = data.domain || data.career || data.domainName || fallbackState.domain || 'Your roadmap'
   const domainId = data.domainId || data.domain_id || fallbackState.domainId || fallbackState.roadmapId || null
   const matchScore = Number(data.matchScore ?? data.score ?? fallbackState.score ?? 0)
   const milestones = normalizeMilestones(data)
-  const curriculum = data.curriculum || { phases: milestones, weeks: data.weeks || milestones.length * 4 }
+  const timelineWeeks = data.timeline?.total_duration_weeks || milestones.length * 4
+  const curriculum = data.curriculum || { phases: milestones, weeks: timelineWeeks }
 
   return {
-    id: data.id || data.roadmapId || data.roadmap_id || fallbackState.roadmapId || 'default',
+    id: data.id || data.roadmapId || data.roadmap_id || raw?.roadmap_id || raw?.roadmapId || fallbackState.roadmapId || 'default',
     domain,
     domainId,
     matchScore,

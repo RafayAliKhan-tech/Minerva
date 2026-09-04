@@ -29,7 +29,7 @@ const getScore = (match) => Number(match?.match ?? match?.score ?? match?.percen
 const getArray = (value) => Array.isArray(value) ? value : (value && typeof value === 'object' ? Object.values(value) : [])
 const getRoadmapPayload = (payload) => {
   const data = unwrap(payload)
-  return data?.roadmap || data?.roadmapResult || data?.roadmap_result || data
+  return data?.result || data
 }
 
 function DomainResults() {
