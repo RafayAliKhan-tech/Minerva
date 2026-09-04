@@ -127,8 +127,8 @@ function DomainAssessment() {
     if (!questions.length && !error) loadQuestions(domainId).catch(() => null)
     if (!activity) return
     const responses = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
-    const saved = responses[activity.id] || {}
-    setCurrentState(getInitialState(activity, saved))
+    const savedResponse = responses[activity.id] || responses[activity.activityId] || responses[activity.questionId] || {}
+    setCurrentState(getInitialState(activity, savedResponse))
     setTimeUp(false)
     setSaved(false)
     setActivityStart(Date.now())

@@ -1854,6 +1854,17 @@ a {
 }
 
 .dashboard-card { min-height: 300px; padding: 24px; }
+.analysis-loader-mark { background: rgba(255, 255, 255, 0.5); box-shadow: 0 14px 32px rgba(26, 26, 26, 0.08); }
+.analysis-loader-orbit { border: 2px solid transparent; border-top-color: #1a1a1a; border-right-color: #707070; animation: analysis-loader-spin 1.3s linear infinite; }
+@keyframes analysis-loader-spin { to { transform: rotate(360deg); } }
+.dashboard-journey-card { display: flex; min-height: 330px; flex-direction: column; }
+.dashboard-journey-card h2 { margin-top: 18px; font-size: 1.35rem; }
+.dashboard-journey-card p { flex: 1; margin-top: 12px; }
+.dashboard-journey-green { background: linear-gradient(145deg, rgba(44, 65, 55, 0.94), rgba(25, 31, 28, 0.82)); }
+.dashboard-journey-tan { background: linear-gradient(145deg, rgba(67, 57, 48, 0.94), rgba(29, 27, 25, 0.82)); }
+.dashboard-journey-orange { background: linear-gradient(145deg, rgba(73, 51, 39, 0.94), rgba(29, 26, 24, 0.82)); }
+.dashboard-journey-icon { display: flex; width: 52px; height: 52px; align-items: center; justify-content: center; margin-top: 30px; border: 1px solid rgba(215, 181, 143, 0.28); border-radius: 50%; color: #e7d1b5; background: rgba(255, 255, 255, 0.06); }
+.dashboard-journey-action { display: inline-flex; width: fit-content; align-items: center; gap: 8px; margin-top: 24px; color: #f2dfc7; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .dashboard-card-top { display: flex; align-items: center; justify-content: space-between; color: #8d8780; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.16em; }
 .dashboard-card-top svg { color: #d7b58f; }
 .dashboard-card h2 { margin: 38px 0 0; color: #f4f0eb; font-size: 1.5rem; letter-spacing: -0.035em; }

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import { startRoute3, submitRoute3, getRoute3Result } from '../api/minervaApi'
+import { startRoute3, submitRoute3 } from '../api/minervaApi'
 
 const Route3AssessmentContext = createContext(null)
 
@@ -34,10 +34,22 @@ const normalizeQuestion = (question, index) => ({
 export function Route3AssessmentProvider({ children }) {
   const [file, setFile] = useState(null)
   const [uploadResult, setUploadResult] = useState(null)
-  const [startResult, setStartResult] = useState(null)
+  const [startResult, setStartResult] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('route3StartResult') || 'null')
+    } catch {
+      return null
+    }
+  })
   const [questions, setQuestions] = useState([])
   const [attemptId, setAttemptId] = useState(sessionStorage.getItem('route3AttemptId') || '')
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('route3Result') || 'null')
+    } catch {
+      return null
+    }
+  })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -55,10 +67,14 @@ export function Route3AssessmentProvider({ children }) {
       if (!nextQuestions.length) throw new Error('Route 3 did not return assessment questions.')
       setFile(selectedFile)
       setStartResult(response)
+      setResult(null)
       setQuestions(nextQuestions)
       setAttemptId(nextAttemptId)
       sessionStorage.setItem('route3AttemptId', nextAttemptId)
       sessionStorage.setItem('route3Questions', JSON.stringify(nextQuestions))
+      sessionStorage.setItem('route3StartResult', JSON.stringify(response))
+      sessionStorage.removeItem('route3Result')
+      sessionStorage.removeItem('route3Answers')
       return response
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.response?.data?.error || requestError.message || 'Unable to start Journey 3.')
@@ -70,15 +86,19 @@ export function Route3AssessmentProvider({ children }) {
 
   const submit = useCallback(async (answers) => {
     if (!attemptId) throw new Error('No backend Route 3 attempt ID is available.')
-    if (!answers || Object.keys(answers).length !== questions.length) throw new Error('Please answer every backend-generated question.')
+    const orderedAnswers = questions.map((question) => answers?.[question.questionId] ?? answers?.[question.id])
+    if (!answers || orderedAnswers.length !== questions.length || orderedAnswers.some((answer) => answer === undefined || answer === null || answer === '')) {
+      throw new Error('Please answer every backend-generated question.')
+    }
     setIsLoading(true)
     setError('')
     try {
-      const response = await submitRoute3({ attemptId, answers })
-      const finalResult = await getRoute3Result(attemptId)
+      const response = await submitRoute3({ attemptId, answers: orderedAnswers.map((answer) => String(answer)) })
+      const finalResult = response
       if (!finalResult || finalResult.status === false) throw new Error('Route 3 returned no evaluation result.')
       setResult(finalResult)
       sessionStorage.setItem('route3Result', JSON.stringify(finalResult))
+      sessionStorage.removeItem('route3PendingSubmission')
       return finalResult
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.response?.data?.error || requestError.message || 'Unable to submit Journey 3.')

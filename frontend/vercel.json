@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/backend-api/:path*",
-      "destination": "https://minerva-backend-f3e7.onrender.com/:path*"
+      "destination": "https://minerva-backend-production-ad1e.up.railway.app/:path*"
     }
   ]
 }

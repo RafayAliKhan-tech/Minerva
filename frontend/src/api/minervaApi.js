@@ -12,7 +12,7 @@ export const loginUser = (payload) => api.post('/api/auth/loginuser', payload).t
 // Profile endpoints
 export const getProfile = () => api.get('/api/profile/getprofile').then(unwrap)
 export const updateProfile = (payload) => api.put('/api/profile/updateprofile', payload).then(unwrap)
-export const updateJourney = (payload) => api.put('/api/profile/updatejourney', payload).then(unwrap)
+export const updateJourney = (payload) => api.post('/api/profile/updatejourney', payload).then(unwrap)
 
 // Career endpoints
 export const getAllCareers = () => api.get('/api/career/getallcareers').then(unwrap)

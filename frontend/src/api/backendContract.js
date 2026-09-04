@@ -113,8 +113,9 @@ export const extractAttemptId = (payload) => {
 }
 
 export const extractInterviewResult = (payload) => {
-  const data = unwrapData(payload)
-  const nested = data?.result && typeof data.result === 'object' ? data.result : data
+  const data = parseStructuredValue(unwrapData(payload))
+  const normalizedData = typeof data === 'string' ? parseStructuredValue(data) : data
+  const nested = normalizedData?.result && typeof normalizedData.result === 'object' ? normalizedData.result : normalizedData
   const scores = nested?.scores ?? nested?.Scores
   const total = nested?.total ?? nested?.Total
   const feedback = nested?.feedback ?? nested?.Feedback
@@ -123,6 +124,26 @@ export const extractInterviewResult = (payload) => {
     total: total === undefined ? null : total,
     feedback: Array.isArray(feedback) ? feedback : (typeof feedback === 'string' ? [feedback] : null),
     raw: nested,
+  }
+}
+
+const parseStructuredValue = (value) => {
+  if (typeof value !== 'string') return value
+  try {
+    return JSON.parse(value)
+  } catch {
+    // Some backend versions return Python's repr while the response contract is being migrated.
+    try {
+      const jsonLike = value
+        .replace(/\bTrue\b/g, 'true')
+        .replace(/\bFalse\b/g, 'false')
+        .replace(/\bNone\b/g, 'null')
+        .replace(/([{,]\s*)'([^']+)'\s*:/g, '$1"$2":')
+        .replace(/:\s*'([^']*)'/g, ':"$1"')
+      return JSON.parse(jsonLike)
+    } catch {
+      return value
+    }
   }
 }
 
@@ -140,10 +161,14 @@ export const careerIdentity = (career) => ({
 })
 
 export const questionIdentity = (question) => ({
-  id: firstDefined(question?.id, question?.questionId, question?.question_id, question?.QuestionId),
-  text: firstDefined(question?.question, question?.questionText, question?.question_text, question?.prompt, question?.text, question?.Question),
-  type: firstDefined(question?.type, question?.questionType, question?.question_type, question?.QuestionType),
-  options: Array.isArray(question?.options) ? question.options : (Array.isArray(question?.Options) ? question.Options : []),
+  id: typeof question === 'string' ? null : firstDefined(question?.id, question?.questionId, question?.question_id, question?.QuestionId, question?.Id),
+  text: typeof question === 'string' ? question : firstDefined(question?.question, question?.questionText, question?.question_text, question?.prompt, question?.Prompt, question?.text, question?.Question, question?.Text, question?.content, question?.Content),
+  type: typeof question === 'string' ? 'short_answer' : firstDefined(question?.type, question?.questionType, question?.question_type, question?.QuestionType, question?.Type),
+  options: Array.isArray(question?.options)
+    ? question.options
+    : (Array.isArray(question?.Options)
+      ? question.Options
+      : (Array.isArray(question?.choices) ? question.choices : (Array.isArray(question?.Choices) ? question.Choices : []))),
 })
 
 export const resolveQuestionUi = (question) => {

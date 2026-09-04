@@ -9,10 +9,10 @@ import {
   extractAttemptId,
   extractCareerList,
   extractQuestions,
-  extractSkillProfile,
   questionIdentity,
   resolveQuestionUi,
 } from '../api/backendContract'
+import { normalizeSkillProfile } from '../utils/skillProfile'
 
 const ATTEMPT_KEY = 'minervaInterviewAttemptId'
 
@@ -39,7 +39,7 @@ function MockInterviewPage() {
       const [careerResponse, journeyResponse, profile] = await Promise.all([
         getAllCareers().catch((requestError) => requestError),
         getJourney2Careers().catch((requestError) => requestError),
-        getProfile().catch(() => null),
+        getProfile(),
       ])
 
       if (careerResponse instanceof Error && journeyResponse instanceof Error) {
@@ -58,7 +58,7 @@ function MockInterviewPage() {
       }
 
       setFields(nextFields)
-      setSkillProfile(extractSkillProfile(profile))
+      setSkillProfile(normalizeSkillProfile(profile))
     } catch (requestError) {
       setFields([])
       setError(apiErrorMessage(requestError, 'Unable to load interview fields from the backend.'))
@@ -87,11 +87,15 @@ function MockInterviewPage() {
     setAttemptId('')
 
     try {
-      const payload = {
-        selectedField,
-        field: selectedField,
+      if (!skillProfile?.length) {
+        throw new Error('No normalized skill profile is available. Complete an assessment before starting an interview.')
       }
-      if (skillProfile != null) payload.skillProfile = skillProfile
+
+      const payload = {
+        targetRole: selectedField,
+        skillProfile,
+        numQuestions: 5,
+      }
 
       const response = await startInterview(payload)
       console.log('Interview start response:', response)
@@ -99,15 +103,21 @@ function MockInterviewPage() {
         throw new Error(response?.message || 'The interview API rejected this start request.')
       }
 
-      const nextQuestions = extractQuestions(response)
-      if (!nextQuestions.length) {
-        throw new Error('The interview API returned no questions.')
+      const nextQuestions = extractQuestions(response).map((question, index) => {
+        const identity = questionIdentity(question)
+        if (typeof question === 'string') {
+          return { id: `interview-question-${index + 1}`, question, type: 'short_answer' }
+        }
+        return identity.id ? question : { ...question, id: `interview-question-${index + 1}` }
+      })
+      if (nextQuestions.length !== 5) {
+        throw new Error(`The interview API must return exactly 5 questions, but returned ${nextQuestions.length}.`)
       }
 
       const invalid = nextQuestions.some((question) => {
         const identity = questionIdentity(question)
         const ui = resolveQuestionUi(question)
-        return !identity.id || !identity.text || ui.ui === 'unknown'
+        return !identity.id || !identity.text || ui.ui === 'unknown' || (ui.ui === 'mcq' && ui.options.length === 0)
       })
       if (invalid) {
         throw new Error('The interview API returned an invalid question structure.')
@@ -139,6 +149,10 @@ function MockInterviewPage() {
     event.preventDefault()
     const value = String(answer || '').trim()
     if (!value || !currentQuestion) return
+    if (active === questions.length - 1 && !attemptId) {
+      setError('The interview did not return a backend attempt ID. Please start again.')
+      return
+    }
 
     const nextAnswers = [
       ...answers,
@@ -164,20 +178,13 @@ function MockInterviewPage() {
     setError('')
     try {
       const payload = {
-        selectedField,
-        field: selectedField,
-        questions,
-        answers: nextAnswers.map((item) => ({
-          questionId: item.questionId,
-          question: item.question,
-          questionType: item.questionType,
-          type: item.type,
-          answer: item.answer,
-          selectedOption: item.selectedOption,
-        })),
+        attemptId,
+        answers: nextAnswers.map((item) => item.answer),
       }
-      if (attemptId) payload.attemptId = attemptId
-      if (skillProfile != null) payload.skillProfile = skillProfile
+
+      if (questions.length !== 5 || nextAnswers.length !== 5) {
+        throw new Error('The interview must contain exactly 5 questions and 5 answers.')
+      }
 
       const response = await submitInterview(payload)
       console.log('Interview submit response:', response)
@@ -274,8 +281,8 @@ function MockInterviewPage() {
                   {currentUi.ui === 'mcq' && (
                     <div className="interview-options">
                       {currentUi.options.map((option, index) => {
-                        const optionValue = String(option?.id ?? option?.value ?? option?.optionId ?? option?.text ?? option?.label ?? option)
-                        const optionLabel = String(option?.text ?? option?.label ?? option?.value ?? option)
+                        const optionValue = String(option?.id ?? option?.Id ?? option?.value ?? option?.Value ?? option?.optionId ?? option?.OptionId ?? option?.text ?? option?.Text ?? option?.label ?? option?.Label ?? option)
+                        const optionLabel = String(option?.text ?? option?.Text ?? option?.label ?? option?.Label ?? option?.value ?? option?.Value ?? option)
                         return (
                           <label key={`${optionValue}-${index}`} className={`interview-option ${answer === optionValue ? 'is-selected' : ''}`}>
                             <input

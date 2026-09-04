@@ -10,7 +10,9 @@ const getUserKey = (user) => getUserEmail(user).trim().toLowerCase() || 'guest'
 
 export const saveLatestAssessment = (user, assessment) => {
   try {
-    localStorage.setItem(`minervaLatestAssessment:${getUserKey(user)}`, JSON.stringify({ ...assessment, completedAt: new Date().toISOString() }))
+    const completed = { ...assessment, completedAt: new Date().toISOString() }
+    localStorage.setItem(`minervaLatestAssessment:${getUserKey(user)}`, JSON.stringify(completed))
+    localStorage.setItem(`minervaJourneyAssessment:${getUserKey(user)}:${assessment.type}`, JSON.stringify(completed))
   } catch {
     // Ignore unavailable storage.
   }
@@ -68,5 +70,31 @@ export const deleteRoadmap = (user, roadmapId) => {
     localStorage.setItem(key, JSON.stringify(updated))
   } catch {
     console.error('Failed to delete roadmap')
+  }
+}
+
+export const getJourneyAssessment = (user, type) => {
+  try {
+    const raw = localStorage.getItem(`minervaJourneyAssessment:${getUserKey(user)}:${type}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export const saveResumeFile = (user, resume) => {
+  try {
+    localStorage.setItem(`minervaResumeFile:${getUserKey(user)}`, JSON.stringify(resume))
+  } catch {
+    // Ignore unavailable storage.
+  }
+}
+
+export const getResumeFile = (user) => {
+  try {
+    const raw = localStorage.getItem(`minervaResumeFile:${getUserKey(user)}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
   }
 }

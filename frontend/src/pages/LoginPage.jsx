@@ -4,7 +4,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import api from '../api/axiosInstance'
+import { getProfile, updateJourney } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
+import { getLatestAssessment } from '../utils/userData'
 
 const categoryOptions = [
   { key: 'exploring', title: "I'm Exploring", description: 'Just browsing career options and discovering what fits you best.' },
@@ -23,7 +25,7 @@ function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { establishSession, hasCompletedOnboarding, completeOnboarding } = useAuth()
+  const { establishSession, completeOnboarding } = useAuth()
 
   useEffect(() => {
     if (location.state?.registeredEmail) setEmail(location.state.registeredEmail)
@@ -44,9 +46,16 @@ function LoginPage() {
       else if (typeof payload.data === 'string') token = payload.data
       if (!token) { setFormError(payload.message || 'Invalid email or password.'); return }
       const user = payload.user || payload.data?.user || payload.profile || payload.data?.profile || (typeof payload.data === 'object' ? payload.data : null) || { email: email.trim() }
-      const explicitlyNew = payload.isNewUser ?? payload.data?.isNewUser ?? payload.newUser ?? payload.data?.newUser
       establishSession(token, user, remember)
-      if (explicitlyNew === false || (explicitlyNew !== true && hasCompletedOnboarding(email))) {
+      let profile = null
+      try {
+        profile = await getProfile()
+      } catch {
+        // The local assessment record remains available if profile loading fails.
+      }
+      const journeyType = profile?.JourneyType || profile?.journeyType || profile?.journey_type
+      const hasAssessmentHistory = Boolean(journeyType || getLatestAssessment(user))
+      if (hasAssessmentHistory) {
         navigate('/dashboard', { replace: true })
       } else {
         setLoginSucceeded(true)
@@ -61,9 +70,20 @@ function LoginPage() {
     }
   }
 
-  const handleContinue = () => {
+  const handleClose = () => {
     setLoginSucceeded(false)
-    completeOnboarding(email)
+    navigate('/dashboard', { replace: true })
+  }
+
+  const handleContinue = async () => {
+    setLoginSucceeded(false)
+    const journeyType = { exploring: 'exploring', career: 'career_mind', jobhunting: 'job_hunting' }[selectedCategory]
+    try {
+      await updateJourney({ JourneyType: journeyType })
+    } catch {
+      // Keep the existing journey transition available if profile persistence is unavailable.
+    }
+    completeOnboarding(email.trim())
     const targetRoute = { exploring: '/explore/assessment/activity/1', career: '/explore/domain-selection', jobhunting: '/explore/resume' }[selectedCategory]
     navigate(targetRoute, { state: { category: selectedCategory } })
   }
@@ -86,7 +106,7 @@ function LoginPage() {
       <p className="auth-switch">Don't have an account? <Button to="/signup" variant="ghost" size="sm" className="auth-link">Create account</Button></p>
     </div>
     <div className="auth-art"><img src="/login.png" alt="Minerva career guidance dashboard" /></div>
-  </Container>{loginSucceeded && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#111]/70 px-4 py-10 backdrop-blur-sm"><div className="w-full max-w-2xl rounded-2xl border border-[#444] bg-[#202020] p-8 text-white shadow-2xl"><div className="flex items-start justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#d7c4ae]">Login Successful</p><h2 className="mt-3 text-3xl font-semibold">Choose your journey</h2><p className="mt-3 text-sm leading-relaxed text-[#b5b5b5]">Select the path that best fits your current goals and Minerva will tailor the next steps.</p></div><button type="button" onClick={() => setLoginSucceeded(false)} className="rounded-full border border-[#555] px-3 py-2 text-sm text-[#d2d2d2]">Close</button></div><div className="mt-8 grid gap-4 sm:grid-cols-3">{categoryOptions.map((option) => <button key={option.key} type="button" onClick={() => setSelectedCategory(option.key)} className={`rounded-xl border px-5 py-6 text-left ${selectedCategory === option.key ? 'border-[#d7c4ae] bg-[#3a3631]' : 'border-[#444] bg-[#292929]'}`}><p className="text-base font-semibold">{option.title}</p><p className="mt-2 text-sm text-[#b5b5b5]">{option.description}</p></button>)}</div><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end"><button type="button" onClick={() => setLoginSucceeded(false)} className="rounded-full border border-[#555] px-5 py-3 text-sm font-semibold text-[#d2d2d2]">Choose later</button><button type="button" onClick={handleContinue} className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#1a1a1a]">Continue as {categoryOptions.find((option) => option.key === selectedCategory)?.title}</button></div></div></div>}</section>
+  </Container>{loginSucceeded && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#111]/70 px-4 py-10 backdrop-blur-sm"><div className="w-full max-w-2xl rounded-2xl border border-[#444] bg-[#202020] p-8 text-white shadow-2xl"><div className="flex items-start justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#d7c4ae]">Login Successful</p><h2 className="mt-3 text-3xl font-semibold">Choose your journey</h2><p className="mt-3 text-sm leading-relaxed text-[#b5b5b5]">Select the path that best fits your current goals and Minerva will tailor the next steps.</p></div><button type="button" onClick={handleClose} className="rounded-full border border-[#555] px-3 py-2 text-sm text-[#d2d2d2]">Close</button></div><div className="mt-8 grid gap-4 sm:grid-cols-3">{categoryOptions.map((option) => <button key={option.key} type="button" onClick={() => setSelectedCategory(option.key)} className={`rounded-xl border px-5 py-6 text-left ${selectedCategory === option.key ? 'border-[#d7c4ae] bg-[#3a3631]' : 'border-[#444] bg-[#292929]'}`}><p className="text-base font-semibold">{option.title}</p><p className="mt-2 text-sm text-[#b5b5b5]">{option.description}</p></button>)}</div><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end"><button type="button" onClick={handleClose} className="rounded-full border border-[#555] px-5 py-3 text-sm font-semibold text-[#d2d2d2]">Choose later</button><button type="button" onClick={handleContinue} className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#1a1a1a]">Continue as {categoryOptions.find((option) => option.key === selectedCategory)?.title}</button></div></div></div>}</section>
 }
 
 export default LoginPage

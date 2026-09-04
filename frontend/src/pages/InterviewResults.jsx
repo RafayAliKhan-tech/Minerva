@@ -39,8 +39,13 @@ function InterviewResults() {
       }
 
       const parsed = extractInterviewResult(response)
-      if (parsed.scores == null && parsed.total == null && parsed.feedback == null) {
-        throw new Error('The interview result API returned an empty or invalid evaluation.')
+      const validScores = parsed.scores?.length === 5
+        && parsed.scores.every((score) => Number.isInteger(Number(score)) && Number(score) >= 0 && Number(score) <= 2)
+      const validFeedback = parsed.feedback?.length === 5
+      const numericTotal = Number(parsed.total)
+      const scoreTotal = parsed.scores?.reduce((sum, score) => sum + Number(score), 0)
+      if (!validScores || !validFeedback || !Number.isInteger(numericTotal) || numericTotal < 0 || numericTotal > 10 || numericTotal !== scoreTotal) {
+        throw new Error('The interview result API returned an invalid evaluation. Expected 5 scores, 5 feedback entries, and a total matching the scores.')
       }
       setResult(parsed)
     } catch (requestError) {
@@ -70,7 +75,7 @@ function InterviewResults() {
 
   const feedbackItems = Array.isArray(result?.feedback) ? result.feedback : []
   const scores = Array.isArray(result?.scores) ? result.scores : []
-  const rows = Math.max(feedbackItems.length, scores.length)
+  const rows = 5
 
   return (
     <main className="interview-results-page">
@@ -105,9 +110,6 @@ function InterviewResults() {
             )}
 
             <section className="interview-result-list">
-              {rows === 0 && (
-                <p className="api-empty-state">The backend result did not include per-question scores or feedback.</p>
-              )}
               {Array.from({ length: rows }, (_, index) => {
                 const score = scores[index]
                 const feedback = feedbackItems[index]

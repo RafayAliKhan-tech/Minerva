@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Container from '../common/Container'
 import { CheckCircle2 } from 'lucide-react'
+import { minervaLogo } from '../../assets'
 
 function AnalysisLoader({ steps = [], onComplete }) {
   const [completedSteps, setCompletedSteps] = useState([])
@@ -27,11 +28,10 @@ function AnalysisLoader({ steps = [], onComplete }) {
         <div className="mx-auto max-w-2xl text-center">
           {/* Loading animation */}
           <div className="mb-12 flex justify-center">
-            <div className="relative h-24 w-24">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange to-orange-light opacity-10" />
-              <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-orange border-r-orange" />
-              <div className="flex h-full items-center justify-center">
-                <span className="text-xl font-serif text-orange">Minerva</span>
+            <div className="analysis-loader-mark relative flex h-28 w-28 items-center justify-center rounded-full">
+              <div className="analysis-loader-orbit absolute inset-1 rounded-full" />
+              <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-card">
+                <img src={minervaLogo} alt="Minerva" className="h-12 w-12 object-contain" />
               </div>
             </div>
           </div>

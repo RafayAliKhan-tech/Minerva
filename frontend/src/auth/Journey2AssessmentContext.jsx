@@ -13,6 +13,17 @@ const unwrapList = (response, key) => {
   return []
 }
 
+const normalizeOption = (option, index) => {
+  if (typeof option !== 'object' || option === null) {
+    const value = String(option ?? `option-${index + 1}`)
+    return { id: value, text: value, label: value }
+  }
+
+  const id = option.id ?? option.optionId ?? option.option_id ?? option.value ?? option.Value ?? option.key ?? `option-${index + 1}`
+  const text = option.text ?? option.optionText ?? option.option_text ?? option.label ?? option.title ?? option.description ?? option.value ?? option.Value ?? String(id)
+  return { ...option, id: String(id), text: String(text), label: option.label ?? String(id) }
+}
+
 const normalizeQuestion = (question, index) => ({
   ...question,
   id: question.id ?? question.questionId ?? question.question_id ?? question.activityId ?? question.activity_id ?? `journey2-${index + 1}`,
@@ -21,8 +32,11 @@ const normalizeQuestion = (question, index) => ({
   title: question.title ?? question.questionText ?? question.question_text ?? question.text ?? `Question ${index + 1}`,
   description: question.description ?? question.instruction ?? question.questionText ?? question.question_text ?? question.text ?? '',
   instruction: question.instruction ?? question.description ?? '',
-  options: Array.isArray(question.options) ? question.options : [],
-  type: String(question.type ?? question.interaction ?? 'multiple-choice').replace('_', '-'),
+  options: (Array.isArray(question.options) ? question.options : (Array.isArray(question.Options) ? question.Options : (Array.isArray(question.choices) ? question.choices : (Array.isArray(question.Choices) ? question.Choices : [])))).map(normalizeOption),
+  type: (() => {
+    const type = String(question.interaction ?? question.type ?? question.questionType ?? question.question_type ?? 'multiple-choice').toLowerCase().replace(/[\s_]+/g, '-')
+    return ['mcq', 'multiplechoice', 'choice'].includes(type) ? 'multiple-choice' : type
+  })(),
 })
 
 export function Journey2AssessmentProvider({ children }) {
@@ -96,8 +110,16 @@ export function Journey2AssessmentProvider({ children }) {
     if (!selectedCareer || !questions.length) throw new Error('Journey 2 career and questions are not loaded.')
     const careerId = selectedCareer.career_id || selectedCareer.careerId || selectedCareer.id
     const stored = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
-    const answers = questions.map((question) => stored[question.activityId] || stored[question.questionId]).filter(Boolean)
-    if (answers.length !== questions.length) throw new Error('Please answer every Journey 2 question before submitting.')
+    const answers = {}
+    questions.forEach((question) => {
+      const response = stored[question.activityId] || stored[question.questionId] || stored[question.id]
+      if (!response) return
+      const answer = response.selectedOption ?? response.selectedLine ?? response.explanation ?? response.answer ?? response.canvasItems ?? response.assignedFixes ?? response.selectedCells ?? response.selectedAreas
+      if (answer !== undefined && answer !== null && answer !== '') {
+        answers[question.questionId] = typeof answer === 'string' ? answer : JSON.stringify(answer)
+      }
+    })
+    if (Object.keys(answers).length !== questions.length) throw new Error('Please answer every Journey 2 question before submitting.')
 
     setIsLoading(true)
     setError('')

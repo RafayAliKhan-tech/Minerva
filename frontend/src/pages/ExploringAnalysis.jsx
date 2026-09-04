@@ -33,9 +33,9 @@ function ExploringAnalysis() {
     setError('')
     try {
       const savedResponses = JSON.parse(sessionStorage.getItem('exploringResponses') || '{}')
-      const answers = Object.values(savedResponses).map((answer) => ({
-        questionId: answer.questionId,
-        selectedOption: answer.selectedOption,
+      const answers = Object.entries(savedResponses).map(([questionId, response]) => ({
+        questionId: String(questionId),
+        selectedOption: String(response.selectedOption),
       }))
 
       const result = await submitJourney1({

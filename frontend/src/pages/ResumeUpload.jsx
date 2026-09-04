@@ -6,6 +6,8 @@ import Button from '../components/common/Button'
 import { ArrowRight, Loader } from 'lucide-react'
 import { uploadResume } from '../api/minervaApi'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
+import { saveResumeFile } from '../utils/userData'
+import { useAuth } from '../auth/AuthContext'
 
 function ResumeUpload() {
   const navigate = useNavigate()
@@ -13,6 +15,7 @@ function ResumeUpload() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const { setFile, setUploadResult } = useRoute3Assessment()
+  const { user } = useAuth()
 
   const handleFileSelect = (file) => {
     setSelectedFile(file)
@@ -34,15 +37,14 @@ function ResumeUpload() {
       setUploadResult(result)
 
       // Store file info in session
-      sessionStorage.setItem(
-        'resumeFile',
-        JSON.stringify({
+      const resumeFile = {
           name: selectedFile.name,
           size: selectedFile.size,
           type: selectedFile.type,
           analysis: result,
-        })
-      )
+      }
+      sessionStorage.setItem('resumeFile', JSON.stringify(resumeFile))
+      saveResumeFile(user, resumeFile)
 
       navigate('/explore/resume/analysis')
     } catch (err) {

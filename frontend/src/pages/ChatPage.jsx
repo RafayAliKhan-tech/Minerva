@@ -7,11 +7,10 @@ import { sendChatMessage, getChatHistory, getProfile } from '../api/minervaApi'
 import {
   apiErrorMessage,
   extractChatAnswer,
-  extractHighestScoredField,
   extractHistoryMessages,
   extractSessionId,
-  extractSkillProfile,
 } from '../api/backendContract'
+import { getStoredHighestScoredField } from '../utils/skillProfile'
 
 const SESSION_KEY = 'minervaChatSessionId'
 const starters = ['What should I learn next?', 'Which role fits my strengths?', 'Help me prepare for an interview']
@@ -38,7 +37,6 @@ function ChatPage() {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([])
   const [sessionId, setSessionId] = useState(() => readStoredSessionId())
-  const [skillProfile, setSkillProfile] = useState(null)
   const [highestScoredField, setHighestScoredField] = useState(null)
   const [profileReady, setProfileReady] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
@@ -88,11 +86,9 @@ function ChatPage() {
       try {
         const profile = await getProfile()
         if (!mounted) return
-        setSkillProfile(extractSkillProfile(profile))
-        setHighestScoredField(extractHighestScoredField(profile))
+        setHighestScoredField(getStoredHighestScoredField())
       } catch (error) {
         if (!mounted) return
-        setSkillProfile(null)
         setHighestScoredField(null)
         setProfileError(apiErrorMessage(error, 'Unable to load the backend profile required for chatbot context.'))
       } finally {
@@ -131,9 +127,6 @@ function ChatPage() {
     try {
       const payload = { message }
       if (sessionId) payload.sessionId = sessionId
-      if (skillProfile != null) payload.skillProfile = skillProfile
-      if (highestScoredField) payload.highestScoredField = highestScoredField
-
       const response = await sendChatMessage(payload)
       console.log('Chat response:', response)
       if (response?.status === false) {

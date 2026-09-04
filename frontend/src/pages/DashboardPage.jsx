@@ -1,9 +1,9 @@
 import { useMemo, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowUpRight, BriefcaseBusiness, ChartNoAxesCombined, MessageCircle, PlayCircle, Sparkles, Target, Zap, Trash2 } from 'lucide-react'
+import { ArrowUpRight, BriefcaseBusiness, ChartNoAxesCombined, MessageCircle, PlayCircle, Sparkles, Telescope, Compass, Target, Zap, Trash2 } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
-import { getDisplayName, getLatestAssessment, getRoadmaps, deleteRoadmap } from '../utils/userData'
+import { getDisplayName, getJourneyAssessment, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
 
 const journeyItems = [
   { label: 'Profile signal', value: 'Strong', detail: 'Your strengths are ready to use', icon: Sparkles },
@@ -21,27 +21,55 @@ function DashboardPage() {
   }, [user])
 
   const resume = useMemo(() => {
-    const raw = sessionStorage.getItem('resumeFile')
-    return raw ? JSON.parse(raw) : null
-  }, [])
-  const domain = sessionStorage.getItem('selectedDomain')
-  const career = sessionStorage.getItem('selectedCareer') || 'frontend'
-  const latest = getLatestAssessment(user)
-  const displayName = getDisplayName(user)
-  const latestScore = latest?.score ?? null
-  const latestLabel = latest?.label || 'No assessment yet'
-
-  const latestResultRoute = (() => {
-    if (!latest) return '/explore'
-
-    if (latest.type === 'exploring') return '/explore/assessment/results'
-    if (latest.type === 'domain') {
-      const currentDomain = sessionStorage.getItem('selectedDomain') || latest.domainId || null
-      return currentDomain ? `/explore/domain-assessment/${currentDomain}/results` : '/explore/domain-selection'
+    const saved = getResumeFile(user)
+    if (saved) return saved
+    try {
+      const raw = sessionStorage.getItem('resumeFile')
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
     }
-    if (latest.type === 'resume') return '/explore/resume/results'
-    return '/explore'
-  })()
+  }, [user])
+  const exploring = getJourneyAssessment(user, 'exploring')
+  const careerInMind = getJourneyAssessment(user, 'domain')
+  const resumeAssessment = getJourneyAssessment(user, 'resume')
+  const displayName = getDisplayName(user)
+
+  const journeyCards = [
+    {
+      title: 'I am exploring',
+      description: 'Discover the career direction that fits your strengths and interests.',
+      icon: Telescope,
+      completed: exploring,
+      route: '/explore/assessment/results',
+      startRoute: '/explore/assessment',
+      completedLabel: exploring?.domain || 'Exploration assessment complete',
+      action: 'Start assessment',
+      accent: 'dashboard-journey-green',
+    },
+    {
+      title: 'Career in my mind',
+      description: 'Turn a target career into a practical, personalized plan.',
+      icon: Compass,
+      completed: careerInMind,
+      route: careerInMind?.careerId ? `/explore/domain-assessment/${careerInMind.careerId}/results` : '/explore/domain-selection',
+      startRoute: '/explore/domain-selection',
+      completedLabel: careerInMind?.domain || 'Career assessment complete',
+      action: 'Choose a career',
+      accent: 'dashboard-journey-tan',
+    },
+    {
+      title: 'My resume',
+      description: 'Upload your resume to uncover role matches and skill gaps.',
+      icon: BriefcaseBusiness,
+      completed: resumeAssessment,
+      route: '/explore/resume/results',
+      startRoute: '/explore/resume',
+      completedLabel: resumeAssessment?.domain || resume?.name || 'Resume assessment complete',
+      action: 'Upload resume',
+      accent: 'dashboard-journey-orange',
+    },
+  ]
 
   const handleDeleteRoadmap = (roadmapId) => {
     deleteRoadmap(user, roadmapId)
@@ -61,31 +89,17 @@ function DashboardPage() {
         </div>
 
         <section className="dashboard-grid dashboard-top-grid">
-          <article className="dashboard-card dashboard-profile-card">
-            <div className="dashboard-card-top"><span>PROFILE SIGNAL</span><Sparkles size={18} /></div>
-            <div className="dashboard-score-ring"><strong>{latestScore === null ? '--' : `${latestScore}%`}</strong><span>latest result</span></div>
-            <h2>{latestLabel}</h2>
-            <p>{latest ? `Completed ${new Date(latest.completedAt).toLocaleDateString()}. Your latest assessment is saved to this account.` : 'Complete an assessment and your latest result will appear here.'}</p>
-            {latest ? (
-              <Link to={latestResultRoute} className="dashboard-text-link" style={{ marginTop: '0.9rem' }}>View Result <ArrowUpRight size={15} /></Link>
-            ) : (
-              <Link to="/explore/domain-selection" className="dashboard-text-link">Explore domains <ArrowUpRight size={15} /></Link>
-            )}
-          </article>
-          <article className="dashboard-card dashboard-focus-card">
-            <div className="dashboard-card-top"><span>CURRENT FOCUS</span><Target size={18} /></div>
-            <p className="dashboard-focus-label">Recommended target</p>
-            <h2>{latest?.domain || (career === 'fullstack' ? 'Full Stack Developer' : 'Frontend Developer')}</h2>
-            <div className="dashboard-progress"><span style={{ width: `${latestScore || 0}%` }} /></div>
-            <div className="dashboard-progress-meta"><span>Readiness</span><strong>{latestScore === null ? '--' : `${latestScore}%`}</strong></div>
-            <Link to={`/explore/resume/skill-gap/${career}`} className="dashboard-text-link">View skill gap <ArrowUpRight size={15} /></Link>
-          </article>
-          <article className="dashboard-card dashboard-resume-card">
-            <div className="dashboard-card-top"><span>RESUME INTELLIGENCE</span><BriefcaseBusiness size={18} /></div>
-            <h2>{resume?.name || 'Resume not connected'}</h2>
-            <p>{resume ? 'Your resume is connected to personalized role matching.' : 'Upload your resume to unlock tailored job matches and feedback.'}</p>
-            <Link to="/explore/resume" className="dashboard-outline-action">{resume ? 'Review insights' : 'Upload resume'} <ArrowUpRight size={15} /></Link>
-          </article>
+          {journeyCards.map(({ title, description, icon: Icon, completed, route, startRoute, completedLabel, action, accent }) => (
+            <article className={`dashboard-card dashboard-journey-card ${accent}`} key={title}>
+              <div className="dashboard-card-top"><span>{completed ? 'JOURNEY COMPLETE' : 'YOUR NEXT JOURNEY'}</span><Icon size={20} /></div>
+              <div className="dashboard-journey-icon"><Icon size={25} /></div>
+              <h2>{title}</h2>
+              <p>{completed ? `${completedLabel}. Your result is saved to this account.` : description}</p>
+              <Link to={completed ? route : startRoute} className="dashboard-journey-action">
+                {completed ? 'View Result' : action} <ArrowUpRight size={15} />
+              </Link>
+            </article>
+          ))}
         </section>
 
         <section className="dashboard-section-heading"><div><p className="dashboard-kicker">YOUR SIGNALS</p><h2>Small moves. Clear direction.</h2></div><Link to="/explore/roadmap" className="dashboard-text-link">Open full roadmap <ArrowUpRight size={15} /></Link></section>

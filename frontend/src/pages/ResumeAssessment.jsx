@@ -37,6 +37,7 @@ function ResumeAssessment() {
     } else {
       // Store answers and navigate to results
       sessionStorage.setItem('route3Answers', JSON.stringify(nextAnswers))
+      sessionStorage.setItem('route3PendingSubmission', 'true')
       navigate('/explore/resume/results')
     }
   }
@@ -72,8 +73,8 @@ function ResumeAssessment() {
                 value={answers[question.id] || ''}
                 onChange={(e) => handleAnswer(e.target.value)}
                 placeholder="Your answer here..."
-                className="w-full rounded-xl border border-beige-border p-4 min-h-32 focus:outline-none focus:border-orange"
-                style={{ borderColor: answers[question.id] ? '#f4a460' : '#e8ddd1', fontFamily: 'inherit' }}
+                className="w-full rounded-xl border border-beige-border p-4 min-h-32 text-[#23211f] focus:outline-none focus:border-orange"
+                style={{ borderColor: answers[question.id] ? '#f4a460' : '#e8ddd1', fontFamily: 'inherit', color: '#23211f' }}
               />
             )}
           </div>

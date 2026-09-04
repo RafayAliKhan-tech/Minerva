@@ -105,13 +105,15 @@ function AuthProvider({ children }) {
   }, [token, location.pathname])
 
   const completeOnboarding = (email = getUserEmail(user)) => {
-    if (!email) return
-    localStorage.setItem(`${ONBOARDED_PREFIX}${email.toLowerCase()}`, 'true')
+    const normalizedEmail = email?.trim().toLowerCase()
+    if (!normalizedEmail) return
+    localStorage.setItem(`${ONBOARDED_PREFIX}${normalizedEmail}`, 'true')
   }
 
   const hasCompletedOnboarding = (email = getUserEmail(user)) => {
-    if (!email) return false
-    return localStorage.getItem(`${ONBOARDED_PREFIX}${email.toLowerCase()}`) === 'true'
+    const normalizedEmail = email?.trim().toLowerCase()
+    if (!normalizedEmail) return false
+    return localStorage.getItem(`${ONBOARDED_PREFIX}${normalizedEmail}`) === 'true'
   }
 
   const value = useMemo(() => ({

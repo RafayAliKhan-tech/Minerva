@@ -1,28 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
-import SkillBar from '../components/assessment/SkillBar'
-import DomainCard from '../components/assessment/DomainCard'
 import Button from '../components/common/Button'
-import { domains } from '../data/domainActivities'
 import { Sparkles, ArrowRight, Zap } from 'lucide-react'
 import { generateRoadmap, getJourney1Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
-import { saveLatestAssessment, saveRoadmap, getRoadmaps } from '../utils/userData'
+import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
 
-const extractJourney1Profile = (payload) => {
-  const data = payload?.data ?? payload
-  const profile = data?.mindProfile || data?.profile || data?.result?.mindProfile || data?.result?.profile || data?.assessmentResult?.mindProfile || data?.assessmentResult?.profile || null
+const extractJourney1Data = (payload) => payload?.career_recommendation?.recommendation?.primary_career ? payload : null
 
-  if (profile && (profile.potentialDomains || profile.insights || profile.analyticalThinking !== undefined)) {
-    return profile
-  }
+const careerCards = [
+  { id: 'development', name: 'Development' },
+  { id: 'ui_ux', name: 'UI/UX' },
+  { id: 'data', name: 'Data' },
+  { id: 'ai', name: 'AI' },
+  { id: 'cyber', name: 'Cyber' },
+]
 
-  if (data?.potentialDomains || data?.insights || data?.analyticalThinking !== undefined) {
-    return data
-  }
-
-  return null
+const getCareerPercentage = (careerScores, careerId) => {
+  const score = careerScores?.[careerId]
+  return Number(typeof score === 'object' ? score?.percentage : score || 0)
 }
 
 const generateSampleCurriculum = (domain, matchScore) => {
@@ -115,7 +112,7 @@ const generateSampleCurriculum = (domain, matchScore) => {
 function ExploringResults() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [profile, setProfile] = useState(null)
+  const [journey1Data, setJourney1Data] = useState(null)
   const [journey1Result, setJourney1Result] = useState(null)
   const [resultError, setResultError] = useState('')
 
@@ -130,28 +127,31 @@ function ExploringResults() {
 
       try {
         const server = await getJourney1Result(assessmentId)
-        const mindProfile = extractJourney1Profile(server)
+        console.log('GetJourney1Result unwrapped response:', server)
+        const journey1Results = extractJourney1Data(server)
 
-        if (!mindProfile) {
-          throw new Error('Journey 1 response did not include a valid profile payload.')
+        if (!journey1Results) {
+          throw new Error('Journey 1 response did not include career recommendation data.')
         }
 
-        setProfile(mindProfile)
+        setJourney1Data(journey1Results)
         setJourney1Result(server)
+        sessionStorage.setItem('journey1Result', JSON.stringify(server))
         setResultError('')
         saveLatestAssessment(user, {
           type: 'exploring',
           label: 'Exploration assessment',
-          domain: mindProfile.potentialDomains?.[0]?.domain,
-          score: mindProfile.potentialDomains?.[0]?.match,
+          domain: journey1Results.career_recommendation.recommendation.primary_career.career,
+          score: journey1Results.career_recommendation.recommendation.primary_career.percentage,
           source: 'journey1',
           assessmentId,
         })
       } catch (e) {
         console.error('fetch exploring result failed from Journey 1', e)
-        setProfile(null)
+        setJourney1Data(null)
         setResultError('We could not load your Journey 1 result from the backend. Please try again or start the assessment over.')
       }
+
     })()
   }, [user])
 
@@ -171,32 +171,70 @@ function ExploringResults() {
     )
   }
 
-  if (!profile) {
+  if (!journey1Data) {
     return (
       <AssessmentLayout onBack={() => navigate('/')}>
-        <p className="text-center text-brown-light">Loading your profile...</p>
+        <p className="text-center text-brown-light">Loading your Journey 1 results...</p>
       </AssessmentLayout>
     )
   }
 
-  const behavioraltrait = [
-    {
-      name: 'Analytical Thinking',
-      score: profile.analyticalThinking,
-    },
-    {
-      name: 'Problem Solving',
-      score: profile.problemSolving,
-    },
-    {
-      name: 'Creative Thinking',
-      score: profile.creativeThinking,
-    },
-    {
-      name: 'User Thinking',
-      score: profile.userThinking,
-    },
-  ]
+  const careerScores = journey1Data.deterministic_career_scores || {}
+
+  const handleGenerateRoadmap = async (careerMatch) => {
+    const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
+    if (!realAssessmentId || !journey1Result) {
+      setResultError('Your backend Journey 1 result is not available. Please complete the assessment again.')
+      return
+    }
+
+    const careerName = careerMatch.id
+    const matchScore = Number(careerMatch.percentage)
+    const payload = {
+      journey: 1,
+      weekly_hours: 5,
+      journey_output: journey1Result,
+      assessmentId: realAssessmentId,
+      domain: careerName,
+      domainId: careerMatch.id,
+      matchScore,
+      strengths: journey1Data.strengths || [],
+      areasToImprove: journey1Data.weak_areas || [],
+      journey1Result,
+    }
+
+    try {
+      setResultError('')
+      const created = await generateRoadmap(payload)
+      const responseData = created?.data?.data || created?.data || created?.roadmap || created || {}
+      const roadmapId = responseData.id || responseData.roadmapId || responseData.roadmap_id
+
+      if (!roadmapId) throw new Error('The backend did not return a valid roadmapId.')
+
+      const savedRoadmap = {
+        id: roadmapId,
+        domain: responseData.domain || careerName,
+        domainId: responseData.domainId || payload.domainId,
+        matchScore: Number(responseData.matchScore ?? payload.matchScore),
+        strengths: responseData.strengths || payload.strengths,
+        areasToImprove: responseData.areasToImprove || payload.areasToImprove,
+        curriculum: responseData.curriculum || responseData.milestones,
+        status: 'generated',
+        createdAt: new Date().toISOString(),
+      }
+
+      saveRoadmap(user, savedRoadmap)
+      navigate(`/roadmap-detail/${roadmapId}`, {
+        state: {
+          ...savedRoadmap,
+          returnTo: { pathname: '/explore/assessment/results', state: { fromJourney1: true } },
+        },
+      })
+    } catch (error) {
+      console.error('Roadmap generation failed for exploring result', error)
+      setResultError('We could not generate your roadmap from the Journey 1 result because the backend rejected the request. Please try again.')
+    }
+  }
 
   return (
     <AssessmentLayout
@@ -212,23 +250,8 @@ function ExploringResults() {
               Here's What We Discovered About You
             </h1>
             <p className="mt-4 text-base text-brown-light">
-              Based on your responses, here's your unique behavioral profile.
+              Based on your responses, here's your Journey 1 career analysis.
             </p>
-          </div>
-
-          {/* Behavioral traits */}
-          <div className="mb-12 space-y-6">
-            <h2 className="font-serif text-2xl font-semibold text-brown">
-              Your Behavioral Profile
-            </h2>
-            {behavioraltrait.map((trait) => (
-              <SkillBar
-                key={trait.name}
-                skill={trait.name}
-                percentage={trait.score}
-                size="md"
-              />
-            ))}
           </div>
 
           {/* Insights */}
@@ -237,7 +260,7 @@ function ExploringResults() {
               Your Strongest Signals
             </h2>
             <div className="space-y-3">
-              {(profile.insights || []).map((insight, index) => (
+              {(journey1Data.strengths || []).map((strength, index) => (
                 <div
                   key={index}
                   className="flex gap-3 rounded-xl border border-beige-border bg-cream-dark p-4"
@@ -245,7 +268,7 @@ function ExploringResults() {
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-journey-green text-journey-green-dark mt-0.5">
                     <Sparkles className="h-4 w-4" aria-hidden="true" />
                   </div>
-                  <p className="text-base text-brown-light">{insight}</p>
+                  <p className="text-base text-brown-light">{typeof strength === 'string' ? strength : JSON.stringify(strength)}</p>
                 </div>
               ))}
             </div>
@@ -254,93 +277,23 @@ function ExploringResults() {
           {/* Divider */}
           <div className="mb-12 h-px bg-beige-border" />
 
-          {/* Potential domains */}
           <div>
             <h2 className="font-serif text-2xl font-semibold text-brown mb-6">
-              Potential CS Domains
+              Career matches
             </h2>
             <div className="space-y-4">
-              {(profile.potentialDomains || []).map((domainMatch) => {
-                const domain = domains.find((d) => d.name === domainMatch.domain)
-                const handleGenerateRoadmap = async () => {
-                  const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
-                  if (!realAssessmentId || !journey1Result) {
-                    setResultError('Your backend Journey 1 result is not available. Please complete the assessment again.')
-                    return
-                  }
-                  const payload = {
-                    assessmentId: realAssessmentId,
-                    domain: domainMatch.domain,
-                    domainId: domain?.id || domainMatch.domain,
-                    matchScore: domainMatch.match,
-                    strengths: profile.insights || [],
-                    areasToImprove: profile.potentialDomains
-                      ?.filter((item) => item.domain !== domainMatch.domain)
-                      ?.map((item) => `${item.domain} (${item.match}%)`) || [],
-                    journey1Result,
-                  }
-
-                  try {
-                    const created = await generateRoadmap(payload)
-                    const responseData = created?.data || created?.roadmap || created || {}
-                    const roadmapId = responseData.id || responseData.roadmapId || responseData.roadmap_id
-
-                    if (!roadmapId) {
-                      throw new Error('The backend did not return a valid roadmapId.')
-                    }
-
-                    const savedRoadmap = {
-                      id: roadmapId,
-                      domain: responseData.domain || domainMatch.domain,
-                      domainId: responseData.domainId || payload.domainId,
-                      matchScore: Number(responseData.matchScore ?? payload.matchScore),
-                      strengths: responseData.strengths || payload.strengths,
-                      areasToImprove: responseData.areasToImprove || payload.areasToImprove,
-                      curriculum: responseData.curriculum || responseData.milestones || generateSampleCurriculum(domainMatch.domain, domainMatch.match),
-                      status: 'generated',
-                      createdAt: new Date().toISOString(),
-                    }
-
-                    saveRoadmap(user, savedRoadmap)
-                    navigate(`/roadmap-detail/${roadmapId}`, {
-                      state: {
-                        ...savedRoadmap,
-                        returnTo: {
-                          pathname: '/explore/assessment/results',
-                          state: { fromJourney1: true },
-                        },
-                      },
-                    })
-                  } catch (error) {
-                    console.error('Roadmap generation failed for exploring result', error)
-                    setResultError('We could not generate your roadmap from the Journey 1 result because the backend rejected the request. Please try again.')
-                  }
-                }
+              {careerCards.map((career) => {
+                const percentage = getCareerPercentage(careerScores, career.id)
                 return (
-                  <div
-                    key={domainMatch.domain}
-                    className="rounded-xl border border-beige-border bg-cream-dark p-6 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-4">
-                        {domain && domain.icon && (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-pill text-orange">
-                            {<domain.icon className="h-6 w-6" aria-hidden="true" />}
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-semibold text-brown">{domainMatch.domain}</p>
-                          <p className="text-xs text-brown-light">Based on your signals</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-orange">{domainMatch.match}%</p>
-                        <p className="text-xs text-brown-light">Match</p>
-                      </div>
+                  <div key={career.id} className="rounded-xl border border-beige-border bg-cream-dark p-6">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-brown">{career.name}</p>
+                      <p className="font-bold text-orange">{percentage}%</p>
                     </div>
                     <button
-                      onClick={handleGenerateRoadmap}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange to-orange-dark text-white rounded-lg font-semibold hover:shadow-md transition-all duration-200 group"
+                      type="button"
+                      onClick={() => handleGenerateRoadmap({ ...career, percentage })}
+                      className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange to-orange-dark text-white rounded-lg font-semibold hover:shadow-md transition-all duration-200 group"
                     >
                       <Zap className="h-4 w-4" aria-hidden="true" />
                       Generate Roadmap
@@ -351,10 +304,39 @@ function ExploringResults() {
             </div>
           </div>
 
+          <div className="mt-12 grid gap-6 sm:grid-cols-2">
+            {journey1Data.weak_areas && (
+              <div className="rounded-xl border border-beige-border bg-cream-dark p-5">
+                <h2 className="font-serif text-xl font-semibold text-brown">Weak areas</h2>
+                <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.weak_areas, null, 2)}</pre>
+              </div>
+            )}
+            {journey1Data.skill_gap_analysis && (
+              <div className="rounded-xl border border-beige-border bg-cream-dark p-5">
+                <h2 className="font-serif text-xl font-semibold text-brown">Skill gap analysis</h2>
+                <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.skill_gap_analysis, null, 2)}</pre>
+              </div>
+            )}
+          </div>
+
+          {journey1Data.preliminary_current_skill_profile && (
+            <div className="mt-6 rounded-xl border border-beige-border bg-cream-dark p-5">
+              <h2 className="font-serif text-xl font-semibold text-brown">Current skill profile</h2>
+              <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.preliminary_current_skill_profile, null, 2)}</pre>
+            </div>
+          )}
+
+          {journey1Data.recommended_next_step && (
+            <div className="mt-6 rounded-xl bg-orange-pill p-5">
+              <h2 className="font-serif text-xl font-semibold text-brown">Recommended next step</h2>
+              <p className="mt-2 text-brown-light">{typeof journey1Data.recommended_next_step === 'string' ? journey1Data.recommended_next_step : JSON.stringify(journey1Data.recommended_next_step)}</p>
+            </div>
+          )}
+
           {/* Info note */}
           <div className="mt-12 rounded-2xl bg-orange-pill p-6">
             <p className="text-sm text-brown">
-              <span className="font-semibold">Note:</span> These are potential matches based on your behavioral signals. This is not a definitive diagnosis, but rather indicators of where your strengths might naturally lead you.
+              <span className="font-semibold">Note:</span> These career scores are calculated from your Journey 1 assessment results.
             </p>
           </div>
 

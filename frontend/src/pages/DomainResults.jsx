@@ -9,14 +9,28 @@ import { useAuth } from '../auth/AuthContext'
 import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
 import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
 
-const unwrap = (payload) => payload?.data ?? payload?.result ?? payload
+const unwrap = (payload) => {
+  let value = payload
+  while (value && typeof value === 'object' && !Array.isArray(value) && (value.data || value.result)) {
+    value = value.data || value.result
+  }
+  return value
+}
 const getProfile = (payload) => {
   const data = unwrap(payload)
-  return data?.result || data?.profile || data?.assessmentResult || data
+  return data?.result || data?.profile || data?.assessmentResult || data?.assessment_result || data
 }
-const getMatches = (profile) => profile?.potentialDomains || profile?.careerMatches || profile?.matches || profile?.domains || []
-const getName = (match) => match?.domain || match?.career || match?.careerName || match?.name || match?.label || 'Selected career'
-const getScore = (match) => Number(match?.match ?? match?.score ?? match?.percentage ?? match?.fit ?? 0)
+const getMatches = (profile) => {
+  const matches = profile?.potentialDomains || profile?.potential_domains || profile?.careerMatches || profile?.career_matches || profile?.matches || profile?.domains || profile?.recommendedCareers || profile?.recommended_careers || []
+  return Array.isArray(matches) ? matches : Object.entries(matches).map(([name, value]) => ({ name, ...(typeof value === 'object' ? value : { score: value }) }))
+}
+const getName = (match) => match?.domain || match?.career || match?.careerName || match?.career_name || match?.name || match?.label || match?.field || 'Selected career'
+const getScore = (match) => Number(match?.match ?? match?.score ?? match?.percentage ?? match?.fit ?? match?.match_score ?? match?.matchScore ?? 0)
+const getArray = (value) => Array.isArray(value) ? value : (value && typeof value === 'object' ? Object.values(value) : [])
+const getRoadmapPayload = (payload) => {
+  const data = unwrap(payload)
+  return data?.roadmap || data?.roadmapResult || data?.roadmap_result || data
+}
 
 function DomainResults() {
   const { domainId } = useParams()
@@ -32,11 +46,18 @@ function DomainResults() {
       try {
         const careerId = selectedCareer?.career_id || selectedCareer?.careerId || selectedCareer?.id || domainId
         const backendResult = await getJourney2Result(careerId)
+        console.groupCollapsed('[Journey2] Result response')
+        console.debug('careerId:', careerId)
+        console.debug('raw result:', backendResult)
+        console.debug('unwrapped result:', unwrap(backendResult))
+        console.groupEnd()
         if (!backendResult || backendResult.status === false) throw new Error(backendResult?.message || 'The Journey 2 API returned no result.')
         const profile = getProfile(backendResult)
+        console.debug('[Journey2] Extracted profile:', profile)
         if (!profile || typeof profile !== 'object') throw new Error('The Journey 2 result response is invalid.')
         setResult(backendResult)
         const matches = getMatches(profile)
+        console.debug('[Journey2] Extracted matches:', matches)
         saveLatestAssessment(user, {
           type: 'domain',
           label: `${selectedCareer?.career_name || selectedCareer?.careerName || domainId} assessment`,
@@ -46,6 +67,7 @@ function DomainResults() {
           careerId,
         })
       } catch (resultError) {
+        console.error('[Journey2] Result loading failed:', resultError)
         setError(resultError?.response?.data?.message || resultError?.response?.data?.error || resultError.message || contextError || 'Unable to load your Journey 2 result.')
       }
     }
@@ -57,8 +79,8 @@ function DomainResults() {
 
   const profile = getProfile(result)
   const matches = getMatches(profile)
-  const traits = profile.scores || profile.skills || []
-  const insights = profile.insights || profile.recommendations || profile.strengths || []
+  const traits = getArray(profile.scores || profile.skills || profile.skill_scores || profile.skillScores)
+  const insights = getArray(profile.insights || profile.recommendations || profile.strengths || profile.recommendations_list)
   const careerName = selectedCareer?.career_name || selectedCareer?.careerName || selectedCareer?.name || domainId
   const careerId = selectedCareer?.career_id || selectedCareer?.careerId || selectedCareer?.id || domainId
 
@@ -66,22 +88,46 @@ function DomainResults() {
     setIsGenerating(true)
     setError('')
     try {
-      const created = await generateRoadmap({
+      const currentSkillProfile = profile.skills || profile.scores || []
+      const assessmentId = sessionStorage.getItem('journey2AssessmentId')
+      const matchScore = getScore(match)
+      const strengths = getArray(profile.strengths || profile.strong_areas || profile.strongAreas)
+      const areasToImprove = getArray(profile.weaknesses || profile.weak_areas || profile.weakAreas || profile.moderate_areas || profile.moderateAreas)
+      const roadmapPayload = {
+        journey: 2,
+        weekly_hours: 5,
+        journey_output: result,
+        assessmentId,
         career: careerId,
         careerId,
-        domain: getName(match),
+        careerName,
+        domain: getName(match) === 'Selected career' ? careerName : getName(match),
         domainId: careerId,
+        matchScore,
+        strengths,
+        areasToImprove,
         journey2Result: result,
-        result,
+      }
+      const created = await generateRoadmap({
+        ...roadmapPayload,
+        journey_output: { ...result, career: careerId, careerName, current_skill_profile: currentSkillProfile },
       })
-      const roadmap = unwrap(created)
-      const roadmapId = roadmap?.roadmapId || roadmap?.roadmap_id || roadmap?.id
+      console.groupCollapsed('[Journey2] Roadmap response')
+      console.debug('request payload:', roadmapPayload)
+      console.debug('raw response:', created)
+      console.debug('unwrapped response:', unwrap(created))
+      console.groupEnd()
+      const roadmap = getRoadmapPayload(created)
+      const roadmapId = roadmap?.roadmapId || roadmap?.roadmap_id || roadmap?.id || roadmap?.Id
+      console.debug('[Journey2] Extracted roadmap:', roadmap, 'roadmapId:', roadmapId)
       if (!roadmapId) throw new Error('The roadmap API did not return a valid roadmap ID.')
       const saved = { ...roadmap, id: roadmapId, domain: roadmap.domain || getName(match), domainId: careerId, source: 'journey2', status: roadmap.status || 'generated' }
       sessionStorage.setItem('journey2RoadmapId', String(roadmapId))
       saveRoadmap(user, saved)
       navigate(`/roadmap-detail/${roadmapId}`, { state: { ...saved, returnTo: { pathname: `/explore/domain-assessment/${careerId}/results` } } })
     } catch (roadmapError) {
+      console.error('[Journey2] Roadmap generation failed:', roadmapError)
+      console.debug('[Journey2] Roadmap error response:', roadmapError?.response?.data)
       setError(roadmapError?.response?.data?.message || roadmapError?.response?.data?.error || roadmapError.message || 'Unable to generate your roadmap.')
     } finally {
       setIsGenerating(false)
