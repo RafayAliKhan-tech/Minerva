@@ -17,6 +17,11 @@ namespace YourProject.Roadmap.Services
 
         public async Task<RoadmapGenerateResponse> GenerateAsync(RoadmapGenerateRequest request, CancellationToken ct = default)
         {
+            if (request.Journey == 1)
+            {
+                request.UseModel = false;
+            }
+
             var response = await _http.PostAsJsonAsync("/api/roadmap/generate", request, ct);
 
             if (!response.IsSuccessStatusCode)
