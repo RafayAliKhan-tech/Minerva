@@ -37,6 +37,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import socket
 import time
 import urllib.error
 import urllib.request
@@ -56,7 +57,7 @@ from .retrieval import load_resources, retrieve_profile
 # xAI's Groq API is OpenAI-compatible (chat completions).
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
-DEFAULT_TIMEOUT_SECONDS = 60
+DEFAULT_TIMEOUT_SECONDS = int(os.environ.get("GROQ_REQUEST_TIMEOUT_SECONDS", "15"))
 
 PRIORITY_ORDER = {
     "critical": 0,
@@ -442,6 +443,9 @@ def call_groq(
 
         except urllib.error.URLError as exc:
             raise PlannerError(f"Groq API request failed: {exc.reason}") from exc
+
+        except (TimeoutError, socket.timeout) as exc:
+            raise PlannerError(f"Groq API request timed out after {timeout} seconds.") from exc
 
     try:
         choice = body["choices"][0]
