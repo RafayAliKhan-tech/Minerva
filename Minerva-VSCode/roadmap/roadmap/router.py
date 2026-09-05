@@ -62,6 +62,7 @@ class RoadmapGenerateRequest(BaseModel):
     weekly_hours: Optional[float] = None
     goal: Optional[str] = None
     target_role: Optional[str] = None
+    career: Optional[str] = None
     preferred_days: Optional[int] = None
     use_model: bool = True            # False = deterministic, no Groq call
     user_id: Optional[str] = None     # so .NET can tag/track whose roadmap this is
@@ -84,6 +85,7 @@ def generate(req: RoadmapGenerateRequest) -> RoadmapGenerateResponse:
             weekly_hours=req.weekly_hours,
             goal=req.goal,
             target_role=req.target_role,
+            career=req.career,
             preferred_days=req.preferred_days,
             use_model=req.use_model,
         )

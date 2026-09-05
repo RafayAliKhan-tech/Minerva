@@ -12,11 +12,11 @@ const fallbackMilestones = [
   { phase: '03', title: 'Move toward opportunity', detail: 'Practice the conversations and applications that open your next door.', tasks: ['Polish portfolio', 'Practice interview stories', 'Apply to three aligned roles'] },
 ]
 
-const normalizeMilestones = (source) => {
-  if (!source) return fallbackMilestones
+const normalizeMilestones = (source, useFallback = true) => {
+  if (!source) return useFallback ? fallbackMilestones : []
 
   const phases = Array.isArray(source) ? source : source.phases || source.curriculum?.phases || source.milestones || source.roadmap?.phases || (source.result && !Array.isArray(source.result) ? source.result.phases : null) || []
-  if (phases.length === 0) return fallbackMilestones
+  if (phases.length === 0) return useFallback ? fallbackMilestones : []
 
   return phases.map((phase, index) => {
     const items = phase.tasks || phase.objectives || phase.topics || phase.lessons || phase.resources || []
@@ -30,15 +30,17 @@ const normalizeMilestones = (source) => {
 }
 
 const normalizeRoadmap = (raw, fallbackState = {}) => {
-  const rawResult = raw?.result
-  const roadmapData = (rawResult && typeof rawResult === 'object' && !Array.isArray(rawResult)) ? rawResult
-    : (Array.isArray(rawResult) && rawResult.length > 0 ? rawResult[0] : null)
+  const roadmapArray = Array.isArray(raw) ? raw : Array.isArray(raw?.result) ? raw.result : null
+  const isRoadmapArray = Array.isArray(roadmapArray)
+  const selectedCareer = fallbackState.domainId || fallbackState.domain || fallbackState.career
+  const roadmapData = (raw?.result && typeof raw.result === 'object' && !isRoadmapArray) ? raw.result
+    : (isRoadmapArray ? roadmapArray.find((item) => item?.career === selectedCareer) : null)
 
-  const data = roadmapData || raw?.data || raw?.roadmap || raw || {}
+  const data = roadmapData || (isRoadmapArray ? {} : raw?.data || raw?.roadmap || raw || {})
   const domain = data.domain || data.career || data.domainName || fallbackState.domain || 'Your roadmap'
   const domainId = data.domainId || data.domain_id || fallbackState.domainId || fallbackState.roadmapId || null
   const matchScore = Number(data.matchScore ?? data.score ?? fallbackState.score ?? 0)
-  const milestones = normalizeMilestones(data)
+  const milestones = normalizeMilestones(data, !isRoadmapArray)
   const timelineWeeks = data.timeline?.total_duration_weeks || milestones.length * 4
   const curriculum = data.curriculum || { phases: milestones, weeks: timelineWeeks }
 

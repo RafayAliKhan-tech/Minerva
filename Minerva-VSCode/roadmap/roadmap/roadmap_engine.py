@@ -333,6 +333,7 @@ def generate_roadmap(
     weekly_hours: Optional[float] = None,
     goal: Optional[str] = None,
     target_role: Optional[str] = None,
+    career: Optional[str] = None,
     preferred_days: Optional[int] = None,
     resources: Optional[Sequence[Dict[str, Any]]] = None,
     resources_path: Optional[str] = None,
@@ -360,9 +361,9 @@ def generate_roadmap(
 
     Returns
     -------
-    Journey 1: List[Dict]  — one validated roadmap per career found in
-               the input (always a list, even if only one career was
-               present, so callers never need to type-branch on count).
+     Journey 1 without career: List[Dict] — one validated roadmap per
+         career found in the input.
+     Journey 1 with career: Dict — one validated roadmap for that career.
     Journey 2 or 3: Dict    — one validated roadmap.
     """
 
@@ -386,7 +387,15 @@ def generate_roadmap(
     )
 
     if journey == 1:
-        profiles = _adapt_journey1_all_careers(journey_output)
+        profiles = adapt(journey=1, journey_output=journey_output, career=career)
+        if not isinstance(profiles, list) or not profiles:
+            raise RoadmapEngineError("Journey 1 adapter produced no career profiles from this input.")
+
+        if career is not None:
+            if len(profiles) != 1:
+                raise RoadmapEngineError(f"Journey 1 adapter returned an unexpected number of profiles for career={career!r}.")
+            prepared = _apply_runtime_settings(profiles[0], weekly_hours, goal, target_role)
+            return _run_pipeline_once(prepared, resources, **pipeline_kwargs)
 
         roadmaps: List[Dict[str, Any]] = []
         total_profiles = len(profiles)

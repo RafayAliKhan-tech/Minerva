@@ -3785,14 +3785,9 @@ def normalize_career_scores(
             or item.get("career")
         )
 
-        # The deterministic scoring engine stores the career ID in
-        # "career" and the display name in "career_name", so
-        # "career_name" must be read first. Reading "career" first
-        # leaked the raw id ("data") into every user-facing string
-        # instead of the display name ("Data & Analytics").
-
         career_name = normalize_text(
-            item.get("career_name")
+            item.get("career")
+            or item.get("career_name")
         )
 
         if not career_name:
@@ -3955,109 +3950,6 @@ def analyze_career_tie(
 # DIMENSION HELPERS
 # ============================================================
 
-def extract_dimensions_from_question_results(
-    career_id: str,
-    deterministic_result: Dict[str, Any]
-) -> List[str]:
-    """
-    Derive the dimensions that belong to one career from
-    question_results, which is where the deterministic engine
-    records the career -> dimension link.
-
-    Only dimensions the user actually answered correctly are
-    returned, so nothing unsupported is claimed as support.
-    Ordering follows the engine's own dimension percentages so the
-    strongest supporting signal is listed first.
-    """
-
-    question_results = deterministic_result.get(
-        "question_results",
-        []
-    )
-
-    if not isinstance(
-        question_results,
-        list
-    ):
-        return []
-
-    # Dimension percentages, used for ordering only.
-
-    strength: Dict[str, float] = {}
-
-    dimension_rows = deterministic_result.get(
-        "dimensions",
-        []
-    )
-
-    if isinstance(
-        dimension_rows,
-        list
-    ):
-
-        for row in dimension_rows:
-
-            if not isinstance(
-                row,
-                dict
-            ):
-                continue
-
-            name = normalize_text(
-                row.get("dimension")
-            )
-
-            if name:
-                strength[name] = safe_float(
-                    row.get("percentage"),
-                    0
-                )
-
-    matched: List[str] = []
-
-    for item in question_results:
-
-        if not isinstance(
-            item,
-            dict
-        ):
-            continue
-
-        item_career = normalize_text(
-            item.get("career")
-            or item.get("career_id")
-        )
-
-        if item_career != career_id:
-            continue
-
-        if not item.get("is_correct"):
-            continue
-
-        for key in (
-            "primary_dimension",
-            "secondary_dimension"
-        ):
-
-            name = normalize_text(
-                item.get(key)
-            )
-
-            if name and name not in matched:
-                matched.append(
-                    name
-                )
-
-    matched.sort(
-        key=lambda name: -strength.get(
-            name,
-            0
-        )
-    )
-
-    return matched
-
-
 def extract_dimensions_for_career(
     career_id: str,
     deterministic_result: Dict[str, Any]
@@ -4074,25 +3966,11 @@ def extract_dimensions_for_career(
         {}
     )
 
-    # --------------------------------------------------------
-    # The deterministic scoring engine emits "dimensions" as a
-    # FLAT LIST of aggregates carrying no career_id, so the
-    # dict-with-"primary" shape below never matched and this
-    # function always returned [] - which silently collapsed every
-    # career's supporting_dimensions onto the same global AI
-    # strengths. The career -> dimension link does exist in
-    # question_results, so derive it from there for the list shape
-    # and keep the dict shape for backward compatibility.
-    # --------------------------------------------------------
-
     if not isinstance(
         dimensions,
         dict
     ):
-        return extract_dimensions_from_question_results(
-            career_id,
-            deterministic_result
-        )
+        return []
 
     primary = dimensions.get(
         "primary",
@@ -4103,10 +3981,7 @@ def extract_dimensions_for_career(
         primary,
         list
     ):
-        return extract_dimensions_from_question_results(
-            career_id,
-            deterministic_result
-        )
+        return []
 
     output: List[str] = []
 
@@ -4296,19 +4171,19 @@ CAREER_FOCUS: Dict[str, str] = {
         "applications"
     ),
 
-    "data": (
+    "data_analytics": (
         "working with data, cleaning information, finding patterns, "
         "creating visualizations, analyzing evidence, and "
         "supporting decisions with data"
     ),
 
-    "ai": (
+    "ai_ml": (
         "building intelligent systems, working with machine "
         "learning, prediction, pattern recognition, model "
         "evaluation, and data-driven systems"
     ),
 
-    "cyber": (
+    "cybersecurity": (
         "understanding security risks, detecting threats, "
         "reasoning about incidents, identifying vulnerabilities, "
         "and protecting systems"
@@ -4354,19 +4229,19 @@ CAREER_PROJECTS: Dict[str, str] = {
         "to-do list, calculator, or simple CRUD app."
     ),
 
-    "data": (
+    "data_analytics": (
         "Take a small public dataset, clean it, create 2–3 "
         "meaningful visualizations, and write three findings "
         "from the data."
     ),
 
-    "ai": (
+    "ai_ml": (
         "Build a small beginner machine-learning project using "
         "a simple dataset and compare the performance of two "
         "basic models."
     ),
 
-    "cyber": (
+    "cybersecurity": (
         "Complete a beginner cybersecurity lab focused on "
         "identifying common security risks and documenting "
         "safe defensive steps."
@@ -4403,18 +4278,12 @@ def build_why_it_fits(
     percentage: Any,
     supporting_dimensions: List[str],
     complete_tie: bool,
-    partial_tie: bool,
-    is_primary: bool = True
+    partial_tie: bool
 ) -> str:
     """
     Generate explanation for why a career is recommended.
 
     Does not alter deterministic ranking.
-
-    is_primary:
-        True  - this career is the highest deterministic result.
-        False - this career is an alternative, so it must never be
-                described as the highest scorer.
     """
 
     score_text = format_percentage(
@@ -4472,21 +4341,6 @@ def build_why_it_fits(
             "strongest areas to explore further."
         )
 
-    if is_primary:
-
-        lead = (
-            f"{career_name} received the highest deterministic "
-            f"score of {score_text}."
-        )
-
-    else:
-
-        lead = (
-            f"{career_name} scored {score_text}, placing it below "
-            f"your highest-scoring area while still being worth "
-            f"exploring."
-        )
-
     if supporting_dimensions:
 
         dimensions_text = ", ".join(
@@ -4494,14 +4348,16 @@ def build_why_it_fits(
         )
 
         return (
-            f"{lead} The result is supported by "
+            f"{career_name} received the highest deterministic "
+            f"score of {score_text}. The result is supported by "
             f"signals such as {dimensions_text}. This area "
             f"involves {focus} and is a useful direction to "
             "explore further."
         )
 
     return (
-        f"{lead} This makes it a useful area to explore "
+        f"{career_name} received the highest deterministic score "
+        f"of {score_text}. This makes it a useful area to explore "
         "further through practical learning and small projects."
     )
 
@@ -4744,8 +4600,7 @@ def build_alternative_careers(
                 tie_info.get(
                     "is_tie",
                     False
-                ),
-                is_primary=False
+                )
             ),
 
             "supporting_dimensions": (

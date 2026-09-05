@@ -22,7 +22,17 @@ const getProfile = (payload) => {
 }
 const getMatches = (profile) => {
   const matches = profile?.potentialDomains || profile?.potential_domains || profile?.careerMatches || profile?.career_matches || profile?.matches || profile?.domains || profile?.recommendedCareers || profile?.recommended_careers || []
-  return Array.isArray(matches) ? matches : Object.entries(matches).map(([name, value]) => ({ name, ...(typeof value === 'object' ? value : { score: value }) }))
+  if (Array.isArray(matches) && matches.length > 0) return matches
+  if (matches && typeof matches === 'object' && !Array.isArray(matches) && Object.keys(matches).length > 0) {
+    return Object.entries(matches).map(([name, value]) => ({ name, ...(typeof value === 'object' ? value : { score: value }) }))
+  }
+
+  // Journey 2 scores one career chosen before the assessment; its backend
+  // contract has no separate matches collection. Represent that returned
+  // selected career for this page without inventing a recommendation.
+  return profile?.career
+    ? [{ career: profile.career, careerName: profile.career_name, match: profile.readiness_percent }]
+    : []
 }
 const getName = (match) => match?.domain || match?.career || match?.careerName || match?.career_name || match?.name || match?.label || match?.field || 'Selected career'
 const getScore = (match) => Number(match?.match ?? match?.score ?? match?.percentage ?? match?.fit ?? match?.match_score ?? match?.matchScore ?? 0)

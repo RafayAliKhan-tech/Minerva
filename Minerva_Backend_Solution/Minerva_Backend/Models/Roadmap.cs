@@ -19,6 +19,9 @@ namespace YourProject.Roadmap.Models
         [JsonPropertyName("target_role")]
         public string? TargetRole { get; set; }
 
+        [JsonPropertyName("career")]
+        public string? Career { get; set; }
+
         [JsonPropertyName("preferred_days")]
         public int? PreferredDays { get; set; }
 

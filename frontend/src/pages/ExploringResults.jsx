@@ -7,7 +7,7 @@ import { generateRoadmap, getJourney1Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
 import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
 
-const extractJourney1Data = (payload) => payload?.career_recommendation?.recommendation?.primary_career ? payload : null
+const extractJourney1Data = (payload) => payload?.career_recommendation ? payload : null
 
 const careerCards = [
   { id: 'development', name: 'Development' },
@@ -18,7 +18,9 @@ const careerCards = [
 ]
 
 const getCareerPercentage = (careerScores, careerId) => {
-  const score = careerScores?.[careerId]
+  const score = Array.isArray(careerScores)
+    ? careerScores.find((item) => item?.career_id === careerId)
+    : careerScores?.[careerId]
   return Number(typeof score === 'object' ? score?.percentage : score || 0)
 }
 
@@ -141,8 +143,8 @@ function ExploringResults() {
         saveLatestAssessment(user, {
           type: 'exploring',
           label: 'Exploration assessment',
-          domain: journey1Results.career_recommendation.recommendation.primary_career.career,
-          score: journey1Results.career_recommendation.recommendation.primary_career.percentage,
+          domain: 'exploring',
+          score: null,
           source: 'journey1',
           assessmentId,
         })
@@ -179,7 +181,7 @@ function ExploringResults() {
     )
   }
 
-  const careerScores = journey1Data.deterministic_career_scores || {}
+  const careerScores = journey1Data.career_recommendation?.deterministic_career_scores || []
 
   const handleGenerateRoadmap = async (careerMatch) => {
     const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
@@ -195,19 +197,21 @@ function ExploringResults() {
       weekly_hours: 5,
       journey_output: journey1Result,
       assessmentId: realAssessmentId,
-      domain: careerName,
-      domainId: careerMatch.id,
+      career: careerName,
+      target_role: careerName,
       matchScore,
-      strengths: journey1Data.strengths || [],
-      areasToImprove: journey1Data.weak_areas || [],
-      journey1Result,
     }
 
     try {
       setResultError('')
       const created = await generateRoadmap(payload)
       const raw = created?.result || created || {}
-      const responseData = Array.isArray(raw) && raw.length > 0 ? raw[0] : (typeof raw === 'object' ? raw : {})
+      const responseData = Array.isArray(raw)
+        ? raw.find((roadmap) => roadmap?.career === careerName) || {}
+        : (typeof raw === 'object' ? raw : {})
+      if (Array.isArray(raw) && !responseData.career) {
+        throw new Error(`The backend did not return a roadmap for ${careerName}.`)
+      }
       const roadmapId = responseData.roadmap_id || responseData.roadmapId || responseData.id || created?.roadmap_id || created?.roadmapId || 'default'
 
       if (!roadmapId) throw new Error('The backend did not return a valid roadmapId.')

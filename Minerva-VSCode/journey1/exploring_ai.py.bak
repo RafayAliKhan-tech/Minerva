@@ -2647,27 +2647,7 @@ def build_recommended_domains(
 
     else:
 
-        # --------------------------------------------------------
-        # IMPORTANT FIX:
-        # career_scores preserves the ORIGINAL input order (see
-        # normalize_career_scores), so career_scores[:2] is NOT the
-        # two highest-scoring careers - it is just the first two
-        # careers as listed in the assessment. That recommended a
-        # 0%-scoring career as "among your strongest". Sort a local
-        # copy by the deterministic percentage instead, leaving the
-        # documented input-order contract of career_scores intact.
-        # --------------------------------------------------------
-
-        selected = sorted(
-            career_scores,
-            key=lambda item: safe_float(
-                item.get(
-                    "percentage"
-                ),
-                0.0
-            ),
-            reverse=True
-        )[:2]
+        selected = career_scores[:2]
 
     output: List[Dict[str, Any]] = []
 
