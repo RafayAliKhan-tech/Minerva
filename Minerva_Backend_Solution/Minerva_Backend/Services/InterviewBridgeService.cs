@@ -16,7 +16,11 @@ namespace Minerva_Backend.Services
             };
 
             var response = await _httpClient.PostAsJsonAsync("/interview/start", payload);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Interview service returned {(int)response.StatusCode}: {errorBody}");
+            }
 
             return await response.Content.ReadFromJsonAsync<object?>();
         }
@@ -31,7 +35,11 @@ namespace Minerva_Backend.Services
             };
 
             var response = await _httpClient.PostAsJsonAsync("/interview/evaluate", payload);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Interview service returned {(int)response.StatusCode}: {errorBody}");
+            }
 
             return await response.Content.ReadFromJsonAsync<object?>();
         }
