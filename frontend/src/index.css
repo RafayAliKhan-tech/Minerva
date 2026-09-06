@@ -27,6 +27,20 @@
   --shadow-card-hover: 0 20px 48px rgba(26, 26, 26, 0.08);
   --shadow-float: 0 18px 44px rgba(26, 26, 26, 0.07);
 }
+.roadmap-heading-actions { display: grid; gap: 14px; justify-items: end; }
+.roadmap-heading-actions .dashboard-outline-action { display: inline-flex; align-items: center; gap: 8px; }
+.roadmap-info-card { margin-top: 18px; padding: 18px; border: 1px solid rgba(245, 240, 234, 0.1); background: rgba(0, 0, 0, 0.12); }
+.roadmap-info-card h2, .roadmap-section-heading h2 { margin: 0 0 12px; color: #f5f1ec; font-size: 1rem; }
+.roadmap-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.roadmap-chip { padding: 7px 10px; border: 1px solid rgba(215, 181, 143, 0.32); color: #d8d1ca; font-size: 0.78rem; }
+.roadmap-resource-line { margin-top: 16px !important; color: #d7b58f !important; font-size: 0.75rem !important; }
+.roadmap-week-grid { display: grid; gap: 10px; margin-top: 20px; }
+.roadmap-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 12px 0 2px; }
+.roadmap-section-heading span { color: #aaa49e; font-size: 0.78rem; }
+.roadmap-week-card { padding: 14px 16px; border: 1px solid rgba(245, 240, 234, 0.1); background: rgba(0, 0, 0, 0.12); }
+.roadmap-week-card strong { color: #d7b58f; font-size: 0.82rem; }
+.roadmap-week-card p { margin: 5px 0; color: #f5f1ec; font-size: 0.9rem; }
+.roadmap-week-card small { color: #aaa49e; font-size: 0.74rem; }
 
 @layer base {
   html {
