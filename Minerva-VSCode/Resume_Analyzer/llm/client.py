@@ -21,31 +21,14 @@ def get_llm_judgment(prompt: str) -> str:
 #     return f"[STUBBED LLM RESPONSE] Would respond to: '{user_message}'"
 
 import os
-import json
+from groq import Groq
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
-
-try:
-    from groq import Groq
-except Exception:  # pragma: no cover - dependency may be absent
-    Groq = None
-
-
-def _get_client():
-    api_key = os.environ.get("GROQ_API_KEY")
-    if Groq is None or not api_key:
-        return None
-    return Groq(api_key=api_key)
-
-
-client = _get_client()
-
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def get_llm_response(system_prompt: str, user_message: str, conversation_history: list = None) -> str:
-    if client is None:
-        raise RuntimeError("No Groq API key available. Set GROQ_API_KEY to enable AI-powered interview generation.")
-
     messages = [{"role": "system", "content": system_prompt}]
 
     if conversation_history:
@@ -54,8 +37,8 @@ def get_llm_response(system_prompt: str, user_message: str, conversation_history
     messages.append({"role": "user", "content": user_message})
 
     response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        messages=messages,
+    model="openai/gpt-oss-120b",
+    messages=messages,
     )
     return response.choices[0].message.content
 
