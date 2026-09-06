@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
-import { Sparkles, ArrowRight, Zap } from 'lucide-react'
+import { Sparkles, ArrowRight, Zap, Loader } from 'lucide-react'
 import { generateRoadmap, getJourney1Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
 import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
@@ -122,6 +122,8 @@ function ExploringResults() {
   const [journey1Data, setJourney1Data] = useState(null)
   const [journey1Result, setJourney1Result] = useState(null)
   const [resultError, setResultError] = useState('')
+  const [roadmapError, setRoadmapError] = useState('')
+  const [generatingCareer, setGeneratingCareer] = useState('')
 
   useEffect(() => {
     ;(async () => {
@@ -191,7 +193,7 @@ function ExploringResults() {
   const handleGenerateRoadmap = async (careerMatch) => {
     const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
     if (!realAssessmentId || !journey1Result) {
-      setResultError('Your backend Journey 1 result is not available. Please complete the assessment again.')
+      setRoadmapError('Your backend Journey 1 result is not available. Please complete the assessment again.')
       return
     }
 
@@ -203,10 +205,12 @@ function ExploringResults() {
       journey_output: journey1Result,
       career: careerName,
       target_role: careerName,
+      use_model: false,
     }
 
     try {
-      setResultError('')
+      setGeneratingCareer(careerName)
+      setRoadmapError('')
       const created = await generateRoadmap(payload)
       console.groupCollapsed('[Journey1] Roadmap response')
       console.debug('raw response:', created)
@@ -230,7 +234,7 @@ function ExploringResults() {
         id: roadmapId,
         domain: responseData.career || responseData.domain || careerName,
         domainId: responseData.domainId || payload.domainId || careerMatch.id,
-        matchScore: Number(responseData.matchScore ?? payload.matchScore),
+        matchScore: Number(responseData.matchScore ?? matchScore),
         strengths: responseData.strengths || payload.strengths || [],
         areasToImprove: responseData.areasToImprove || payload.areasToImprove || payload.weak_areas || [],
         curriculum: responseData.curriculum || { phases: responseData.phases || [], weeks: responseData.timeline?.total_duration_weeks || 12 },
@@ -247,7 +251,9 @@ function ExploringResults() {
       })
     } catch (error) {
       console.error('Roadmap generation failed for exploring result:', error, error?.response?.data)
-      setResultError(error?.response?.data?.message || error?.response?.data?.error || error?.response?.data?.detail || error?.response?.data?.title || error?.message || 'We could not generate your Journey 1 roadmap. Please try again.')
+      setRoadmapError(error?.response?.data?.message || error?.response?.data?.error || error?.response?.data?.detail || error?.response?.data?.title || error?.message || 'We could not generate your Journey 1 roadmap. Please try again.')
+    } finally {
+      setGeneratingCareer('')
     }
   }
 
@@ -296,6 +302,7 @@ function ExploringResults() {
             <h2 className="font-serif text-2xl font-semibold text-brown mb-6">
               Career matches
             </h2>
+            {roadmapError && <p className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
             <div className="space-y-4">
               {careerCards.map((career) => {
                 const percentage = getCareerPercentage(careerScores, career.id)
@@ -308,10 +315,12 @@ function ExploringResults() {
                     <button
                       type="button"
                       onClick={() => handleGenerateRoadmap({ ...career, percentage })}
-                      className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange to-orange-dark text-white rounded-lg font-semibold hover:shadow-md transition-all duration-200 group"
+                      disabled={Boolean(generatingCareer)}
+                      className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange to-orange-dark text-white rounded-lg font-semibold hover:shadow-md transition-all duration-200 group disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <Zap className="h-4 w-4" aria-hidden="true" />
-                      Generate Roadmap
+                      {generatingCareer === career.id
+                        ? <><Loader className="h-4 w-4 animate-spin" aria-hidden="true" /> Generating roadmap...</>
+                        : <><Zap className="h-4 w-4" aria-hidden="true" /> Generate Roadmap</>}
                     </button>
                   </div>
                 )
