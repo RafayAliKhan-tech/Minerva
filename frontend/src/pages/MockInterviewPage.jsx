@@ -12,7 +12,7 @@ import {
   questionIdentity,
   resolveQuestionUi,
 } from '../api/backendContract'
-import { normalizeSkillProfile } from '../utils/skillProfile'
+import { getStoredSkillProfile, normalizeSkillProfile } from '../utils/skillProfile'
 
 const ATTEMPT_KEY = 'minervaInterviewAttemptId'
 
@@ -58,7 +58,14 @@ function MockInterviewPage() {
       }
 
       setFields(nextFields)
-      setSkillProfile(normalizeSkillProfile(profile))
+      const profileSkillProfile = normalizeSkillProfile(profile)
+      const storedSkillProfile = getStoredSkillProfile()
+      const resolvedSkillProfile = storedSkillProfile || profileSkillProfile
+      console.debug('[MockInterview] Skill profile resolved:', {
+        source: storedSkillProfile ? 'stored-assessment' : (profileSkillProfile ? 'profile' : 'none'),
+        skillCount: resolvedSkillProfile?.length || 0,
+      })
+      setSkillProfile(resolvedSkillProfile)
     } catch (requestError) {
       setFields([])
       setError(apiErrorMessage(requestError, 'Unable to load interview fields from the backend.'))
