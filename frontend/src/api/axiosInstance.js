@@ -16,6 +16,10 @@ api.interceptors.request.use(
       if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
         delete config.headers['Content-Type']
         delete config.headers['content-type']
+        if (config.headers.common) {
+          delete config.headers.common['Content-Type']
+          delete config.headers.common['content-type']
+        }
       }
     } catch (e) {
       // ignore

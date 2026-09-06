@@ -13,6 +13,7 @@ namespace Minerva_Backend.Controllers
         private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         [HttpPost("StartRoute3")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> StartRoute3Async([FromForm(Name = "file")] IFormFile file)
         {
             var userId = GetUserId();
