@@ -32,15 +32,7 @@ namespace Minerva_Backend.Services
                 };
             }
 
-            object? result;
-            try
-            {
-                result = await _bridge.StartAsync(dto.TargetRole, dto.SkillProfile, dto.NumQuestions);
-            }
-            catch (HttpRequestException ex)
-            {
-                return new ResponseResult<object> { Data = null, Message = GetBridgeErrorMessage(ex), Status = false };
-            }
+            var result = await _bridge.StartAsync(dto.TargetRole, dto.SkillProfile, dto.NumQuestions);
 
             if (result == null)
             {
@@ -125,18 +117,8 @@ namespace Minerva_Backend.Services
             // Deserialize stored questions
             var questions = JsonSerializer.Deserialize<List<QuestionDto>>(attempt.QuestionsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
 
-            var normalizedAnswers = dto.Answers
-                .Where(a => !string.IsNullOrWhiteSpace(a.GetEffectiveId()))
-                .Select(a => new InterviewAnswerDto
-                {
-                    Id = a.GetEffectiveId().Trim(),
-                    Answer = a.GetEffectiveAnswer().Trim(),
-                    QuestionId = a.GetEffectiveId().Trim()
-                })
-                .ToList();
-
-            if (normalizedAnswers.Count != questions.Count ||
-                !normalizedAnswers.Select(a => a.Id).OrderBy(x => x)
+            if (dto.Answers.Count != questions.Count ||
+                !dto.Answers.Select(a => a.Id).OrderBy(x => x)
                     .SequenceEqual(questions.Select(q => q.Id).OrderBy(x => x)))
             {
                 return new ResponseResult<object>
@@ -147,15 +129,7 @@ namespace Minerva_Backend.Services
                 };
             }
 
-            object? result;
-            try
-            {
-                result = await _bridge.EvaluateAsync(questions, normalizedAnswers, attempt.TargetRole);
-            }
-            catch (HttpRequestException ex)
-            {
-                return new ResponseResult<object> { Data = null, Message = GetBridgeErrorMessage(ex), Status = false };
-            }
+            var result = await _bridge.EvaluateAsync(questions, dto.Answers, attempt.TargetRole);
 
             if (result == null)
             {
@@ -209,14 +183,6 @@ namespace Minerva_Backend.Services
                 Message = "Interview result fetched successfully.",
                 Status = true,
             };
-        }
-
-        private static string GetBridgeErrorMessage(HttpRequestException exception)
-        {
-            const string rateLimitMessage = "Groq daily limit reached. Please try again tomorrow.";
-            return exception.Message.Contains(rateLimitMessage, StringComparison.OrdinalIgnoreCase)
-                ? rateLimitMessage
-                : "Interview service is temporarily unavailable. Please try again later.";
         }
     }
 }

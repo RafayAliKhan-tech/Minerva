@@ -35,20 +35,7 @@ namespace Minerva_Backend.Services
             }
 
             await using var stream = file.OpenReadStream();
-            object? result;
-            try
-            {
-                result = await _bridge.StartAsync(stream, file.FileName, file.ContentType);
-            }
-            catch (HttpRequestException ex)
-            {
-                return new ResponseResult<object>
-                {
-                    Data = null,
-                    Message = GetBridgeErrorMessage(ex),
-                    Status = false
-                };
-            }
+            var result = await _bridge.StartAsync(stream, file.FileName, file.ContentType);
 
             if (result == null)
             {
@@ -150,14 +137,6 @@ namespace Minerva_Backend.Services
                 Message = "Route 3 result fetched successfully.",
                 Status = true,
             };
-        }
-
-        private static string GetBridgeErrorMessage(HttpRequestException exception)
-        {
-            const string rateLimitMessage = "Groq daily limit reached. Please try again tomorrow.";
-            return exception.Message.Contains(rateLimitMessage, StringComparison.OrdinalIgnoreCase)
-                ? rateLimitMessage
-                : "Route 3 service is temporarily unavailable. Please try again later.";
         }
     }
 }
