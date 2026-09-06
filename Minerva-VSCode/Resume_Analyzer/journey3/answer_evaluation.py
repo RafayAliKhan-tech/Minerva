@@ -2,23 +2,6 @@ from ..llm.client import get_structured_llm_response
 from ..llm.client import normalize_llm_text
 
 
-def _fallback_answer_evaluation(question, student_answer, skill_id):
-    text = (student_answer or '').strip().lower()
-    keywords = [
-        'algorithm', 'debug', 'optimi', 'design', 'data', 'state', 'test', 'tradeoff', 'problem', 'structure',
-        'scale', 'performance', 'security', 'model', 'architecture', 'system', 'evaluate', 'measure', 'explain',
-        'why', 'how', 'when', 'compare', 'decide'
-    ]
-    keyword_hits = sum(1 for keyword in keywords if keyword in text)
-    is_correct = len(text) > 30 and (keyword_hits >= 2 or 'because' in text or 'example' in text or 'in practice' in text)
-    reasoning = (
-        'The answer gives practical reasoning and demonstrates some understanding of the concept.'
-        if is_correct else
-        'The answer is too brief or lacks enough concrete reasoning to confidently show the concept is understood.'
-    )
-    return {"is_correct": bool(is_correct), "reasoning": reasoning}
-
-
 def evaluate_route3_answer(question, student_answer, skill_id):
     readable_skill = skill_id.replace('_', ' ')
     system_prompt = f"""You are a technical interviewer evaluating a student's answer to a question testing "{readable_skill}".
@@ -38,8 +21,6 @@ Grading criteria:
 Respond with ONLY valid JSON, no markdown, no extra text, in this exact shape:
 {{"is_correct": true or false, "reasoning": "1-2 sentences noting both correctness and what could improve"}}"""
 
-    try:
-        response = get_structured_llm_response(system_prompt, student_answer)
-        return response
-    except Exception:
-        return _fallback_answer_evaluation(question, student_answer, skill_id)
+    response = get_structured_llm_response(system_prompt, student_answer)
+    # text = normalize_llm_text(response)
+    return response
