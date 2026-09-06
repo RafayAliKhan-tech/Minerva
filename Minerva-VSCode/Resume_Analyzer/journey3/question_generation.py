@@ -2,12 +2,25 @@ from ..llm.client import get_llm_response
 from ..llm.client import normalize_llm_text
 import random
 
+
+def _fallback_question_text(skill_id):
+    name = skill_id.replace('_', ' ').title()
+    templates = [
+        f"Explain how you would apply {name} in a real project and describe the trade-offs you would consider.",
+        f"Describe a practical scenario where {name} is useful and explain the key decision points you would watch for.",
+        f"What is the core idea behind {name}, and how would you verify that your implementation is correct in practice?",
+        f"How would you explain {name} to a peer who is new to the concept, and what would you look for to ensure it is being used correctly?",
+    ]
+    return templates[hash(skill_id) % len(templates)]
+
+
 def select_target_skills(career, matrix, num_core=4, num_supporting=1):
     required = matrix[career]["required_skills"]
     core = [sid for sid, s in required.items() if s["category"] == "core"]
     supporting = [sid for sid, s in required.items() if s["category"] == "supporting"]
     # return core[:num_core] + supporting[:num_supporting]
     return random.sample(core, min(num_core, len(core))) + random.sample(supporting, min(num_supporting, len(supporting)))
+
 
 def generate_route3_questions(career, extracted_info, matrix):
     target_skill_ids = select_target_skills(career, matrix)
@@ -28,8 +41,11 @@ partially correct. Where possible, phrase it using a scenario relevant to the st
 background above.
 
 Respond with ONLY the question text, nothing else."""
-        question_text = get_llm_response(system_prompt, "Generate the question now.")
-        text = normalize_llm_text(question_text)
+        try:
+            question_text = get_llm_response(system_prompt, "Generate the question now.")
+            text = normalize_llm_text(question_text)
+        except Exception:
+            text = _fallback_question_text(skill_id)
         questions.append({"skill_id": skill_id, "question": text})
 
     return questions
