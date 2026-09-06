@@ -11,22 +11,28 @@ import {
   extractSessionId,
 } from '../api/backendContract'
 import { getStoredHighestScoredField } from '../utils/skillProfile'
+import { getUserEmail } from '../utils/userData'
 
 const SESSION_KEY = 'minervaChatSessionId'
 const starters = ['What should I learn next?', 'Which role fits my strengths?', 'Help me prepare for an interview']
 
-const readStoredSessionId = () => {
+const getSessionKey = (user) => {
+  const email = getUserEmail(user).trim().toLowerCase()
+  return email ? `${SESSION_KEY}:${email}` : SESSION_KEY
+}
+
+const readStoredSessionId = (user) => {
   try {
-    return sessionStorage.getItem(SESSION_KEY) || ''
+    return sessionStorage.getItem(getSessionKey(user)) || ''
   } catch {
     return ''
   }
 }
 
-const persistSessionId = (sessionId) => {
+const persistSessionId = (sessionId, user) => {
   if (!sessionId) return
   try {
-    sessionStorage.setItem(SESSION_KEY, String(sessionId))
+    sessionStorage.setItem(getSessionKey(user), String(sessionId))
   } catch {
     // Ignore unavailable session storage.
   }
@@ -36,7 +42,7 @@ function ChatPage() {
   const { user } = useAuth()
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([])
-  const [sessionId, setSessionId] = useState(() => readStoredSessionId())
+  const [sessionId, setSessionId] = useState(() => readStoredSessionId(user))
   const [highestScoredField, setHighestScoredField] = useState(null)
   const [profileReady, setProfileReady] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
@@ -51,7 +57,7 @@ function ChatPage() {
     const nextSessionId = extractSessionId(payload)
     if (nextSessionId) {
       setSessionId(String(nextSessionId))
-      persistSessionId(nextSessionId)
+      persistSessionId(nextSessionId, user)
       return String(nextSessionId)
     }
     return sessionId
@@ -103,12 +109,18 @@ function ChatPage() {
   }, [user])
 
   useEffect(() => {
-    const storedSessionId = readStoredSessionId()
+    const storedSessionId = readStoredSessionId(user)
+    setSessionId(storedSessionId)
+    setMessages([])
+    setHistoryError('')
+    setSendError('')
+    setPendingRetry('')
     if (storedSessionId) {
-      setSessionId(storedSessionId)
       loadHistory(storedSessionId)
+    } else {
+      setLoadingHistory(false)
     }
-  }, [])
+  }, [user])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
