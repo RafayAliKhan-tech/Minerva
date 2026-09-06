@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/backend-api/:path*",
-      "destination": "https://minerva-production-ccd5.up.railway.app/:path*"
+      "destination": "https://minerva-production-ccd5.up.railway.app:path*"
     }
   ]
 }
