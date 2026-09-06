@@ -213,6 +213,7 @@ function ExploringResults() {
       const created = await generateRoadmap(payload)
       console.groupCollapsed('[Journey1] Roadmap response')
       console.debug('raw response:', created)
+      console.debug('engine version:', created?.engine_version || created?.engineVersion || 'missing')
       console.debug('payload:', JSON.stringify(created, null, 2))
       console.groupEnd()
       const envelope = unwrapRoadmapResponse(created)

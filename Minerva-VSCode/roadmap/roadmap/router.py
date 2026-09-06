@@ -71,6 +71,7 @@ class RoadmapGenerateRequest(BaseModel):
 class RoadmapGenerateResponse(BaseModel):
     roadmap_id: str
     result: Union[Dict[str, Any], List[Dict[str, Any]]]
+    engine_version: str = "j1-all-careers-v1"
 
 
 @router.post("/generate", response_model=RoadmapGenerateResponse)
@@ -101,7 +102,11 @@ def generate(req: RoadmapGenerateRequest) -> RoadmapGenerateResponse:
     roadmap_id = str(uuid.uuid4())
     _save_roadmap(roadmap_id, result)
 
-    return RoadmapGenerateResponse(roadmap_id=roadmap_id, result=result)
+    return RoadmapGenerateResponse(
+        roadmap_id=roadmap_id,
+        result=result,
+        engine_version="j1-all-careers-v1",
+    )
 
 
 @router.get("/result/{roadmap_id}")
