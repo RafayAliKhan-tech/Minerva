@@ -2033,3 +2033,312 @@ a {
   .auth-input { height: 48px; }
   .auth-art img { max-height: min(50vh, 390px); }
 }
+
+/* Shared layout guardrails for compact screens. */
+body {
+  overflow-x: hidden;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-top-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-top-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .roadmap-layout,
+  .interview-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.52fr);
+  }
+
+  .auth-stage-inner {
+    gap: 36px;
+  }
+}
+
+@media (max-width: 800px) {
+  .container,
+  .landing-page-shell .container,
+  .landing-page-shell .hero-inner {
+    width: min(100% - 28px, 720px);
+  }
+
+  .dashboard-page,
+  .roadmap-page,
+  .chat-page,
+  .interview-page,
+  .interview-results-page {
+    padding-top: 96px;
+    padding-bottom: 72px;
+  }
+
+  .dashboard-heading,
+  .roadmap-heading,
+  .chat-heading,
+  .interview-heading,
+  .results-heading,
+  .dashboard-section-heading {
+    display: grid;
+    align-items: start;
+    gap: 18px;
+  }
+
+  .dashboard-heading h1,
+  .roadmap-heading h1,
+  .chat-heading h1,
+  .interview-heading h1,
+  .results-heading h1 {
+    font-size: clamp(2.35rem, 9vw, 4rem);
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-heading p:not(.dashboard-kicker),
+  .roadmap-heading p:not(.dashboard-kicker),
+  .chat-heading p:not(.dashboard-kicker),
+  .interview-heading p:not(.dashboard-kicker),
+  .results-heading p:not(.dashboard-kicker) {
+    font-size: 0.92rem;
+  }
+
+  .dashboard-top-grid,
+  .dashboard-action-grid,
+  .results-grid,
+  .roadmap-layout,
+  .interview-layout,
+  .interview-feedback-panel,
+  .chat-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-top-grid > :first-child {
+    grid-column: auto;
+  }
+
+  .dashboard-card,
+  .dashboard-action-card,
+  .roadmap-milestone,
+  .roadmap-aside,
+  .chat-window,
+  .interview-question-card,
+  .interview-coach-card,
+  .interview-feedback-panel {
+    padding: 20px;
+  }
+
+  .dashboard-card,
+  .dashboard-journey-card {
+    min-height: 0;
+  }
+
+  .dashboard-section-heading {
+    margin-top: 56px;
+  }
+
+  .roadmap-layout,
+  .chat-shell {
+    margin-top: 32px;
+  }
+
+  .roadmap-milestone {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .roadmap-bottom-actions,
+  .results-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .roadmap-bottom-actions > *,
+  .results-actions > * {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .chat-shell {
+    min-height: 0;
+  }
+
+  .chat-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid rgba(245, 240, 234, 0.1);
+  }
+
+  .chat-context {
+    margin: 26px 0 18px;
+  }
+
+  .chat-window {
+    min-height: 560px;
+  }
+
+  .chat-message {
+    max-width: 92%;
+  }
+
+  .chat-starters button {
+    flex: 1 1 220px;
+    min-height: 42px;
+  }
+
+  .interview-question-card h2 {
+    margin-top: 42px;
+  }
+
+  .interview-feedback-panel {
+    gap: 24px;
+  }
+
+  .results-score {
+    min-width: 0;
+    width: 100%;
+    border-top: 1px solid #d7b58f;
+    border-left: 0;
+  }
+
+  .auth-page-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .auth-page-main,
+  .auth-page-main .auth-stage {
+    min-height: 100dvh;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 520px) {
+  .container,
+  .landing-page-shell .container,
+  .landing-page-shell .hero-inner {
+    width: calc(100% - 24px);
+  }
+
+  .site-navbar nav {
+    height: 64px;
+  }
+
+  .dashboard-page,
+  .roadmap-page,
+  .chat-page,
+  .interview-page,
+  .interview-results-page {
+    padding-top: 84px;
+    padding-bottom: 56px;
+  }
+
+  .dashboard-heading h1,
+  .roadmap-heading h1,
+  .chat-heading h1,
+  .interview-heading h1,
+  .results-heading h1 {
+    font-size: clamp(2rem, 12vw, 3.1rem);
+  }
+
+  .dashboard-primary-action,
+  .dashboard-outline-action {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .dashboard-card,
+  .dashboard-action-card,
+  .roadmap-milestone,
+  .roadmap-aside,
+  .chat-sidebar,
+  .chat-window,
+  .interview-question-card,
+  .interview-coach-card,
+  .interview-feedback-panel,
+  .result-metric {
+    padding: 16px;
+  }
+
+  .dashboard-card h2 {
+    margin-top: 26px;
+    font-size: 1.25rem;
+  }
+
+  .dashboard-action-card > svg:last-child {
+    top: 16px;
+    right: 16px;
+  }
+
+  .roadmap-milestone {
+    display: block;
+  }
+
+  .roadmap-phase {
+    margin-bottom: 18px;
+  }
+
+  .chat-window {
+    min-height: 500px;
+  }
+
+  .chat-message {
+    max-width: 100%;
+    padding: 13px 14px;
+  }
+
+  .chat-composer {
+    min-height: 52px;
+  }
+
+  .chat-composer button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .api-error-banner {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .api-error-banner button {
+    align-self: flex-start;
+  }
+
+  .interview-question-card h2 {
+    margin-top: 32px;
+    font-size: 1.75rem;
+  }
+
+  .interview-question-meta {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .interview-role-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .interview-result-item-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .auth-stage {
+    padding-top: 76px;
+  }
+
+  .auth-title {
+    font-size: clamp(2rem, 11vw, 2.75rem);
+  }
+
+  .auth-options {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
