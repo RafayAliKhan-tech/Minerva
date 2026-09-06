@@ -1,28 +1,50 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Clock } from 'lucide-react'
 
-function Timer({ duration, onTimeUp, isActive = true }) {
+function readDeadline(storageKey, duration) {
+  if (!storageKey || typeof window === 'undefined') return Date.now() + duration * 1000
+
+  try {
+    const stored = Number(sessionStorage.getItem(storageKey))
+    if (Number.isFinite(stored) && stored > 0) return stored
+    const deadline = Date.now() + duration * 1000
+    sessionStorage.setItem(storageKey, String(deadline))
+    return deadline
+  } catch {
+    return Date.now() + duration * 1000
+  }
+}
+
+function Timer({ duration, onTimeUp, isActive = true, storageKey }) {
   const safeDuration = Number.isFinite(Number(duration)) ? Number(duration) : 60
-  const [timeLeft, setTimeLeft] = useState(safeDuration)
+  const [deadline, setDeadline] = useState(() => readDeadline(storageKey, safeDuration))
+  const [timeLeft, setTimeLeft] = useState(() => Math.max(0, Math.ceil((deadline - Date.now()) / 1000)))
+  const hasFinished = useRef(false)
 
   useEffect(() => {
-    setTimeLeft(safeDuration)
-  }, [safeDuration])
+    const nextDeadline = readDeadline(storageKey, safeDuration)
+    setDeadline(nextDeadline)
+    setTimeLeft(Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000)))
+    hasFinished.current = false
+  }, [storageKey, safeDuration])
 
   useEffect(() => {
     if (!isActive) return
 
     if (timeLeft <= 0) {
-      onTimeUp?.()
+      if (!hasFinished.current) {
+        hasFinished.current = true
+        onTimeUp?.()
+      }
       return
     }
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1)
+      setTimeLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)))
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [timeLeft, isActive, onTimeUp])
+  }, [deadline, timeLeft, isActive, onTimeUp])
 
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60

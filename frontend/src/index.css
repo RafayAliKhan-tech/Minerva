@@ -29,10 +29,12 @@
 }
 .roadmap-heading-actions { display: grid; gap: 14px; justify-items: end; }
 .roadmap-heading-actions .dashboard-outline-action { display: inline-flex; align-items: center; gap: 8px; }
-.roadmap-info-card { margin-top: 18px; padding: 18px; border: 1px solid rgba(245, 240, 234, 0.1); background: rgba(0, 0, 0, 0.12); }
+.roadmap-info-card { margin-top: 18px; padding: 18px; border: 1px solid rgba(245, 240, 234, 0.1); background: rgba(0, 0, 0, 0.12); border-radius: 14px; }
 .roadmap-info-card h2, .roadmap-section-heading h2 { margin: 0 0 12px; color: #f5f1ec; font-size: 1rem; }
 .roadmap-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .roadmap-chip { padding: 7px 10px; border: 1px solid rgba(215, 181, 143, 0.32); color: #d8d1ca; font-size: 0.78rem; }
+.roadmap-chip a { display: inline-flex; align-items: center; gap: 5px; color: inherit; text-decoration: none; }
+.roadmap-chip a:hover { color: #fff; text-decoration: underline; }
 .roadmap-resource-line { margin-top: 16px !important; color: #d7b58f !important; font-size: 0.75rem !important; }
 .roadmap-week-grid { display: grid; gap: 10px; margin-top: 20px; }
 .roadmap-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 12px 0 2px; }
@@ -1837,10 +1839,11 @@ a {
 .roadmap-progress-card span { color: #99928b; font-size: 0.68rem; }
 .roadmap-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr); gap: 20px; margin-top: 58px; }
 .roadmap-timeline { display: grid; gap: 14px; }
-.roadmap-milestone { display: grid; grid-template-columns: 70px 1fr; gap: 20px; padding: 22px; }
+.roadmap-milestone { display: grid; grid-template-columns: 70px 1fr; gap: 20px; padding: 22px; border-radius: 16px; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12); }
 .roadmap-phase { color: #d7b58f; font-size: 1.35rem; font-weight: 700; }
 .roadmap-phase span { display: block; margin-top: 7px; color: #847c74; font-size: 0.57rem; letter-spacing: 0.15em; }
 .roadmap-milestone h2 { margin: 0; color: #f5f1ec; font-size: 1.2rem; }
+.roadmap-milestone-body { min-width: 0; }
 .roadmap-milestone p { margin: 7px 0 16px; color: #aaa49e; font-size: 0.84rem; }
 .roadmap-task-list { display: grid; gap: 7px; }
 .roadmap-task { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid rgba(245, 240, 234, 0.1); background: rgba(0, 0, 0, 0.12); color: #d8d1ca; text-align: left; cursor: pointer; }

@@ -52,7 +52,7 @@ namespace Minerva_Backend.Services
 
             if (result == null)
             {
-                return new ResponseResult<object> { Data = null, Message = "Chat service is unavailable.", Status = false };
+                return new ResponseResult<object> { Data = null, Message = "Please try again later.", Status = false };
             }
 
             // Extract updated_history from Python's response and persist it

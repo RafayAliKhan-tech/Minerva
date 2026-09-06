@@ -25,6 +25,8 @@ const normalizeMilestones = (source, useFallback = true) => {
       title: phase.title || phase.name || ('Phase ' + (index + 1)),
       detail: phase.detail || phase.description || ('Phase ' + (index + 1) + ' learning objectives'),
       tasks: Array.isArray(items) ? items.map((item) => typeof item === 'string' ? item : item.title || item.name || item.label || 'Milestone task') : [],
+      resources: Array.isArray(phase.resources) ? phase.resources : [],
+      estimatedHours: phase.estimated_hours || phase.estimatedHours || phase.hours || null,
     }
   })
 }
@@ -41,6 +43,7 @@ const normalizeRoadmap = (raw, fallbackState = {}) => {
   const domainId = data.domainId || data.domain_id || fallbackState.domainId || fallbackState.roadmapId || null
   const matchScore = Number(data.matchScore ?? data.score ?? fallbackState.score ?? 0)
   const milestones = normalizeMilestones(data, !isRoadmapArray)
+  const resources = milestones.flatMap((milestone) => milestone.resources || [])
   const timelineWeeks = data.timeline?.total_duration_weeks || milestones.length * 4
   const curriculum = data.curriculum || { phases: milestones, weeks: timelineWeeks }
   const phases = Array.isArray(data.phases) ? data.phases : (Array.isArray(curriculum.phases) ? curriculum.phases : [])
@@ -53,6 +56,7 @@ const normalizeRoadmap = (raw, fallbackState = {}) => {
     matchScore,
     curriculum,
     milestones,
+    resources,
     phases,
     learningObjectives: Array.isArray(data.learning_objectives) ? data.learning_objectives : (Array.isArray(data.learningObjectives) ? data.learningObjectives : []),
     certifications: Array.isArray(data.certifications) ? data.certifications : [],
@@ -69,6 +73,12 @@ const normalizeRoadmap = (raw, fallbackState = {}) => {
 const displayItem = (item) => {
   if (typeof item === 'string' || typeof item === 'number') return String(item)
   return item?.title || item?.name || item?.skill || item?.label || item?.description || item?.id || JSON.stringify(item)
+}
+
+const resourceLink = (resource) => {
+  const url = resource?.url || resource?.link || resource?.href
+  const label = displayItem(resource)
+  return url ? <a href={url} target="_blank" rel="noreferrer">{label}<ArrowUpRight size={13} /></a> : <span>{label}</span>
 }
 
 function RoadmapPage() {
@@ -160,7 +170,7 @@ function RoadmapPage() {
 
   const timelineWeeks = Array.isArray(roadmap.timeline?.weeks) ? roadmap.timeline.weeks : []
   const backendPhases = roadmap.phases.length > 0 ? roadmap.phases : roadmap.milestones
-  const sectionCard = (title, items) => items.length > 0 && <section className="roadmap-info-card"><h2>{title}</h2><div className="roadmap-chip-list">{items.map((item, index) => <span className="roadmap-chip" key={`${title}-${index}`}>{displayItem(item)}</span>)}</div></section>
+  const sectionCard = (title, items) => items.length > 0 && <><section className="roadmap-info-card"><h2>{title}</h2><div className="roadmap-chip-list">{items.map((item, index) => <span className="roadmap-chip" key={`${title}-${index}`}>{title === 'Resources' ? resourceLink(item) : displayItem(item)}</span>)}</div></section>{title === 'Learning objectives' && roadmap.resources?.length > 0 && <section className="roadmap-info-card"><h2>Resources</h2><div className="roadmap-chip-list">{roadmap.resources.map((item, index) => <span className="roadmap-chip" key={`resource-${index}`}>{resourceLink(item)}</span>)}</div></section>}</>
 
   return <main className="roadmap-page"><Container>
     <Link to={returnTarget} className="back-link"><ArrowLeft size={15} /> {backLabel}</Link>

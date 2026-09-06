@@ -16,6 +16,12 @@ import { getUserEmail } from '../utils/userData'
 const SESSION_KEY = 'minervaChatSessionId'
 const starters = ['What should I learn next?', 'Which role fits my strengths?', 'Help me prepare for an interview']
 
+const chatErrorMessage = (error, fallback) => {
+  const status = error?.response?.status
+  if (status === 404 || status === 429 || status >= 500) return 'Please try again later.'
+  return apiErrorMessage(error, fallback)
+}
+
 const getSessionKey = (user) => {
   const email = getUserEmail(user).trim().toLowerCase()
   return email ? `${SESSION_KEY}:${email}` : SESSION_KEY
@@ -79,7 +85,7 @@ function ChatPage() {
       setMessages(extractHistoryMessages(response))
     } catch (error) {
       setMessages([])
-      setHistoryError(apiErrorMessage(error, 'Unable to load chat history from the backend.'))
+      setHistoryError(chatErrorMessage(error, 'Unable to load chat history from the backend.'))
     } finally {
       setLoadingHistory(false)
     }
@@ -96,7 +102,7 @@ function ChatPage() {
       } catch (error) {
         if (!mounted) return
         setHighestScoredField(null)
-        setProfileError(apiErrorMessage(error, 'Unable to load the backend profile required for chatbot context.'))
+        setProfileError(chatErrorMessage(error, 'Unable to load the backend profile required for chatbot context.'))
       } finally {
         if (mounted) setProfileReady(true)
       }
@@ -158,7 +164,7 @@ function ChatPage() {
             return
           }
         } catch (historyLoadError) {
-          setHistoryError(apiErrorMessage(historyLoadError, 'Message sent, but chat history could not be reloaded.'))
+          setHistoryError(chatErrorMessage(historyLoadError, 'Message sent, but chat history could not be reloaded.'))
         }
       }
 
@@ -169,7 +175,7 @@ function ChatPage() {
       setMessages((current) => [...current, { id: `assistant-${current.length}`, from: 'assistant', text: String(answer) }])
     } catch (error) {
       setPendingRetry(message)
-      setSendError(apiErrorMessage(error, 'The chat API failed. No generated answer is available.'))
+      setSendError(chatErrorMessage(error, 'The chat API failed. No generated answer is available.'))
     } finally {
       setSending(false)
     }
