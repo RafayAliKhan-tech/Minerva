@@ -12,10 +12,12 @@ namespace YourProject.Controllers
     public class RoadmapController : ControllerBase
     {
         private readonly IRoadmapService _roadmapService;
+        private readonly ILogger<RoadmapController> _logger;
 
-        public RoadmapController(IRoadmapService roadmapService)
+        public RoadmapController(IRoadmapService roadmapService, ILogger<RoadmapController> logger)
         {
             _roadmapService = roadmapService;
+            _logger = logger;
         }
 
         // POST /api/roadmap/generate
@@ -30,7 +32,13 @@ namespace YourProject.Controllers
             catch (HttpRequestException ex)
             {
                 // Python engine itself errored (bad journey_output shape, etc.)
+                _logger.LogError(ex, "Journey {Journey} roadmap engine request failed", request.Journey);
                 return StatusCode(502, new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Journey {Journey} roadmap generation failed unexpectedly", request.Journey);
+                return StatusCode(500, new { error = "Roadmap generation failed.", detail = ex.Message });
             }
         }
 

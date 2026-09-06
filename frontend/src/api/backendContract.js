@@ -11,6 +11,8 @@ export const apiErrorMessage = (error, fallback) => (
   || error?.response?.data?.Message
   || error?.response?.data?.error
   || error?.response?.data?.Error
+  || error?.response?.data?.detail
+  || error?.response?.data?.title
   || (typeof error?.response?.data === 'string' ? error.response.data : null)
   || error?.message
   || fallback

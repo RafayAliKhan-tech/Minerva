@@ -247,7 +247,7 @@ function ExploringResults() {
       })
     } catch (error) {
       console.error('Roadmap generation failed for exploring result:', error, error?.response?.data)
-      setResultError(error?.response?.data?.message || error?.response?.data?.error || error?.message || 'We could not generate your Journey 1 roadmap. Please try again.')
+      setResultError(error?.response?.data?.message || error?.response?.data?.error || error?.response?.data?.detail || error?.response?.data?.title || error?.message || 'We could not generate your Journey 1 roadmap. Please try again.')
     }
   }
 
