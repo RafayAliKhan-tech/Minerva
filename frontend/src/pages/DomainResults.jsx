@@ -41,6 +41,13 @@ const getRoadmapPayload = (payload) => {
   const data = unwrap(payload)
   return data?.result || data
 }
+const getRoadmapId = (payload) => {
+  if (!payload || typeof payload !== 'object') return null
+  const directId = payload.roadmapId || payload.roadmap_id || payload.id || payload.Id
+  if (directId) return directId
+  if (payload.roadmap && typeof payload.roadmap === 'object') return getRoadmapId(payload.roadmap)
+  return null
+}
 
 function DomainResults() {
   const { domainId } = useParams()
@@ -107,8 +114,11 @@ function DomainResults() {
       console.debug('unwrapped response:', unwrap(created))
       console.groupEnd()
       const roadmap = getRoadmapPayload(created)
-      const roadmapId = roadmap?.roadmapId || roadmap?.roadmap_id || roadmap?.id || roadmap?.Id
-      if (!roadmapId) throw new Error('The roadmap API did not return a valid roadmap ID.')
+      console.log('[Journey2] Roadmap API payload:', JSON.stringify(created, null, 2))
+      const roadmapId = getRoadmapId(roadmap)
+      if (!roadmapId) {
+        throw new Error(`The roadmap API did not return a valid roadmap ID. Response: ${JSON.stringify(created)}`)
+      }
       const saved = { ...roadmap, id: roadmapId, domain: roadmap.domain || getName(match), domainId: careerId, source: 'journey2', status: roadmap.status || 'generated' }
       sessionStorage.setItem('journey2RoadmapId', String(roadmapId))
       saveRoadmap(user, saved)
