@@ -57,9 +57,7 @@ export const getJourney2Result = (careerId) =>
   })
 
 // Route 3 (Resume/Job Hunting) endpoints
-export const startRoute3 = (formData) => api.post('/api/route3/startroute3', formData, {
-  headers: { 'Content-Type': undefined }
-}).then((response) => {
+export const startRoute3 = (formData) => api.post('/api/route3/startroute3', formData).then((response) => {
   console.log('Route3 start response:', response.data)
   return unwrap(response)
 })
