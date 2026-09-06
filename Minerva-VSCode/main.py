@@ -326,7 +326,8 @@ async def resume_evaluate(file: UploadFile = File(...)):
 async def route3_start(file: UploadFile = File(...)):
 
     allowed_extensions = {".pdf", ".docx"}
-    file_ext = Path(file.filename).suffix.lower()
+    file_name = file.filename or ""
+    file_ext = Path(file_name).suffix.lower()
 
     if file_ext not in allowed_extensions:
         raise HTTPException(
@@ -335,11 +336,16 @@ async def route3_start(file: UploadFile = File(...)):
         )
 
     try:
+        file_size = 0
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir) / file.filename
+            tmp_path = Path(tmp_dir) / Path(file_name).name
 
             with tmp_path.open("wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+                while chunk := await file.read(1024 * 1024):
+                    file_size += len(chunk)
+                    if file_size > 5 * 1024 * 1024:
+                        raise HTTPException(status_code=400, detail="File size must be under 5 MB.")
+                    buffer.write(chunk)
 
             result = run_route3_assessment(str(tmp_path))
 
