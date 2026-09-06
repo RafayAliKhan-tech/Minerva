@@ -5,6 +5,12 @@ import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
 import { getRoadmapKey, saveRoadmap } from '../utils/userData'
 import { getRoadmapResult } from '../api/minervaApi'
+import resourceData from '../../../Minerva-VSCode/roadmap/roadmap/resources.json'
+
+const bundledResourceCatalog = (resourceData.resources || []).reduce((catalog, resource) => {
+  catalog[resource.resource_id] = resource
+  return catalog
+}, {})
 
 const fallbackMilestones = [
   { phase: '01', title: 'Sharpen your foundation', detail: 'Strengthen the fundamentals that make your target role easier to reach.', tasks: ['JavaScript essentials', 'Accessible interface patterns', 'Git workflow'] },
@@ -43,7 +49,7 @@ const normalizeRoadmap = (raw, fallbackState = {}) => {
   const domain = data.domain || data.career || data.domainName || fallbackState.domain || 'Your roadmap'
   const domainId = data.domainId || data.domain_id || fallbackState.domainId || fallbackState.roadmapId || null
   const matchScore = Number(data.matchScore ?? data.score ?? fallbackState.score ?? 0)
-  const resourceCatalog = data.resource_catalog || data.resourceCatalog || {}
+  const resourceCatalog = { ...bundledResourceCatalog, ...(data.resource_catalog || data.resourceCatalog || {}) }
   const milestones = normalizeMilestones(data, resourceCatalog, !isRoadmapArray)
   const resolveResourceList = (items) => (Array.isArray(items) ? items : []).map((item) => resourceCatalog[item] || item)
   const resources = [
@@ -183,7 +189,7 @@ function RoadmapPage() {
       resourceDetails: (week.resources || []).map((resource) => roadmap.resourceCatalog[resource] || resource),
     }))
     : []
-  const backendPhases = roadmap.phases.length > 0 ? roadmap.phases : roadmap.milestones
+  const backendPhases = roadmap.milestones
   const sectionCard = (title, items) => items.length > 0 && <><section className="roadmap-info-card"><h2>{title}</h2><div className="roadmap-chip-list">{items.map((item, index) => <span className="roadmap-chip" key={`${title}-${index}`}>{title === 'Resources' ? resourceLink(item) : displayItem(item)}</span>)}</div></section>{title === 'Learning objectives' && roadmap.resources?.length > 0 && <section className="roadmap-info-card"><h2>Resources</h2><div className="roadmap-resource-cards">{roadmap.resources.map((item, index) => <article className="roadmap-resource-card" key={`resource-${index}`}><div><strong>{displayItem(item)}</strong><small>{item.resource_type || item.type || 'Resource'}{item.provider ? ` · ${item.provider}` : ''}{item.estimated_hours ? ` · ${item.estimated_hours} hours` : ''}</small></div>{resourceLink(item)}</article>)}</div></section>}</>
 
   return <main className="roadmap-page"><Container>
