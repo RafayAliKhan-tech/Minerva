@@ -13,14 +13,21 @@ namespace Minerva_Backend.Controllers
         private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         [HttpPost("StartRoute3")]
-        public async Task<IActionResult> StartRoute3Async(IFormFile file)
+        public async Task<IActionResult> StartRoute3Async([FromForm(Name = "file")] IFormFile file)
         {
             var userId = GetUserId();
             if (userId == null) return Unauthorized();
 
-            var result = await _route3Service.StartAssessment(userId, file);
-            if (!result.Status) return BadRequest(result);
-            return Ok(result);
+            try
+            {
+                var result = await _route3Service.StartAssessment(userId, file);
+                if (!result.Status) return BadRequest(result);
+                return Ok(result);
+            }
+            catch (HttpRequestException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpPost("SubmitRoute3")]

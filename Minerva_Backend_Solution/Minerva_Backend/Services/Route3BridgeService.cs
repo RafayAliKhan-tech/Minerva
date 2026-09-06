@@ -9,11 +9,16 @@ namespace Minerva_Backend.Services
         {
             using var content = new MultipartFormDataContent();
             using var streamContent = new StreamContent(fileStream);
-            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
+                string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
             content.Add(streamContent, "file", fileName);
 
             var response = await _httpClient.PostAsync("/route3/start", content);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Route 3 service returned {(int)response.StatusCode}: {errorBody}");
+            }
             return await response.Content.ReadFromJsonAsync<object>();
         }
 
