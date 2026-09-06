@@ -318,32 +318,15 @@ def adapt_journey1(
         )
 
     # ------------------------------------------------------------
-    # Find careers directly from J1 output
-    # ------------------------------------------------------------
-
-    available_careers: List[str] = []
-
-    for skill in source_skills:
-
-        if not isinstance(skill, dict):
-            continue
-
-        skill_career = skill.get("career")
-
-        if (
-            skill_career
-            and skill_career not in available_careers
-        ):
-            available_careers.append(skill_career)
-
-    # ------------------------------------------------------------
-    # Career filtering
+    # Generate every supported career. Missing evidence remains empty.
     # ------------------------------------------------------------
 
     if career is not None:
         selected_careers = [career]
     else:
-        selected_careers = available_careers
+        # Journey 1 roadmaps are available for every supported career,
+        # including careers with no assessed skill evidence.
+        selected_careers = sorted(SUPPORTED_CAREERS)
 
     # ------------------------------------------------------------
     # Existing J1 AI insight structure
