@@ -80,13 +80,17 @@ def generate(req: RoadmapGenerateRequest) -> RoadmapGenerateResponse:
         raise HTTPException(status_code=400, detail="journey must be 1, 2, or 3")
 
     try:
+        requested_career = req.career
+        if req.journey == 1 and not requested_career and req.target_role:
+            requested_career = req.target_role
+
         result = generate_roadmap(
             journey=req.journey,
             journey_output=req.journey_output,
             weekly_hours=req.weekly_hours,
             goal=req.goal,
             target_role=req.target_role,
-            career=req.career,
+            career=requested_career,
             preferred_days=req.preferred_days,
             use_model=req.use_model,
         )
