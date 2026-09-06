@@ -115,7 +115,7 @@ function DomainResults() {
       console.groupEnd()
       const roadmap = getRoadmapPayload(created)
       console.log('[Journey2] Roadmap API payload:', JSON.stringify(created, null, 2))
-      const roadmapId = getRoadmapId(roadmap)
+      const roadmapId = getRoadmapId(created) || getRoadmapId(roadmap)
       if (!roadmapId) {
         throw new Error(`The roadmap API did not return a valid roadmap ID. Response: ${JSON.stringify(created)}`)
       }
