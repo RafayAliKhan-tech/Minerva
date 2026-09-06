@@ -195,6 +195,20 @@ def _apply_runtime_settings(
 # VALIDATOR, for exactly ONE profile
 # ============================================================================
 
+def _attach_resource_catalog(
+    roadmap: Dict[str, Any],
+    resources: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Expose the fixed resource metadata needed by roadmap clients."""
+
+    result = deepcopy(roadmap)
+    result["resource_catalog"] = {
+        resource["resource_id"]: deepcopy(resource)
+        for resource in resources
+        if isinstance(resource, dict) and resource.get("resource_id")
+    }
+    return result
+
 def _run_pipeline_once(
     profile: Dict[str, Any],
     resources: Sequence[Dict[str, Any]],
@@ -284,7 +298,7 @@ def _run_pipeline_once(
             )
             roadmap["meta"]["unassessed_skills"] = unassessed
 
-        return roadmap
+        return _attach_resource_catalog(roadmap, resources)
 
     # ---- deterministic recovery ------------------------------------------
     # Do not patch an invalid model output — regenerate the plan and
@@ -313,7 +327,7 @@ def _run_pipeline_once(
             )
             fallback_roadmap["meta"]["unassessed_skills"] = unassessed
 
-        return fallback_roadmap
+        return _attach_resource_catalog(fallback_roadmap, resources)
 
     raise RoadmapEngineValidationError(
         career_context=profile_with_rules.get("career"),

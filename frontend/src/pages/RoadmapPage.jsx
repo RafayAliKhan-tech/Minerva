@@ -12,20 +12,21 @@ const fallbackMilestones = [
   { phase: '03', title: 'Move toward opportunity', detail: 'Practice the conversations and applications that open your next door.', tasks: ['Polish portfolio', 'Practice interview stories', 'Apply to three aligned roles'] },
 ]
 
-const normalizeMilestones = (source, useFallback = true) => {
+const normalizeMilestones = (source, resourceCatalog = {}, useFallback = true) => {
   if (!source) return useFallback ? fallbackMilestones : []
 
   const phases = Array.isArray(source) ? source : source.phases || source.curriculum?.phases || source.milestones || source.roadmap?.phases || (source.result && !Array.isArray(source.result) ? source.result.phases : null) || []
   if (phases.length === 0) return useFallback ? fallbackMilestones : []
 
   return phases.map((phase, index) => {
-    const items = phase.tasks || phase.objectives || phase.topics || phase.lessons || phase.resources || []
+    const items = phase.tasks || phase.objectives || phase.topics || phase.lessons || []
+    const resourceIds = Array.isArray(phase.resources) ? phase.resources : []
     return {
       phase: String(index + 1).padStart(2, '0'),
       title: phase.title || phase.name || ('Phase ' + (index + 1)),
       detail: phase.detail || phase.description || ('Phase ' + (index + 1) + ' learning objectives'),
       tasks: Array.isArray(items) ? items.map((item) => typeof item === 'string' ? item : item.title || item.name || item.label || 'Milestone task') : [],
-      resources: Array.isArray(phase.resources) ? phase.resources : [],
+      resources: resourceIds.map((resource) => resourceCatalog[resource] || resource),
       estimatedHours: phase.estimated_hours || phase.estimatedHours || phase.hours || null,
     }
   })
@@ -42,8 +43,15 @@ const normalizeRoadmap = (raw, fallbackState = {}) => {
   const domain = data.domain || data.career || data.domainName || fallbackState.domain || 'Your roadmap'
   const domainId = data.domainId || data.domain_id || fallbackState.domainId || fallbackState.roadmapId || null
   const matchScore = Number(data.matchScore ?? data.score ?? fallbackState.score ?? 0)
-  const milestones = normalizeMilestones(data, !isRoadmapArray)
-  const resources = milestones.flatMap((milestone) => milestone.resources || [])
+  const resourceCatalog = data.resource_catalog || data.resourceCatalog || {}
+  const milestones = normalizeMilestones(data, resourceCatalog, !isRoadmapArray)
+  const resolveResourceList = (items) => (Array.isArray(items) ? items : []).map((item) => resourceCatalog[item] || item)
+  const resources = [
+    ...milestones.flatMap((milestone) => milestone.resources || []),
+    ...resolveResourceList(data.certifications),
+    ...resolveResourceList(data.job_preparation || data.jobPreparation),
+    ...resolveResourceList(data.recommended_jobs || data.recommendedJobs),
+  ].filter((item, index, list) => list.findIndex((candidate) => (candidate?.resource_id || candidate) === (item?.resource_id || item)) === index)
   const timelineWeeks = data.timeline?.total_duration_weeks || milestones.length * 4
   const curriculum = data.curriculum || { phases: milestones, weeks: timelineWeeks }
   const phases = Array.isArray(data.phases) ? data.phases : (Array.isArray(curriculum.phases) ? curriculum.phases : [])
@@ -57,11 +65,12 @@ const normalizeRoadmap = (raw, fallbackState = {}) => {
     curriculum,
     milestones,
     resources,
+    resourceCatalog,
     phases,
     learningObjectives: Array.isArray(data.learning_objectives) ? data.learning_objectives : (Array.isArray(data.learningObjectives) ? data.learningObjectives : []),
-    certifications: Array.isArray(data.certifications) ? data.certifications : [],
-    jobPreparation: Array.isArray(data.job_preparation) ? data.job_preparation : (Array.isArray(data.jobPreparation) ? data.jobPreparation : []),
-    recommendedJobs: Array.isArray(data.recommended_jobs) ? data.recommended_jobs : (Array.isArray(data.recommendedJobs) ? data.recommendedJobs : []),
+    certifications: resolveResourceList(data.certifications),
+    jobPreparation: resolveResourceList(data.job_preparation || data.jobPreparation),
+    recommendedJobs: resolveResourceList(data.recommended_jobs || data.recommendedJobs),
     timeline: data.timeline && typeof data.timeline === 'object' ? data.timeline : { total_duration_weeks: timelineWeeks, hours_per_week: null, total_estimated_hours: null, weeks: [] },
     strengths: data.strengths || fallbackState.strengths || [],
     areasToImprove: data.areasToImprove || fallbackState.areasToImprove || [],
@@ -168,9 +177,14 @@ function RoadmapPage() {
     URL.revokeObjectURL(url)
   }
 
-  const timelineWeeks = Array.isArray(roadmap.timeline?.weeks) ? roadmap.timeline.weeks : []
+  const timelineWeeks = Array.isArray(roadmap.timeline?.weeks)
+    ? roadmap.timeline.weeks.map((week) => ({
+      ...week,
+      resourceDetails: (week.resources || []).map((resource) => roadmap.resourceCatalog[resource] || resource),
+    }))
+    : []
   const backendPhases = roadmap.phases.length > 0 ? roadmap.phases : roadmap.milestones
-  const sectionCard = (title, items) => items.length > 0 && <><section className="roadmap-info-card"><h2>{title}</h2><div className="roadmap-chip-list">{items.map((item, index) => <span className="roadmap-chip" key={`${title}-${index}`}>{title === 'Resources' ? resourceLink(item) : displayItem(item)}</span>)}</div></section>{title === 'Learning objectives' && roadmap.resources?.length > 0 && <section className="roadmap-info-card"><h2>Resources</h2><div className="roadmap-chip-list">{roadmap.resources.map((item, index) => <span className="roadmap-chip" key={`resource-${index}`}>{resourceLink(item)}</span>)}</div></section>}</>
+  const sectionCard = (title, items) => items.length > 0 && <><section className="roadmap-info-card"><h2>{title}</h2><div className="roadmap-chip-list">{items.map((item, index) => <span className="roadmap-chip" key={`${title}-${index}`}>{title === 'Resources' ? resourceLink(item) : displayItem(item)}</span>)}</div></section>{title === 'Learning objectives' && roadmap.resources?.length > 0 && <section className="roadmap-info-card"><h2>Resources</h2><div className="roadmap-resource-cards">{roadmap.resources.map((item, index) => <article className="roadmap-resource-card" key={`resource-${index}`}><div><strong>{displayItem(item)}</strong><small>{item.resource_type || item.type || 'Resource'}{item.provider ? ` · ${item.provider}` : ''}{item.estimated_hours ? ` · ${item.estimated_hours} hours` : ''}</small></div>{resourceLink(item)}</article>)}</div></section>}</>
 
   return <main className="roadmap-page"><Container>
     <Link to={returnTarget} className="back-link"><ArrowLeft size={15} /> {backLabel}</Link>
@@ -179,7 +193,7 @@ function RoadmapPage() {
     {isLoading && <p className="text-center text-brown-light mb-6">Loading your roadmap...</p>}
     {routeError && <p className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{routeError}</p>}
 
-    <div className="roadmap-layout"><div className="roadmap-timeline">{backendPhases.map((item, index) => <article className="roadmap-milestone" key={`${item.title || item.name}-${index}`}><div className="roadmap-phase">{String(item.phase || index + 1).padStart(2, '0')}<span>{index === 0 ? 'NOW' : index === 1 ? 'NEXT' : 'LATER'}</span></div><div className="roadmap-milestone-body"><h2>{item.title || item.name || `Phase ${index + 1}`}</h2><p>{item.description || item.detail || `${(item.objectives || []).length} learning objectives`}</p><div className="roadmap-task-list">{(item.objectives || item.tasks || item.topics || []).map((task) => { const label = displayItem(task); return <button type="button" className={`roadmap-task ${completed.includes(label) ? 'is-complete' : ''}`} key={`${item.title}-${label}`} onClick={() => toggle(label)}><span>{completed.includes(label) ? <Check size={14} /> : <Circle size={14} />}</span>{label}</button> })}</div>{item.resources?.length > 0 && <p className="roadmap-resource-line">Resources: {item.resources.map(displayItem).join(', ')}</p>}</div></article>)}{timelineWeeks.length > 0 && <section className="roadmap-week-grid"><div className="roadmap-section-heading"><h2>Weekly timeline</h2><span>{roadmap.timeline.total_duration_weeks || timelineWeeks.length} weeks</span></div>{timelineWeeks.map((week) => <article className="roadmap-week-card" key={week.week}><strong>Week {week.week}</strong><p>{week.milestone || week.focus?.join(', ') || 'Roadmap progress'}</p><small>{week.estimated_hours || 0} hours · {(week.resources || []).join(', ') || 'Focus work'}</small></article>)}</section>}</div><aside className="roadmap-aside"><Clock3 size={22} /><p className="dashboard-kicker">ROADMAP AT A GLANCE</p><h2>{roadmap.timeline.total_estimated_hours ? `${roadmap.timeline.total_estimated_hours} hours of focused work.` : 'One focused hour beats a scattered day.'}</h2><p>{roadmap.timeline.hours_per_week ? `${roadmap.timeline.hours_per_week} hours per week across ${roadmap.timeline.total_duration_weeks || timelineWeeks.length} weeks.` : 'Choose one task, make it visible, and let the next step become easier.'}</p>{sectionCard('Learning objectives', roadmap.learningObjectives)}{sectionCard('Certifications', roadmap.certifications)}{sectionCard('Job preparation', roadmap.jobPreparation)}{sectionCard('Recommended jobs', roadmap.recommendedJobs)}<button type="button" onClick={() => navigate(`/explore/domain-assessment/${assessmentTarget}`)} className="dashboard-primary-action" style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }}>Start assessment <ArrowUpRight size={15} /></button><Link to="/chat" className="dashboard-outline-action" style={{ marginTop: '1rem' }}>Ask for a plan <MessageCircle size={15} /></Link></aside></div>
+    <div className="roadmap-layout"><div className="roadmap-timeline">{backendPhases.map((item, index) => <article className="roadmap-milestone" key={`${item.title || item.name}-${index}`}><div className="roadmap-phase">{String(item.phase || index + 1).padStart(2, '0')}<span>{index === 0 ? 'NOW' : index === 1 ? 'NEXT' : 'LATER'}</span></div><div className="roadmap-milestone-body"><h2>{item.title || item.name || `Phase ${index + 1}`}</h2><p>{item.description || item.detail || `${(item.objectives || []).length} learning objectives`}</p><div className="roadmap-task-list">{(item.objectives || item.tasks || item.topics || []).map((task) => { const label = displayItem(task); return <button type="button" className={`roadmap-task ${completed.includes(label) ? 'is-complete' : ''}`} key={`${item.title}-${label}`} onClick={() => toggle(label)}><span>{completed.includes(label) ? <Check size={14} /> : <Circle size={14} />}</span>{label}</button> })}</div>{item.resources?.length > 0 && <div className="roadmap-resource-cards">{item.resources.map((resource, resourceIndex) => <article className="roadmap-resource-card" key={`${item.title}-resource-${resourceIndex}`}><div><strong>{displayItem(resource)}</strong><small>{resource.resource_type || resource.type || 'Resource'}{resource.provider ? ` · ${resource.provider}` : ''}{resource.estimated_hours ? ` · ${resource.estimated_hours} hours` : ''}</small></div>{resourceLink(resource)}</article>)}</div>}</div></article>)}{timelineWeeks.length > 0 && <section className="roadmap-week-grid"><div className="roadmap-section-heading"><h2>Weekly timeline</h2><span>{roadmap.timeline.total_duration_weeks || timelineWeeks.length} weeks</span></div>{timelineWeeks.map((week) => <article className="roadmap-week-card" key={week.week}><strong>Week {week.week}</strong><p>{week.milestone || week.focus?.join(', ') || 'Roadmap progress'}</p><small>{week.estimated_hours || 0} hours · {week.resourceDetails?.map(displayItem).join(', ') || 'Focus work'}</small></article>)}</section>}</div><aside className="roadmap-aside"><Clock3 size={22} /><p className="dashboard-kicker">ROADMAP AT A GLANCE</p><h2>{roadmap.timeline.total_estimated_hours ? `${roadmap.timeline.total_estimated_hours} hours of focused work.` : 'One focused hour beats a scattered day.'}</h2><p>{roadmap.timeline.hours_per_week ? `${roadmap.timeline.hours_per_week} hours per week across ${roadmap.timeline.total_duration_weeks || timelineWeeks.length} weeks.` : 'Choose one task, make it visible, and let the next step become easier.'}</p>{sectionCard('Learning objectives', roadmap.learningObjectives)}{sectionCard('Certifications', roadmap.certifications)}{sectionCard('Job preparation', roadmap.jobPreparation)}{sectionCard('Recommended jobs', roadmap.recommendedJobs)}<button type="button" onClick={() => navigate(`/explore/domain-assessment/${assessmentTarget}`)} className="dashboard-primary-action" style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }}>Start assessment <ArrowUpRight size={15} /></button><Link to="/chat" className="dashboard-outline-action" style={{ marginTop: '1rem' }}>Ask for a plan <MessageCircle size={15} /></Link></aside></div>
     <div className="roadmap-bottom-actions"><button type="button" onClick={() => navigate(`/explore/domain-assessment/${assessmentTarget}`)} className="dashboard-primary-action">Continue with your domain assessment <ArrowUpRight size={16} /></button><Link to={returnTarget} className="dashboard-text-link">{backLabel} <ArrowUpRight size={15} /></Link></div>
   </Container></main>
 }

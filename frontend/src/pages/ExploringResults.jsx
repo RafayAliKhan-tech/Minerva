@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
-import { Sparkles, ArrowRight, Zap, Loader } from 'lucide-react'
+import { Sparkles, ArrowRight, Zap, Loader, Code2, Palette, BarChart3, Brain, Shield, ArrowUpRight } from 'lucide-react'
 import { generateRoadmap, getJourney1Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
 import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
@@ -15,11 +15,11 @@ const unwrapRoadmapResponse = (payload) => {
 }
 
 const careerCards = [
-  { id: 'development', name: 'Development' },
-  { id: 'ui_ux', name: 'UI/UX' },
-  { id: 'data', name: 'Data' },
-  { id: 'ai', name: 'AI' },
-  { id: 'cyber', name: 'Cyber' },
+  { id: 'development', name: 'Software Development', icon: Code2, accent: 'text-blue-700 bg-blue-50 border-blue-100', description: 'Build products, APIs, and reliable systems that solve real problems.' },
+  { id: 'ui_ux', name: 'UI/UX Design', icon: Palette, accent: 'text-pink-700 bg-pink-50 border-pink-100', description: 'Shape clear, useful experiences through research, interaction, and visual craft.' },
+  { id: 'data', name: 'Data & Analytics', icon: BarChart3, accent: 'text-emerald-700 bg-emerald-50 border-emerald-100', description: 'Turn raw information into decisions, stories, and measurable outcomes.' },
+  { id: 'ai', name: 'AI & Machine Learning', icon: Brain, accent: 'text-orange-700 bg-orange-50 border-orange-100', description: 'Create intelligent systems with data, experimentation, and responsible model thinking.' },
+  { id: 'cyber', name: 'Cybersecurity', icon: Shield, accent: 'text-red-700 bg-red-50 border-red-100', description: 'Protect applications and people by thinking like both a builder and an adversary.' },
 ]
 
 const getCareerPercentage = (careerScores, careerId) => {
@@ -320,26 +320,35 @@ function ExploringResults() {
               Career matches
             </h2>
             {roadmapError && <p className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-            <div className="space-y-4">
+            <div className="grid gap-5 sm:grid-cols-2">
               {careerCards.map((career) => {
                 const percentage = getCareerPercentage(careerScores, career.id)
+                const Icon = career.icon
                 return (
-                  <div key={career.id} className="rounded-xl border border-beige-border bg-cream-dark p-6">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-brown">{career.name}</p>
-                      <p className="font-bold text-orange">{percentage}%</p>
+                  <article key={career.id} className="group flex h-full flex-col rounded-2xl border border-beige-border bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${career.accent}`}>
+                        <Icon className="h-6 w-6" aria-hidden="true" />
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-brown">{percentage}%</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-brown-light">match</p>
+                      </div>
                     </div>
+                    <h3 className="mt-5 font-serif text-2xl font-semibold text-brown">{career.name}</h3>
+                    <p className="mt-2 min-h-12 text-sm leading-relaxed text-brown-light">{career.description}</p>
+                    <div className="mt-5 h-2 overflow-hidden rounded-full bg-brown/10"><div className="h-full rounded-full bg-gradient-to-r from-orange to-orange-dark transition-all duration-500" style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }} /></div>
                     <button
                       type="button"
                       onClick={() => handleGenerateRoadmap({ ...career, percentage })}
                       disabled={Boolean(generatingCareer)}
-                      className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange to-orange-dark text-white rounded-lg font-semibold hover:shadow-md transition-all duration-200 group disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brown px-4 py-3 font-semibold text-white transition-all duration-200 hover:bg-orange hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {generatingCareer === career.id
                         ? <><Loader className="h-4 w-4 animate-spin" aria-hidden="true" /> Generating roadmap...</>
-                        : <><Zap className="h-4 w-4" aria-hidden="true" /> Generate Roadmap</>}
+                        : <><Zap className="h-4 w-4" aria-hidden="true" /> Generate Roadmap <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></>}
                     </button>
-                  </div>
+                      </article>
                 )
               })}
             </div>

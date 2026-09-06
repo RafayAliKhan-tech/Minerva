@@ -33,7 +33,7 @@ function AssessmentLayout({
           <div className="mb-8 space-y-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold uppercase tracking-wider text-brown-light">
-                Step {currentStep} of {totalSteps}
+                Question {currentStep} of {totalSteps}
               </div>
               <span className="text-xs text-brown-light">
                 {Math.round((currentStep / totalSteps) * 100)}%
