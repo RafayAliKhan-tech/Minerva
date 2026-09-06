@@ -8,6 +8,11 @@ import { useAuth } from '../auth/AuthContext'
 import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
 
 const extractJourney1Data = (payload) => payload?.career_recommendation ? payload : null
+const unwrapRoadmapResponse = (payload) => {
+  if (!payload || typeof payload !== 'object') return payload
+  if (payload.data && typeof payload.data === 'object') return unwrapRoadmapResponse(payload.data)
+  return payload
+}
 
 const careerCards = [
   { id: 'development', name: 'Development' },
@@ -196,25 +201,30 @@ function ExploringResults() {
       journey: 1,
       weekly_hours: 5,
       journey_output: journey1Result,
-      assessmentId: realAssessmentId,
       career: careerName,
       target_role: careerName,
-      matchScore,
     }
 
     try {
       setResultError('')
       const created = await generateRoadmap(payload)
-      const raw = created?.result || created || {}
+      console.groupCollapsed('[Journey1] Roadmap response')
+      console.debug('raw response:', created)
+      console.debug('payload:', JSON.stringify(created, null, 2))
+      console.groupEnd()
+      const envelope = unwrapRoadmapResponse(created)
+      const raw = envelope?.result || envelope || {}
       const responseData = Array.isArray(raw)
         ? raw.find((roadmap) => roadmap?.career === careerName) || {}
         : (typeof raw === 'object' ? raw : {})
       if (Array.isArray(raw) && !responseData.career) {
         throw new Error(`The backend did not return a roadmap for ${careerName}.`)
       }
-      const roadmapId = responseData.roadmap_id || responseData.roadmapId || responseData.id || created?.roadmap_id || created?.roadmapId || 'default'
+      const roadmapId = envelope?.roadmap_id || envelope?.roadmapId || envelope?.id || responseData.roadmap_id || responseData.roadmapId || responseData.id
 
-      if (!roadmapId) throw new Error('The backend did not return a valid roadmapId.')
+      if (!roadmapId) {
+        throw new Error(`The Journey 1 roadmap API did not return a valid roadmap ID. Response: ${JSON.stringify(created)}`)
+      }
 
       const savedRoadmap = {
         id: roadmapId,
@@ -236,8 +246,8 @@ function ExploringResults() {
         },
       })
     } catch (error) {
-      console.error('Roadmap generation failed for exploring result', error)
-      setResultError('We could not generate your roadmap from the Journey 1 result because the backend rejected the request. Please try again.')
+      console.error('Roadmap generation failed for exploring result:', error, error?.response?.data)
+      setResultError(error?.response?.data?.message || error?.response?.data?.error || error?.message || 'We could not generate your Journey 1 roadmap. Please try again.')
     }
   }
 
