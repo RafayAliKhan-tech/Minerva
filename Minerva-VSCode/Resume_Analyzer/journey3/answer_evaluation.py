@@ -1,4 +1,4 @@
-from ..llm.client import GroqRateLimitError, get_structured_llm_response
+from ..llm.client import get_structured_llm_response
 from ..llm.client import normalize_llm_text
 
 
@@ -41,7 +41,5 @@ Respond with ONLY valid JSON, no markdown, no extra text, in this exact shape:
     try:
         response = get_structured_llm_response(system_prompt, student_answer)
         return response
-    except GroqRateLimitError:
-      raise
     except Exception:
         return _fallback_answer_evaluation(question, student_answer, skill_id)

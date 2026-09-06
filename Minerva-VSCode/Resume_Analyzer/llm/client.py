@@ -32,19 +32,6 @@ except Exception:  # pragma: no cover - dependency may be absent
     Groq = None
 
 
-GROQ_RATE_LIMIT_MESSAGE = "Groq daily limit reached. Please try again tomorrow."
-
-
-class GroqRateLimitError(RuntimeError):
-    pass
-
-
-def _is_rate_limit_error(error):
-    status_code = getattr(error, "status_code", None)
-    error_text = str(error).lower()
-    return status_code == 429 or "rate_limit_exceeded" in error_text or "rate limit" in error_text
-
-
 def _get_client():
     api_key = os.environ.get("GROQ_API_KEY")
     if Groq is None or not api_key:
@@ -56,7 +43,7 @@ client = _get_client()
 
 
 def get_llm_response(system_prompt: str, user_message: str, conversation_history: list = None) -> str:
-    if client is None or not os.environ.get("GROQ_API_KEY"):
+    if client is None:
         raise RuntimeError("No Groq API key available. Set GROQ_API_KEY to enable AI-powered interview generation.")
 
     messages = [{"role": "system", "content": system_prompt}]
@@ -66,15 +53,10 @@ def get_llm_response(system_prompt: str, user_message: str, conversation_history
 
     messages.append({"role": "user", "content": user_message})
 
-    try:
-        response = client.chat.completions.create(
-            model="openai/gpt-oss-120b",
-            messages=messages,
-        )
-    except Exception as error:
-        if _is_rate_limit_error(error):
-            raise GroqRateLimitError(GROQ_RATE_LIMIT_MESSAGE) from error
-        raise
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-120b",
+        messages=messages,
+    )
     return response.choices[0].message.content
 
 

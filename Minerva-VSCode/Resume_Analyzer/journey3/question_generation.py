@@ -1,4 +1,4 @@
-from ..llm.client import GroqRateLimitError, get_llm_response
+from ..llm.client import get_llm_response
 from ..llm.client import normalize_llm_text
 import random
 
@@ -44,8 +44,6 @@ Respond with ONLY the question text, nothing else."""
         try:
             question_text = get_llm_response(system_prompt, "Generate the question now.")
             text = normalize_llm_text(question_text)
-        except GroqRateLimitError:
-            raise
         except Exception:
             text = _fallback_question_text(skill_id)
         questions.append({"skill_id": skill_id, "question": text})
