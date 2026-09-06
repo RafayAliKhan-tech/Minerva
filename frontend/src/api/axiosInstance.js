@@ -13,10 +13,6 @@ api.interceptors.request.use(
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token')
       if (token) config.headers.Authorization = `Bearer ${token}`
-      if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
-        delete config.headers['Content-Type']
-        delete config.headers['content-type']
-      }
     } catch (e) {
       // ignore
     }
