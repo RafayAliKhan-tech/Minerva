@@ -388,9 +388,6 @@ def adapt_journey1(
             and skill.get("career") == selected_career
         ]
 
-        if not career_skills:
-            continue
-
         profile = _base_profile(
             journey="exploring",
             career=selected_career,

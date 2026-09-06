@@ -28,22 +28,6 @@ const getCareerPercentage = (careerScores, careerId) => {
     : careerScores?.[careerId]
   return Number(typeof score === 'object' ? score?.percentage : score || 0)
 }
-const getAvailableCareerCards = (data, careerScores) => {
-  const targetCareers = Array.isArray(data?.target_careers) ? data.target_careers : []
-  const profileCareers = Array.isArray(data?.preliminary_current_skill_profile)
-    ? data.preliminary_current_skill_profile.map((skill) => skill?.career)
-    : []
-  const scoreCareers = Array.isArray(careerScores)
-    ? careerScores.map((score) => score?.career_id || score?.career || score?.id)
-    : Object.keys(careerScores || {})
-  const availableIds = new Set(
-    [...targetCareers, ...profileCareers, ...scoreCareers]
-      .map((career) => typeof career === 'object' ? career?.career_id || career?.career || career?.id : career)
-      .filter(Boolean),
-  )
-  return careerCards.filter((career) => availableIds.has(career.id))
-}
-
 const generateSampleCurriculum = (domain, matchScore) => {
   const curriculumByDomain = {
     'UI/UX Design': {
@@ -204,7 +188,6 @@ function ExploringResults() {
   }
 
   const careerScores = journey1Data.career_recommendation?.deterministic_career_scores || []
-  const availableCareerCards = getAvailableCareerCards(journey1Data, careerScores)
 
   const handleGenerateRoadmap = async (careerMatch) => {
     const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
@@ -319,9 +302,8 @@ function ExploringResults() {
               Career matches
             </h2>
             {roadmapError && <p className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-            {availableCareerCards.length < careerCards.length && <p className="mb-5 text-sm text-brown-light">Roadmaps are available for the career areas supported by this assessment result.</p>}
             <div className="space-y-4">
-              {availableCareerCards.map((career) => {
+              {careerCards.map((career) => {
                 const percentage = getCareerPercentage(careerScores, career.id)
                 return (
                   <div key={career.id} className="rounded-xl border border-beige-border bg-cream-dark p-6">
