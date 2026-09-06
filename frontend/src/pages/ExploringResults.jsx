@@ -28,6 +28,21 @@ const getCareerPercentage = (careerScores, careerId) => {
     : careerScores?.[careerId]
   return Number(typeof score === 'object' ? score?.percentage : score || 0)
 }
+const normalizeCareerId = (value) => {
+  const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+  const aliases = {
+    software_development: 'development',
+    software_engineering: 'development',
+    ui_ux_design: 'ui_ux',
+    data_analytics: 'data',
+    artificial_intelligence: 'ai',
+    machine_learning: 'ai',
+    cybersecurity: 'cyber',
+    cyber_security: 'cyber',
+  }
+  return aliases[normalized] || normalized
+}
+const getRoadmapCareer = (roadmap) => roadmap?.career || roadmap?.domain || roadmap?.target_role || roadmap?.targetRole
 const generateSampleCurriculum = (domain, matchScore) => {
   const curriculumByDomain = {
     'UI/UX Design': {
@@ -218,10 +233,12 @@ function ExploringResults() {
       console.groupEnd()
       const envelope = unwrapRoadmapResponse(created)
       const raw = envelope?.result || envelope || {}
+      const returnedRoadmaps = Array.isArray(raw) ? raw : [raw]
+      console.debug('[Journey1] Returned roadmap careers:', returnedRoadmaps.map(getRoadmapCareer).filter(Boolean))
       const responseData = Array.isArray(raw)
-        ? raw.find((roadmap) => roadmap?.career === careerName) || {}
+        ? raw.find((roadmap) => normalizeCareerId(getRoadmapCareer(roadmap)) === normalizeCareerId(careerName)) || {}
         : (typeof raw === 'object' ? raw : {})
-      if (Array.isArray(raw) && !responseData.career) {
+      if (Array.isArray(raw) && !getRoadmapCareer(responseData)) {
         throw new Error(`The backend did not return a roadmap for ${careerName}.`)
       }
       const roadmapId = envelope?.roadmap_id || envelope?.roadmapId || envelope?.id || responseData.roadmap_id || responseData.roadmapId || responseData.id
