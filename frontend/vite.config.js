@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/backend-api': {
-        target: 'https://minerva-backend-production-ad1e.up.railway.app',
+        target: 'https://minerva-production-ccd5.up.railway.app',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/backend-api/, ''),
