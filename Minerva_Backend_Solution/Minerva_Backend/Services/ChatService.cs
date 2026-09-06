@@ -34,21 +34,11 @@ namespace Minerva_Backend.Services
                 // Start a new session — pull the most recent skill profile across all sources
                 var (skillProfileJson, career) = await GetLatestSkillProfile(userId);
 
-                if (skillProfileJson == null)
-                {
-                    return new ResponseResult<object>
-                    {
-                        Data = null,
-                        Message = "No assessment result found. Complete an assessment before starting a chat.",
-                        Status = false,
-                    };
-                }
-
                 session = new ChatSession
                 {
                     UserId = userId,
                     Career = career,
-                    SkillProfileJson = skillProfileJson,
+                    SkillProfileJson = skillProfileJson ?? "[]",
                     HistoryJson = "[]"
                 };
                 _context.ChatSessions.Add(session);
