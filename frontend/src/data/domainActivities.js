@@ -42,7 +42,7 @@ export const getDomainActivities = (careerId) => {
     id: question.id,
     title: question.title,
     description: question.title,
-    duration: 60,
+    duration: 180,
     type: 'multiple-choice',
     instruction: question.instruction,
     question_id: question.id,
