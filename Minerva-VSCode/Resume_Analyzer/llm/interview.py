@@ -1,4 +1,4 @@
-from .client import get_structured_llm_response
+from .client import GROQ_RATE_LIMIT_MESSAGE, GroqRateLimitError, get_structured_llm_response
 from .client import normalize_llm_text
 from .prompt_context import summarize_skill_profile
 
@@ -82,6 +82,8 @@ def generate_interview_questions(target_role, skill_profile, num_questions=5):
 
         return {"success": True, "data": response}
 
+    except GroqRateLimitError:
+        return {"success": False, "error": GROQ_RATE_LIMIT_MESSAGE}
     except Exception:
         fallback = _deterministic_question_bank(target_role, num_questions)
         return {"success": True, "data": fallback}
@@ -137,6 +139,8 @@ def evaluate_interview_answers(questions, answers, target_role):
             "data": response
         }
 
+    except GroqRateLimitError:
+        return {"success": False, "error": GROQ_RATE_LIMIT_MESSAGE}
     except Exception:
         fallback = _deterministic_evaluation(questions, answers, target_role)
         return {"success": True, "data": fallback}
