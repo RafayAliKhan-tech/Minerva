@@ -15,6 +15,15 @@ dist-ssr
 # Local environment configuration
 frontend/.env.production
 
+# Qoder workspace cache
+.qoder/
+
+# Python roadmap store (runtime-generated)
+**/roadmap_store/
+
+# Build verification temp folders
+build-verify*/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,3 +34,8 @@ frontend/.env.production
 *.njsproj
 *.sln
 *.sw?
+
+# Vercel / Railway CLI local artifacts
+.vercel/
+.vercel-tmp/
+.rw-tmp/
