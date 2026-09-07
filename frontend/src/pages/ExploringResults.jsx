@@ -5,7 +5,8 @@ import Button from '../components/common/Button'
 import { Sparkles, ArrowRight, Zap, Loader, Code2, Palette, BarChart3, Brain, Shield, ArrowUpRight } from 'lucide-react'
 import { generateRoadmap, getJourney1Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
-import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
+import { saveLatestAssessment, saveJourney1Result, saveRoadmap } from '../utils/userData'
+import { getSkillInsights, getSkillInsightText } from '../utils/skillInsights'
 
 const extractJourney1Data = (payload) => payload?.career_recommendation ? payload : null
 const unwrapRoadmapResponse = (payload) => {
@@ -159,6 +160,7 @@ function ExploringResults() {
 
         setJourney1Data(journey1Results)
         setJourney1Result(server)
+        saveJourney1Result(user, journey1Results)
         sessionStorage.setItem('journey1Result', JSON.stringify(server))
         setResultError('')
         saveLatestAssessment(user, {
@@ -203,6 +205,7 @@ function ExploringResults() {
   }
 
   const careerScores = journey1Data.career_recommendation?.deterministic_career_scores || []
+  const skillInsights = getSkillInsights(journey1Data)
 
   const handleGenerateRoadmap = async (careerMatch) => {
     const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
@@ -355,24 +358,30 @@ function ExploringResults() {
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2">
-            {journey1Data.weak_areas && (
-              <div className="rounded-xl border border-beige-border bg-cream-dark p-5">
-                <h2 className="font-serif text-xl font-semibold text-brown">Weak areas</h2>
-                <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.weak_areas, null, 2)}</pre>
+            <div className="rounded-xl border border-journey-green bg-journey-green/10 p-5">
+              <h2 className="font-serif text-xl font-semibold text-brown">Strengths</h2>
+              <div className="mt-3 space-y-2 text-sm text-brown-light">
+                {skillInsights.strengths.length > 0
+                  ? skillInsights.strengths.map((skill) => <p key={`${skill.career}-${skill.name}`}>{getSkillInsightText(skill)}</p>)
+                  : <p>Your assessment did not find enough evidence for a clear strength yet.</p>}
               </div>
-            )}
-            {journey1Data.skill_gap_analysis && (
-              <div className="rounded-xl border border-beige-border bg-cream-dark p-5">
-                <h2 className="font-serif text-xl font-semibold text-brown">Skill gap analysis</h2>
-                <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.skill_gap_analysis, null, 2)}</pre>
+            </div>
+            <div className="rounded-xl border border-orange-pill bg-orange-pill/20 p-5">
+              <h2 className="font-serif text-xl font-semibold text-brown">Weaknesses</h2>
+              <div className="mt-3 space-y-2 text-sm text-brown-light">
+                {skillInsights.weaknesses.length > 0
+                  ? skillInsights.weaknesses.map((skill) => <p key={`${skill.career}-${skill.name}`}>{getSkillInsightText(skill)}</p>)
+                  : <p>No significant development areas were identified.</p>}
               </div>
-            )}
+            </div>
           </div>
 
-          {journey1Data.preliminary_current_skill_profile && (
+          {skillInsights.profile.length > 0 && (
             <div className="mt-6 rounded-xl border border-beige-border bg-cream-dark p-5">
-              <h2 className="font-serif text-xl font-semibold text-brown">Current skill profile</h2>
-              <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.preliminary_current_skill_profile, null, 2)}</pre>
+              <h2 className="font-serif text-xl font-semibold text-brown">Your current skill profile</h2>
+              <div className="mt-3 grid gap-2 text-sm text-brown-light sm:grid-cols-2">
+                {skillInsights.profile.map((skill) => <p key={`${skill.career}-${skill.name}`}>{getSkillInsightText(skill)}</p>)}
+              </div>
             </div>
           )}
 
