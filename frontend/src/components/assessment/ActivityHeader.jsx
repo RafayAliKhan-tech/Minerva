@@ -6,7 +6,7 @@ function ActivityHeader({ title, subtitle, step, totalSteps }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brown-light">
-            Activity {step} of {totalSteps}
+            Question {step} of {totalSteps}
           </p>
           <h2 className="font-serif text-3xl font-semibold text-brown sm:text-4xl">
             {title}

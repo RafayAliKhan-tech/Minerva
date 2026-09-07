@@ -22,14 +22,31 @@ const getProfile = (payload) => {
 }
 const getMatches = (profile) => {
   const matches = profile?.potentialDomains || profile?.potential_domains || profile?.careerMatches || profile?.career_matches || profile?.matches || profile?.domains || profile?.recommendedCareers || profile?.recommended_careers || []
-  return Array.isArray(matches) ? matches : Object.entries(matches).map(([name, value]) => ({ name, ...(typeof value === 'object' ? value : { score: value }) }))
+  if (Array.isArray(matches) && matches.length > 0) return matches
+  if (matches && typeof matches === 'object' && !Array.isArray(matches) && Object.keys(matches).length > 0) {
+    return Object.entries(matches).map(([name, value]) => ({ name, ...(typeof value === 'object' ? value : { score: value }) }))
+  }
+
+  // Journey 2 scores one career chosen before the assessment; its backend
+  // contract has no separate matches collection. Represent that returned
+  // selected career for this page without inventing a recommendation.
+  return profile?.career
+    ? [{ career: profile.career, careerName: profile.career_name, match: profile.readiness_percent }]
+    : []
 }
 const getName = (match) => match?.domain || match?.career || match?.careerName || match?.career_name || match?.name || match?.label || match?.field || 'Selected career'
 const getScore = (match) => Number(match?.match ?? match?.score ?? match?.percentage ?? match?.fit ?? match?.match_score ?? match?.matchScore ?? 0)
 const getArray = (value) => Array.isArray(value) ? value : (value && typeof value === 'object' ? Object.values(value) : [])
 const getRoadmapPayload = (payload) => {
   const data = unwrap(payload)
-  return data?.roadmap || data?.roadmapResult || data?.roadmap_result || data
+  return data?.result || data
+}
+const getRoadmapId = (payload) => {
+  if (!payload || typeof payload !== 'object') return null
+  const directId = payload.roadmapId || payload.roadmap_id || payload.id || payload.Id
+  if (directId) return directId
+  if (payload.roadmap && typeof payload.roadmap === 'object') return getRoadmapId(payload.roadmap)
+  return null
 }
 
 function DomainResults() {
@@ -97,8 +114,11 @@ function DomainResults() {
       console.debug('unwrapped response:', unwrap(created))
       console.groupEnd()
       const roadmap = getRoadmapPayload(created)
-      const roadmapId = roadmap?.roadmapId || roadmap?.roadmap_id || roadmap?.id || roadmap?.Id
-      if (!roadmapId) throw new Error('The roadmap API did not return a valid roadmap ID.')
+      console.log('[Journey2] Roadmap API payload:', JSON.stringify(created, null, 2))
+      const roadmapId = getRoadmapId(created) || getRoadmapId(roadmap)
+      if (!roadmapId) {
+        throw new Error(`The roadmap API did not return a valid roadmap ID. Response: ${JSON.stringify(created)}`)
+      }
       const saved = { ...roadmap, id: roadmapId, domain: roadmap.domain || getName(match), domainId: careerId, source: 'journey2', status: roadmap.status || 'generated' }
       sessionStorage.setItem('journey2RoadmapId', String(roadmapId))
       saveRoadmap(user, saved)

@@ -77,7 +77,14 @@ export function Route3AssessmentProvider({ children }) {
       sessionStorage.removeItem('route3Answers')
       return response
     } catch (requestError) {
-      setError(requestError?.response?.data?.message || requestError?.response?.data?.error || requestError.message || 'Unable to start Journey 3.')
+      console.error('[Route3] Start request failed:', {
+        fileName: selectedFile?.name,
+        fileType: selectedFile?.type,
+        fileSize: selectedFile?.size,
+        status: requestError?.response?.status,
+        response: requestError?.response?.data,
+      })
+      setError(requestError?.response?.data?.message || requestError?.response?.data?.error || requestError?.response?.data?.detail || requestError.message || 'Unable to start Journey 3.')
       throw requestError
     } finally {
       setIsLoading(false)

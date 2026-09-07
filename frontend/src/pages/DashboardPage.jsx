@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ArrowUpRight, BriefcaseBusiness, MessageCircle, PlayCircle, Telescope, Compass, Zap, Trash2 } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
-import { getJourneyAssessment, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
+import { getJourneyAssessment, getJourney1Result, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
+import { getSkillInsights, getSkillInsightText } from '../utils/skillInsights'
 
 function DashboardPage() {
   const { user } = useAuth()
@@ -27,6 +28,8 @@ function DashboardPage() {
   const exploring = getJourneyAssessment(user, 'exploring')
   const careerInMind = getJourneyAssessment(user, 'domain')
   const resumeAssessment = getJourneyAssessment(user, 'resume')
+  const journey1Result = getJourney1Result(user)
+  const skillInsights = getSkillInsights(journey1Result)
 
   const journeyCards = [
     {
@@ -157,6 +160,26 @@ function DashboardPage() {
                   </div>
                 </article>
               ))}
+            </section>
+          </>
+        )}
+
+        {journey1Result && (skillInsights.strengths.length > 0 || skillInsights.weaknesses.length > 0) && (
+          <>
+            <section className="dashboard-section-heading"><div><p className="dashboard-kicker">YOUR PROFILE</p><h2>Strengths and next areas to grow.</h2></div></section>
+            <section className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+              <article className="dashboard-card dashboard-journey-green">
+                <div className="dashboard-card-top"><span>STRENGTHS</span><Compass size={18} /></div>
+                <div style={{ display: 'grid', gap: '0.6rem' }}>
+                  {skillInsights.strengths.map((skill) => <p key={`${skill.career}-${skill.name}`} style={{ margin: 0 }}>{getSkillInsightText(skill)}</p>)}
+                </div>
+              </article>
+              <article className="dashboard-card dashboard-journey-orange">
+                <div className="dashboard-card-top"><span>AREAS TO GROW</span><Zap size={18} /></div>
+                <div style={{ display: 'grid', gap: '0.6rem' }}>
+                  {skillInsights.weaknesses.map((skill) => <p key={`${skill.career}-${skill.name}`} style={{ margin: 0 }}>{getSkillInsightText(skill)}</p>)}
+                </div>
+              </article>
             </section>
           </>
         )}

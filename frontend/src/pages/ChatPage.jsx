@@ -11,22 +11,34 @@ import {
   extractSessionId,
 } from '../api/backendContract'
 import { getStoredHighestScoredField } from '../utils/skillProfile'
+import { getUserEmail } from '../utils/userData'
 
 const SESSION_KEY = 'minervaChatSessionId'
 const starters = ['What should I learn next?', 'Which role fits my strengths?', 'Help me prepare for an interview']
 
-const readStoredSessionId = () => {
+const chatErrorMessage = (error, fallback) => {
+  const status = error?.response?.status
+  if (status === 404 || status === 429 || status >= 500) return 'Please try again later.'
+  return apiErrorMessage(error, fallback)
+}
+
+const getSessionKey = (user) => {
+  const email = getUserEmail(user).trim().toLowerCase()
+  return email ? `${SESSION_KEY}:${email}` : SESSION_KEY
+}
+
+const readStoredSessionId = (user) => {
   try {
-    return sessionStorage.getItem(SESSION_KEY) || ''
+    return sessionStorage.getItem(getSessionKey(user)) || ''
   } catch {
     return ''
   }
 }
 
-const persistSessionId = (sessionId) => {
+const persistSessionId = (sessionId, user) => {
   if (!sessionId) return
   try {
-    sessionStorage.setItem(SESSION_KEY, String(sessionId))
+    sessionStorage.setItem(getSessionKey(user), String(sessionId))
   } catch {
     // Ignore unavailable session storage.
   }
@@ -36,7 +48,7 @@ function ChatPage() {
   const { user } = useAuth()
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([])
-  const [sessionId, setSessionId] = useState(() => readStoredSessionId())
+  const [sessionId, setSessionId] = useState(() => readStoredSessionId(user))
   const [highestScoredField, setHighestScoredField] = useState(null)
   const [profileReady, setProfileReady] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
@@ -51,7 +63,7 @@ function ChatPage() {
     const nextSessionId = extractSessionId(payload)
     if (nextSessionId) {
       setSessionId(String(nextSessionId))
-      persistSessionId(nextSessionId)
+      persistSessionId(nextSessionId, user)
       return String(nextSessionId)
     }
     return sessionId
@@ -73,7 +85,7 @@ function ChatPage() {
       setMessages(extractHistoryMessages(response))
     } catch (error) {
       setMessages([])
-      setHistoryError(apiErrorMessage(error, 'Unable to load chat history from the backend.'))
+      setHistoryError(chatErrorMessage(error, 'Unable to load chat history from the backend.'))
     } finally {
       setLoadingHistory(false)
     }
@@ -90,7 +102,7 @@ function ChatPage() {
       } catch (error) {
         if (!mounted) return
         setHighestScoredField(null)
-        setProfileError(apiErrorMessage(error, 'Unable to load the backend profile required for chatbot context.'))
+        setProfileError(chatErrorMessage(error, 'Unable to load the backend profile required for chatbot context.'))
       } finally {
         if (mounted) setProfileReady(true)
       }
@@ -103,12 +115,18 @@ function ChatPage() {
   }, [user])
 
   useEffect(() => {
-    const storedSessionId = readStoredSessionId()
+    const storedSessionId = readStoredSessionId(user)
+    setSessionId(storedSessionId)
+    setMessages([])
+    setHistoryError('')
+    setSendError('')
+    setPendingRetry('')
     if (storedSessionId) {
-      setSessionId(storedSessionId)
       loadHistory(storedSessionId)
+    } else {
+      setLoadingHistory(false)
     }
-  }, [])
+  }, [user])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -146,7 +164,7 @@ function ChatPage() {
             return
           }
         } catch (historyLoadError) {
-          setHistoryError(apiErrorMessage(historyLoadError, 'Message sent, but chat history could not be reloaded.'))
+          setHistoryError(chatErrorMessage(historyLoadError, 'Message sent, but chat history could not be reloaded.'))
         }
       }
 
@@ -157,7 +175,7 @@ function ChatPage() {
       setMessages((current) => [...current, { id: `assistant-${current.length}`, from: 'assistant', text: String(answer) }])
     } catch (error) {
       setPendingRetry(message)
-      setSendError(apiErrorMessage(error, 'The chat API failed. No generated answer is available.'))
+      setSendError(chatErrorMessage(error, 'The chat API failed. No generated answer is available.'))
     } finally {
       setSending(false)
     }

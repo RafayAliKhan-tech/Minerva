@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { minervaLogo } from '../../assets'
+import minervaLogo from '../../assets/logo/minerva-logo.png'
 
 function Logo({ className = '', showTagline = false }) {
   return (

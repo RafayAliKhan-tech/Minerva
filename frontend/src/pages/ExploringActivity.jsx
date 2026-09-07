@@ -227,7 +227,12 @@ function ExploringActivity() {
       subtitle={activity.description}
     >
       <div className="mb-6 flex justify-end">
-        <Timer duration={activity.duration} onTimeUp={() => setTimeUp(true)} isActive={!submitted} />
+        <Timer
+          duration={180}
+          storageKey={`minerva:journey1:timer:${activity.id || activity.question_id}`}
+          onTimeUp={() => setTimeUp(true)}
+          isActive={!submitted}
+        />
       </div>
 
       {activity.type === 'logic-puzzle' && (

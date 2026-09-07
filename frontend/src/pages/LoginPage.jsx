@@ -98,7 +98,7 @@ function LoginPage() {
         <label className="auth-input"><UserRound /><input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /></label>
         <label className="auth-input"><LockKeyhole /><input required type={showPwd ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" /><button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Hide password' : 'Show password'}>{showPwd ? <EyeOff /> : <Eye />}</button></label>
         {formError && <p className="auth-form-error" role="alert">{formError}</p>}
-        <div className="auth-options"><label><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label><a href="#">Forgot password?</a></div>
+        <div className="auth-options"><label><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label></div>
         <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight} disabled={isSubmitting} aria-busy={isSubmitting}>
           {isSubmitting ? 'Logging in...' : 'Log In'}
         </Button>

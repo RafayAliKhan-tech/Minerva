@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Container from '../common/Container'
 import { CheckCircle2 } from 'lucide-react'
-import { minervaLogo } from '../../assets'
+import minervaLogo from '../../assets/logo/minerva-logo.png'
 
 function AnalysisLoader({ steps = [], onComplete }) {
   const [completedSteps, setCompletedSteps] = useState([])

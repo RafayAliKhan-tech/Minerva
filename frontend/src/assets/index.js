@@ -1,1 +1,0 @@
-export { default as minervaLogo } from './logo/minerva-logo.png'

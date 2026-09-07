@@ -98,3 +98,20 @@ export const getResumeFile = (user) => {
     return null
   }
 }
+
+export const saveJourney1Result = (user, result) => {
+  try {
+    localStorage.setItem(`minervaJourney1Result:${getUserKey(user)}`, JSON.stringify(result))
+  } catch {
+    // Ignore unavailable storage.
+  }
+}
+
+export const getJourney1Result = (user) => {
+  try {
+    const raw = localStorage.getItem(`minervaJourney1Result:${getUserKey(user)}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}

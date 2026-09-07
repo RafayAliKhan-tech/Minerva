@@ -60,7 +60,7 @@ function SignupPage() {
         <label className="auth-input"><Mail /><input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /></label>
         <label className="auth-input"><LockKeyhole /><input required type={showPwd ? 'text' : 'password'} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" /><button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Hide password' : 'Show password'}>{showPwd ? <EyeOff /> : <Eye />}</button></label>
         <label className="auth-input"><LockKeyhole /><input required type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirm password" /></label>
-        <div className="auth-options"><label><input id="agree" type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label></div>
+        <div className="auth-options"><label><input id="agree" type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I agree to the Minerva terms and privacy policy.</label></div>
         {formError && <p className="auth-form-error" role="alert">{formError}</p>}
         <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight} disabled={isSubmitting}>
           {isSubmitting ? 'Creating Account...' : 'Create Account'}

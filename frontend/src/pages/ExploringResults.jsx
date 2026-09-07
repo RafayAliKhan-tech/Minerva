@@ -2,26 +2,48 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
-import { Sparkles, ArrowRight, Zap } from 'lucide-react'
+import { Sparkles, ArrowRight, Zap, Loader, Code2, Palette, BarChart3, Brain, Shield, ArrowUpRight } from 'lucide-react'
 import { generateRoadmap, getJourney1Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
-import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
+import { saveLatestAssessment, saveJourney1Result, saveRoadmap } from '../utils/userData'
+import { getSkillInsights, getSkillInsightText } from '../utils/skillInsights'
 
-const extractJourney1Data = (payload) => payload?.career_recommendation?.recommendation?.primary_career ? payload : null
+const extractJourney1Data = (payload) => payload?.career_recommendation ? payload : null
+const unwrapRoadmapResponse = (payload) => {
+  if (!payload || typeof payload !== 'object') return payload
+  if (payload.data && typeof payload.data === 'object') return unwrapRoadmapResponse(payload.data)
+  return payload
+}
 
 const careerCards = [
-  { id: 'development', name: 'Development' },
-  { id: 'ui_ux', name: 'UI/UX' },
-  { id: 'data', name: 'Data' },
-  { id: 'ai', name: 'AI' },
-  { id: 'cyber', name: 'Cyber' },
+  { id: 'development', name: 'Software Development', icon: Code2, accent: 'text-blue-700 bg-blue-50 border-blue-100', description: 'Build products, APIs, and reliable systems that solve real problems.' },
+  { id: 'ui_ux', name: 'UI/UX Design', icon: Palette, accent: 'text-pink-700 bg-pink-50 border-pink-100', description: 'Shape clear, useful experiences through research, interaction, and visual craft.' },
+  { id: 'data', name: 'Data & Analytics', icon: BarChart3, accent: 'text-emerald-700 bg-emerald-50 border-emerald-100', description: 'Turn raw information into decisions, stories, and measurable outcomes.' },
+  { id: 'ai', name: 'AI & Machine Learning', icon: Brain, accent: 'text-orange-700 bg-orange-50 border-orange-100', description: 'Create intelligent systems with data, experimentation, and responsible model thinking.' },
+  { id: 'cyber', name: 'Cybersecurity', icon: Shield, accent: 'text-red-700 bg-red-50 border-red-100', description: 'Protect applications and people by thinking like both a builder and an adversary.' },
 ]
 
 const getCareerPercentage = (careerScores, careerId) => {
-  const score = careerScores?.[careerId]
+  const score = Array.isArray(careerScores)
+    ? careerScores.find((item) => item?.career_id === careerId)
+    : careerScores?.[careerId]
   return Number(typeof score === 'object' ? score?.percentage : score || 0)
 }
-
+const normalizeCareerId = (value) => {
+  const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+  const aliases = {
+    software_development: 'development',
+    software_engineering: 'development',
+    ui_ux_design: 'ui_ux',
+    data_analytics: 'data',
+    artificial_intelligence: 'ai',
+    machine_learning: 'ai',
+    cybersecurity: 'cyber',
+    cyber_security: 'cyber',
+  }
+  return aliases[normalized] || normalized
+}
+const getRoadmapCareer = (roadmap) => roadmap?.career || roadmap?.domain || roadmap?.target_role || roadmap?.targetRole
 const generateSampleCurriculum = (domain, matchScore) => {
   const curriculumByDomain = {
     'UI/UX Design': {
@@ -115,6 +137,8 @@ function ExploringResults() {
   const [journey1Data, setJourney1Data] = useState(null)
   const [journey1Result, setJourney1Result] = useState(null)
   const [resultError, setResultError] = useState('')
+  const [roadmapError, setRoadmapError] = useState('')
+  const [generatingCareer, setGeneratingCareer] = useState('')
 
   useEffect(() => {
     ;(async () => {
@@ -136,13 +160,14 @@ function ExploringResults() {
 
         setJourney1Data(journey1Results)
         setJourney1Result(server)
+        saveJourney1Result(user, journey1Results)
         sessionStorage.setItem('journey1Result', JSON.stringify(server))
         setResultError('')
         saveLatestAssessment(user, {
           type: 'exploring',
           label: 'Exploration assessment',
-          domain: journey1Results.career_recommendation.recommendation.primary_career.career,
-          score: journey1Results.career_recommendation.recommendation.primary_career.percentage,
+          domain: 'exploring',
+          score: null,
           source: 'journey1',
           assessmentId,
         })
@@ -179,12 +204,13 @@ function ExploringResults() {
     )
   }
 
-  const careerScores = journey1Data.deterministic_career_scores || {}
+  const careerScores = journey1Data.career_recommendation?.deterministic_career_scores || []
+  const skillInsights = getSkillInsights(journey1Data)
 
   const handleGenerateRoadmap = async (careerMatch) => {
     const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
     if (!realAssessmentId || !journey1Result) {
-      setResultError('Your backend Journey 1 result is not available. Please complete the assessment again.')
+      setRoadmapError('Your backend Journey 1 result is not available. Please complete the assessment again.')
       return
     }
 
@@ -194,31 +220,44 @@ function ExploringResults() {
       journey: 1,
       weekly_hours: 5,
       journey_output: journey1Result,
-      assessmentId: realAssessmentId,
-      domain: careerName,
-      domainId: careerMatch.id,
-      matchScore,
-      strengths: journey1Data.strengths || [],
-      areasToImprove: journey1Data.weak_areas || [],
-      journey1Result,
+      career: careerName,
+      target_role: careerName,
+      use_model: false,
     }
 
     try {
-      setResultError('')
+      setGeneratingCareer(careerName)
+      setRoadmapError('')
       const created = await generateRoadmap(payload)
-      const responseData = created?.data?.data || created?.data || created?.roadmap || created || {}
-      const roadmapId = responseData.id || responseData.roadmapId || responseData.roadmap_id
+      console.groupCollapsed('[Journey1] Roadmap response')
+      console.debug('raw response:', created)
+      console.debug('engine version:', created?.engine_version || created?.engineVersion || 'missing')
+      console.debug('payload:', JSON.stringify(created, null, 2))
+      console.groupEnd()
+      const envelope = unwrapRoadmapResponse(created)
+      const raw = envelope?.result || envelope || {}
+      const returnedRoadmaps = Array.isArray(raw) ? raw : [raw]
+      console.debug('[Journey1] Returned roadmap careers:', returnedRoadmaps.map(getRoadmapCareer).filter(Boolean))
+      const responseData = Array.isArray(raw)
+        ? raw.find((roadmap) => normalizeCareerId(getRoadmapCareer(roadmap)) === normalizeCareerId(careerName)) || {}
+        : (typeof raw === 'object' ? raw : {})
+      if (Array.isArray(raw) && !getRoadmapCareer(responseData)) {
+        throw new Error(`The backend did not return a roadmap for ${careerName}.`)
+      }
+      const roadmapId = envelope?.roadmap_id || envelope?.roadmapId || envelope?.id || responseData.roadmap_id || responseData.roadmapId || responseData.id
 
-      if (!roadmapId) throw new Error('The backend did not return a valid roadmapId.')
+      if (!roadmapId) {
+        throw new Error(`The Journey 1 roadmap API did not return a valid roadmap ID. Response: ${JSON.stringify(created)}`)
+      }
 
       const savedRoadmap = {
         id: roadmapId,
-        domain: responseData.domain || careerName,
-        domainId: responseData.domainId || payload.domainId,
-        matchScore: Number(responseData.matchScore ?? payload.matchScore),
-        strengths: responseData.strengths || payload.strengths,
-        areasToImprove: responseData.areasToImprove || payload.areasToImprove,
-        curriculum: responseData.curriculum || responseData.milestones,
+        domain: responseData.career || responseData.domain || careerName,
+        domainId: responseData.domainId || payload.domainId || careerMatch.id,
+        matchScore: Number(responseData.matchScore ?? matchScore),
+        strengths: responseData.strengths || payload.strengths || [],
+        areasToImprove: responseData.areasToImprove || payload.areasToImprove || payload.weak_areas || [],
+        curriculum: responseData.curriculum || { phases: responseData.phases || [], weeks: responseData.timeline?.total_duration_weeks || 12 },
         status: 'generated',
         createdAt: new Date().toISOString(),
       }
@@ -231,8 +270,10 @@ function ExploringResults() {
         },
       })
     } catch (error) {
-      console.error('Roadmap generation failed for exploring result', error)
-      setResultError('We could not generate your roadmap from the Journey 1 result because the backend rejected the request. Please try again.')
+      console.error('Roadmap generation failed for exploring result:', error, error?.response?.data)
+      setRoadmapError(error?.response?.data?.message || error?.response?.data?.error || error?.response?.data?.detail || error?.response?.data?.title || error?.message || 'We could not generate your Journey 1 roadmap. Please try again.')
+    } finally {
+      setGeneratingCareer('')
     }
   }
 
@@ -281,48 +322,66 @@ function ExploringResults() {
             <h2 className="font-serif text-2xl font-semibold text-brown mb-6">
               Career matches
             </h2>
-            <div className="space-y-4">
+            {roadmapError && <p className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
+            <div className="grid gap-5 sm:grid-cols-2">
               {careerCards.map((career) => {
                 const percentage = getCareerPercentage(careerScores, career.id)
+                const Icon = career.icon
                 return (
-                  <div key={career.id} className="rounded-xl border border-beige-border bg-cream-dark p-6">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-brown">{career.name}</p>
-                      <p className="font-bold text-orange">{percentage}%</p>
+                  <article key={career.id} className="group flex h-full flex-col rounded-2xl border border-beige-border bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${career.accent}`}>
+                        <Icon className="h-6 w-6" aria-hidden="true" />
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-brown">{percentage}%</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-brown-light">match</p>
+                      </div>
                     </div>
+                    <h3 className="mt-5 font-serif text-2xl font-semibold text-brown">{career.name}</h3>
+                    <p className="mt-2 min-h-12 text-sm leading-relaxed text-brown-light">{career.description}</p>
+                    <div className="mt-5 h-2 overflow-hidden rounded-full bg-brown/10"><div className="h-full rounded-full bg-gradient-to-r from-orange to-orange-dark transition-all duration-500" style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }} /></div>
                     <button
                       type="button"
                       onClick={() => handleGenerateRoadmap({ ...career, percentage })}
-                      className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange to-orange-dark text-white rounded-lg font-semibold hover:shadow-md transition-all duration-200 group"
+                      disabled={Boolean(generatingCareer)}
+                      className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brown px-4 py-3 font-semibold text-white transition-all duration-200 hover:bg-orange hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <Zap className="h-4 w-4" aria-hidden="true" />
-                      Generate Roadmap
+                      {generatingCareer === career.id
+                        ? <><Loader className="h-4 w-4 animate-spin" aria-hidden="true" /> Generating roadmap...</>
+                        : <><Zap className="h-4 w-4" aria-hidden="true" /> Generate Roadmap <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></>}
                     </button>
-                  </div>
+                      </article>
                 )
               })}
             </div>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2">
-            {journey1Data.weak_areas && (
-              <div className="rounded-xl border border-beige-border bg-cream-dark p-5">
-                <h2 className="font-serif text-xl font-semibold text-brown">Weak areas</h2>
-                <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.weak_areas, null, 2)}</pre>
+            <div className="rounded-xl border border-journey-green bg-journey-green/10 p-5">
+              <h2 className="font-serif text-xl font-semibold text-brown">Strengths</h2>
+              <div className="mt-3 space-y-2 text-sm text-brown-light">
+                {skillInsights.strengths.length > 0
+                  ? skillInsights.strengths.map((skill) => <p key={`${skill.career}-${skill.name}`}>{getSkillInsightText(skill)}</p>)
+                  : <p>Your assessment did not find enough evidence for a clear strength yet.</p>}
               </div>
-            )}
-            {journey1Data.skill_gap_analysis && (
-              <div className="rounded-xl border border-beige-border bg-cream-dark p-5">
-                <h2 className="font-serif text-xl font-semibold text-brown">Skill gap analysis</h2>
-                <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.skill_gap_analysis, null, 2)}</pre>
+            </div>
+            <div className="rounded-xl border border-orange-pill bg-orange-pill/20 p-5">
+              <h2 className="font-serif text-xl font-semibold text-brown">Weaknesses</h2>
+              <div className="mt-3 space-y-2 text-sm text-brown-light">
+                {skillInsights.weaknesses.length > 0
+                  ? skillInsights.weaknesses.map((skill) => <p key={`${skill.career}-${skill.name}`}>{getSkillInsightText(skill)}</p>)
+                  : <p>No significant development areas were identified.</p>}
               </div>
-            )}
+            </div>
           </div>
 
-          {journey1Data.preliminary_current_skill_profile && (
+          {skillInsights.profile.length > 0 && (
             <div className="mt-6 rounded-xl border border-beige-border bg-cream-dark p-5">
-              <h2 className="font-serif text-xl font-semibold text-brown">Current skill profile</h2>
-              <pre className="mt-3 whitespace-pre-wrap text-sm text-brown-light">{JSON.stringify(journey1Data.preliminary_current_skill_profile, null, 2)}</pre>
+              <h2 className="font-serif text-xl font-semibold text-brown">Your current skill profile</h2>
+              <div className="mt-3 grid gap-2 text-sm text-brown-light sm:grid-cols-2">
+                {skillInsights.profile.map((skill) => <p key={`${skill.career}-${skill.name}`}>{getSkillInsightText(skill)}</p>)}
+              </div>
             </div>
           )}
 

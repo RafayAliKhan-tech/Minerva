@@ -12,6 +12,7 @@
     "@react-three/fiber": "^9.7.0",
     "axios": "^1.19.0",
     "gsap": "^3.15.0",
+    "jspdf": "^4.2.1",
     "lucide-react": "^1.30.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

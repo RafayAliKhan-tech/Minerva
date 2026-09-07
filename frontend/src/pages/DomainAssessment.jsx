@@ -227,7 +227,12 @@ function DomainAssessment() {
       subtitle={activity.description}
     >
       <div className="mb-6 flex justify-end">
-        <Timer duration={activity.duration} onTimeUp={() => setTimeUp(true)} isActive={!saved} />
+        <Timer
+          duration={180}
+          storageKey={`minerva:journey2:timer:${activity.id || activity.activityId || activity.questionId}`}
+          onTimeUp={() => setTimeUp(true)}
+          isActive={!saved}
+        />
       </div>
 
       {activity.type === 'code-debugger' && (

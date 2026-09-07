@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Zap } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { useAuth } from '../auth/AuthContext'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
-import { getRoute3Result } from '../api/minervaApi'
-import { saveLatestAssessment } from '../utils/userData'
+import { generateRoadmap, getRoute3Result } from '../api/minervaApi'
+import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
 
 const unwrapResult = (value) => value?.data || value?.result || value || {}
 const firstValue = (value, keys) => keys.reduce((found, key) => found ?? value?.[key], undefined)
@@ -50,6 +50,8 @@ function ResumeResults() {
   const { submit, startResult, result: storedResult, attemptId, error: contextError, isLoading } = useRoute3Assessment()
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
+  const [roadmapError, setRoadmapError] = useState('')
+  const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false)
   const loadingRef = useRef(false)
 
   useEffect(() => {
@@ -106,6 +108,49 @@ function ResumeResults() {
   const evaluations = list(data.evaluations || data.evaluation_results || data.answerEvaluations || data.answer_evaluations || data.evaluationResults || data.answers)
   const renderList = (items) => items.map((item, idx) => <div key={idx} className="rounded-xl border border-beige-border bg-white p-4 text-brown">{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</div>)
 
+  const handleGenerateRoadmap = async () => {
+    const journeyOutput = unwrapResult(result)
+    if (!Array.isArray(journeyOutput?.skill_profile)) {
+      setRoadmapError('Journey 3 did not return the evaluated skill profile required to generate a roadmap.')
+      return
+    }
+
+    setIsGeneratingRoadmap(true)
+    setRoadmapError('')
+    try {
+      const created = await generateRoadmap({
+        journey: 3,
+        weekly_hours: 5,
+        journey_output: journeyOutput,
+      })
+      const roadmapId = created?.roadmap_id || created?.roadmapId
+      if (!roadmapId) throw new Error('The roadmap API did not return a valid roadmap ID.')
+
+      const roadmap = created?.result || {}
+      const savedRoadmap = {
+        ...roadmap,
+        id: roadmapId,
+        domain: roadmap.career || 'Resume skill development',
+        domainId: null,
+        source: 'journey3',
+        status: 'generated',
+        createdAt: new Date().toISOString(),
+      }
+      saveRoadmap(user, savedRoadmap)
+      navigate(`/roadmap-detail/${roadmapId}`, {
+        state: {
+          ...savedRoadmap,
+          returnTo: { pathname: '/explore/resume/results' },
+        },
+      })
+    } catch (roadmapRequestError) {
+      console.error('Journey 3 roadmap generation failed:', roadmapRequestError)
+      setRoadmapError(roadmapRequestError?.response?.data?.message || roadmapRequestError?.response?.data?.error || roadmapRequestError.message || 'Unable to generate your Journey 3 roadmap.')
+    } finally {
+      setIsGeneratingRoadmap(false)
+    }
+  }
+
   return (
     <AssessmentLayout onBack={() => navigate(-1)} showProgress={false}>
       <div className="space-y-10">
@@ -137,7 +182,18 @@ function ResumeResults() {
         {list(data.weaknesses || data.areasToImprove).length > 0 && <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8"><h3 className="text-xl font-semibold text-brown mb-6">Weaknesses</h3><div className="space-y-3">{renderList(list(data.weaknesses || data.areasToImprove))}</div></div>}
 
         {/* CTA */}
+        {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
         <div className="flex flex-col gap-3 sm:flex-row">
+          <Button
+            onClick={handleGenerateRoadmap}
+            disabled={isGeneratingRoadmap}
+            variant="dark"
+            size="lg"
+            icon={Zap}
+            className="flex-1"
+          >
+            {isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}
+          </Button>
           <Button
             to="/dashboard"
             variant="ghost"

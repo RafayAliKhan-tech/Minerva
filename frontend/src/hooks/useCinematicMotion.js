@@ -17,9 +17,10 @@ export function useCinematicMotion(rootRef) {
     if (!root) return undefined
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const isMobile = window.matchMedia('(max-width: 767px)').matches
 
     const ctx = gsap.context(() => {
-      if (reducedMotion) return
+      if (reducedMotion || isMobile) return
 
       const heroShell = root.querySelector('.hero-scroll-shell')
       const heroTransform = root.querySelector('.hero-transform')
