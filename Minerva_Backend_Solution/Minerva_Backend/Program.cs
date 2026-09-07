@@ -557,6 +557,7 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
     await Minerva_Backend.Helpers.AssessmentSeeder.SeedAssessmentQuestions(dbContext);
     await Minerva_Backend.Helpers.CareerSeeder.SeedCareers(dbContext);
     await Minerva_Backend.Helpers.Journey1Seeder.SeedJourney1Questions(dbContext);
