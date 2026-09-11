@@ -42,5 +42,8 @@ namespace YourProject.Roadmap.Models
         // (matches the Python engine's documented dual return shape).
         [JsonPropertyName("result")]
         public System.Text.Json.JsonElement Result { get; set; }
+
+        [JsonPropertyName("engine_version")]
+        public string? EngineVersion { get; set; }
     }
 }

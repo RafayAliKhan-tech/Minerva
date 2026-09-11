@@ -28,6 +28,30 @@ import uuid
 
 from .roadmap_engine import generate_roadmap
 
+
+def _normalize_career_id(value: Any) -> Optional[str]:
+    """Use the same stable IDs as the Journey 1 adapter and frontend."""
+
+    if value is None:
+        return None
+
+    normalized = str(value).strip().lower()
+    normalized = "".join(
+        character if character.isalnum() else "_"
+        for character in normalized
+    ).strip("_")
+
+    return {
+        "software_development": "development",
+        "software_engineering": "development",
+        "ui_ux_design": "ui_ux",
+        "data_analytics": "data",
+        "artificial_intelligence": "ai",
+        "machine_learning": "ai",
+        "cybersecurity": "cyber",
+        "cyber_security": "cyber",
+    }.get(normalized, normalized)
+
 router = APIRouter()
 
 # --- Persistent file-based roadmap store --------------------------------
@@ -71,7 +95,7 @@ class RoadmapGenerateRequest(BaseModel):
 class RoadmapGenerateResponse(BaseModel):
     roadmap_id: str
     result: Union[Dict[str, Any], List[Dict[str, Any]]]
-    engine_version: str = "j1-all-careers-v1"
+    engine_version: str = "j1-selected-career-v2"
 
 
 @router.post("/generate", response_model=RoadmapGenerateResponse)
@@ -80,9 +104,9 @@ def generate(req: RoadmapGenerateRequest) -> RoadmapGenerateResponse:
         raise HTTPException(status_code=400, detail="journey must be 1, 2, or 3")
 
     try:
-        requested_career = req.career
+        requested_career = _normalize_career_id(req.career)
         if req.journey == 1 and not requested_career and req.target_role:
-            requested_career = req.target_role
+            requested_career = _normalize_career_id(req.target_role)
 
         result = generate_roadmap(
             journey=req.journey,
@@ -94,6 +118,31 @@ def generate(req: RoadmapGenerateRequest) -> RoadmapGenerateResponse:
             preferred_days=req.preferred_days,
             use_model=req.use_model,
         )
+
+        # A selected card is a single-roadmap operation. Older engine
+        # versions returned all represented careers even when `career` was
+        # supplied, and omitted careers with no skill evidence (0% matches).
+        # Normalize that legacy shape so the frontend never has to guess.
+        if req.journey == 1 and requested_career and isinstance(result, list):
+            selected = next(
+                (
+                    roadmap
+                    for roadmap in result
+                    if isinstance(roadmap, dict)
+                    and _normalize_career_id(
+                        roadmap.get("career")
+                        or roadmap.get("domain")
+                        or roadmap.get("target_role")
+                    ) == requested_career
+                ),
+                None,
+            )
+            if selected is None:
+                raise ValueError(
+                    f"Selected Journey 1 career '{requested_career}' "
+                    "did not produce a roadmap."
+                )
+            result = selected
     except (ValueError, TypeError) as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
@@ -109,7 +158,7 @@ def generate(req: RoadmapGenerateRequest) -> RoadmapGenerateResponse:
     return RoadmapGenerateResponse(
         roadmap_id=roadmap_id,
         result=result,
-        engine_version="j1-all-careers-v1",
+        engine_version="j1-selected-career-v2",
     )
 
 

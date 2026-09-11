@@ -334,6 +334,7 @@ def adapt_journey1(
         "Journey 1",
     )
 
+    career = _normalize_career_id(career)
     _validate_career(career)
 
     source_skills = data.get(
