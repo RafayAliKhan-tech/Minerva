@@ -37,6 +37,7 @@ const readableSkill = (skill) => {
     gap: Number.isFinite(Number(skill?.gap)) ? Number(skill.gap) : null,
     priority: String(skill?.priority || '').toLowerCase(),
     evidence: Number(skill?.positive_evidence || skill?.positiveEvidence || 0),
+    negativeEvidence: Number(skill?.negative_evidence || skill?.negativeEvidence || 0),
     level: normalizeText(level),
     category: normalizeText(skill?.category),
   }
@@ -60,12 +61,12 @@ export const getSkillInsights = (result) => {
   ).map(readableSkill).filter(Boolean)
 
   const strengths = uniqueByName(profile
-    .filter((skill) => (skill.gap === 0 && skill.evidence > 0) || skill.priority === 'none')
+    .filter((skill) => skill.evidence > 0 && skill.negativeEvidence === 0 && ((skill.gap === 0) || skill.priority === 'none'))
     .sort((left, right) => right.evidence - left.evidence))
     .slice(0, 5)
 
   const weaknesses = uniqueByName(profile
-    .filter((skill) => skill.gap > 0 || ['high', 'medium', 'low'].includes(skill.priority))
+    .filter((skill) => skill.evidence === 0 || skill.negativeEvidence > 0 || skill.gap > 0 || ['high', 'medium', 'low'].includes(skill.priority))
     .sort((left, right) => (right.gap || 0) - (left.gap || 0)))
     .slice(0, 5)
 

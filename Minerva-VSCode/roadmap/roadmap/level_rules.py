@@ -191,6 +191,8 @@ def apply_level_rule(
         skill.get("evidence_status")
     )
 
+    from_scratch = bool(skill.get("from_scratch"))
+
     _validate_level(
         current_level,
         "current_level",
@@ -207,7 +209,7 @@ def apply_level_rule(
     # CASE 1 — NO EVIDENCE
     # ========================================================================
 
-    if evidence_status == "no_evidence":
+    if evidence_status == "no_evidence" and not from_scratch:
 
         return {
             "skill_id": skill_id,
@@ -230,6 +232,32 @@ def apply_level_rule(
             "reason":
                 "Current skill level is unknown; "
                 "do not treat missing evidence as a skill gap.",
+        }
+
+    # Journey 1 lets the learner choose a 0% career. In that case,
+    # missing evidence means the roadmap must start at foundation level.
+    if evidence_status == "no_evidence" and from_scratch:
+        target = target_level or MIN_LEVEL
+        resource_levels = list(range(MIN_LEVEL, min(MAX_LEVEL, target) + 1))
+        difficulties = []
+        for level in resource_levels:
+            for difficulty in _difficulty_for_level(level):
+                if difficulty not in difficulties:
+                    difficulties.append(difficulty)
+
+        return {
+            "skill_id": skill_id,
+            "state": "development_gap",
+            "starting_phase": "foundation",
+            "resource_strategy": "from_scratch_progression",
+            "resource_levels": resource_levels,
+            "resource_difficulties": difficulties,
+            "development_required": True,
+            "progression_required": len(resource_levels) > 1,
+            "reason": (
+                "Journey 1 provided no evidence for this selected career; "
+                "start from foundation level and progress to the target level."
+            ),
         }
 
     # ========================================================================

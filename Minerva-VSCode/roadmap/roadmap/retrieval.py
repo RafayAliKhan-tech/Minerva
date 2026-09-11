@@ -401,9 +401,7 @@ def retrieve_for_skill(
     # Apply deterministic level rules
     # ---------------------------------------------------------------
 
-    level_result = apply_level_rule(
-        skill
-    )
+    level_result = apply_level_rule(skill)
 
     validate_level_rule_result(
         level_result

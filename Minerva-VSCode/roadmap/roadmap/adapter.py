@@ -76,6 +76,32 @@ def _validate_career(career: Optional[str]) -> None:
         )
 
 
+def _normalize_career_id(value: Any) -> Optional[str]:
+    """Normalize career labels emitted by different Journey 1 versions."""
+
+    if value is None:
+        return None
+
+    normalized = str(value).strip().lower()
+    normalized = "".join(
+        character if character.isalnum() else "_"
+        for character in normalized
+    ).strip("_")
+
+    aliases = {
+        "software_development": "development",
+        "software_engineering": "development",
+        "ui_ux_design": "ui_ux",
+        "data_analytics": "data",
+        "artificial_intelligence": "ai",
+        "machine_learning": "ai",
+        "cybersecurity": "cyber",
+        "cyber_security": "cyber",
+    }
+
+    return aliases.get(normalized, normalized)
+
+
 def _copy_optional_list(value: Any) -> List[Any]:
     """Safely copy an optional list."""
 
@@ -231,6 +257,15 @@ def _normalize_skill_record(
         "evidence_status": _normalize_evidence_status(
             skill.get("evidence_status")
         ),
+
+        # A Journey 1 career with no evidence is an explicit
+        # from-scratch learning request, not a reason to return an
+        # empty roadmap.
+        "from_scratch": (
+            source == "Journey 1"
+            and _normalize_evidence_status(skill.get("evidence_status"))
+            == "no_evidence"
+        ),
     }
 
     return normalized
@@ -368,7 +403,7 @@ def adapt_journey1(
             skill
             for skill in source_skills
             if isinstance(skill, dict)
-            and skill.get("career") == selected_career
+            and _normalize_career_id(skill.get("career")) == selected_career
         ]
 
         profile = _base_profile(

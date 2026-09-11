@@ -518,12 +518,6 @@ const careerCards = [
   { id: 'cyber', name: 'Cybersecurity', icon: Shield, accent: 'text-red-700 bg-red-50 border-red-100', description: 'Protect applications and people by thinking like both a builder and an adversary.' },
 ]
 
-const getCareerPercentage = (careerScores, careerId) => {
-  const score = Array.isArray(careerScores)
-    ? careerScores.find((item) => item?.career_id === careerId)
-    : careerScores?.[careerId]
-  return Number(typeof score === 'object' ? score?.percentage : score || 0)
-}
 const normalizeCareerId = (value) => {
   const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
   const aliases = {
@@ -538,12 +532,22 @@ const normalizeCareerId = (value) => {
   }
   return aliases[normalized] || normalized
 }
+const getCareerPercentage = (careerScores, careerId) => {
+  const score = Array.isArray(careerScores)
+    ? careerScores.find((item) => normalizeCareerId(item?.career_id || item?.career || item?.name) === normalizeCareerId(careerId))
+    : careerScores?.[careerId]
+  const value = typeof score === 'object' ? score?.percentage : score
+  return Number(value ?? 0)
+}
 const getRoadmapCareer = (roadmap) => roadmap?.career || roadmap?.domain || roadmap?.target_role || roadmap?.targetRole
 const getSignalText = (signal) => {
-  if (typeof signal === 'string') return signal
+  if (typeof signal === 'string') return signal.includes(':') ? signal.slice(signal.indexOf(':') + 1).trim() : signal
   return signal?.description || signal?.signal || signal?.text || signal?.name || JSON.stringify(signal)
 }
-const getSignalCareer = (signal) => signal?.career || signal?.field || signal?.domain || ''
+const getSignalCareer = (signal) => {
+  if (typeof signal === 'string' && signal.includes(':')) return signal.slice(0, signal.indexOf(':')).trim()
+  return signal?.career || signal?.field || signal?.domain || ''
+}
 const fieldMatches = (career, selectedField) => {
   if (selectedField === 'all' || !career) return true
   return normalizeCareerId(career) === normalizeCareerId(selectedField)
@@ -644,7 +648,8 @@ function ExploringResults() {
   const [resultError, setResultError] = useState('')
   const [roadmapError, setRoadmapError] = useState('')
   const [generatingCareer, setGeneratingCareer] = useState('')
-  const [selectedField, setSelectedField] = useState('all')
+  const [selectedSignalField, setSelectedSignalField] = useState('all')
+  const [selectedProfileField, setSelectedProfileField] = useState('all')
   const [showCareerMatches, setShowCareerMatches] = useState(false)
 
   useEffect(() => {
@@ -689,7 +694,7 @@ function ExploringResults() {
 
   if (resultError) {
     return (
-      <AssessmentLayout onBack={() => navigate('/explore/assessment')} showProgress={false}>
+      <AssessmentLayout showProgress={false}>
         <div className="rounded-3xl border border-red-200 bg-white p-8 shadow-card sm:p-12">
           <h1 className="font-serif text-3xl font-semibold text-brown sm:text-4xl">Journey 1 result unavailable</h1>
           <p className="mt-4 text-base text-brown-light">{resultError}</p>
@@ -705,7 +710,7 @@ function ExploringResults() {
 
   if (!journey1Data) {
     return (
-      <AssessmentLayout onBack={() => navigate('/')}>
+      <AssessmentLayout showProgress={false}>
         <p className="text-center text-brown-light">Loading your Journey 1 results...</p>
       </AssessmentLayout>
     )
@@ -715,14 +720,14 @@ function ExploringResults() {
   const skillInsights = getSkillInsights(journey1Data)
   const professionalStrengths = skillInsights.strengths.map((skill) => getProfessionalSkillInsight(skill, 'strength'))
   const professionalDevelopmentAreas = skillInsights.weaknesses.map((skill) => getProfessionalSkillInsight(skill, 'development'))
-  const filteredStrengths = filterByField(professionalStrengths, selectedField)
-  const filteredDevelopmentAreas = filterByField(professionalDevelopmentAreas, selectedField)
+  const filteredStrengths = filterByField(professionalStrengths, selectedProfileField)
+  const filteredDevelopmentAreas = filterByField(professionalDevelopmentAreas, selectedProfileField)
   const strongestSignals = filterByField(
     (journey1Data.strengths || []).map((signal) => ({
       text: getSignalText(signal),
       career: getSignalCareer(signal),
     })),
-    selectedField,
+    selectedSignalField,
   )
 
   const handleGenerateRoadmap = async (careerMatch) => {
@@ -732,7 +737,7 @@ function ExploringResults() {
       return
     }
 
-    const careerName = careerMatch.id
+    const careerName = normalizeCareerId(careerMatch.id)
     const matchScore = Number(careerMatch.percentage)
     const payload = {
       journey: 1,
@@ -797,34 +802,33 @@ function ExploringResults() {
 
   return (
     <AssessmentLayout
-      onBack={() => navigate('/')}
       showProgress={false}
-      contentClassName="max-w-6xl"
+      contentClassName="max-w-none"
     >
       {/* Main card */}
       <div className="overflow-hidden rounded-[2rem] border border-beige-border bg-white shadow-card">
-        <div className="border-b border-beige-border bg-cream-dark/40 px-6 py-10 sm:px-10 sm:py-12 lg:px-14">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="border-b border-beige-border bg-cream-dark/40 px-5 py-7 sm:px-8 sm:py-8 lg:px-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-beige-border bg-white px-3 py-1.5 text-xs font-semibold text-brown-light">
                 <Sparkles className="h-3.5 w-3.5 text-orange" aria-hidden="true" />
                 Journey 1 complete
               </div>
-              <h1 className="mt-5 max-w-xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-brown sm:text-5xl lg:text-6xl">
+              <h1 className="mt-3 max-w-2xl font-serif text-3xl font-semibold leading-[1.05] tracking-tight text-brown sm:text-4xl lg:text-5xl">
                 A clearer view of where you can go next.
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-brown-light sm:text-lg">
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brown-light sm:text-base">
                 Your assessment highlights the patterns, capabilities, and career directions that are most relevant to you right now.
               </p>
             </div>
-            <div className="flex shrink-0 gap-6 border-t border-beige-border pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
+            <div className="flex shrink-0 gap-5 border-t border-beige-border pt-4 lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
               {[
                 { value: strongestSignals.length, label: 'Strongest signals' },
                 { value: filteredStrengths.length + filteredDevelopmentAreas.length, label: 'Profile insights' },
                 { value: careerCards.length, label: 'Career directions' },
               ].map((stat) => (
                 <div key={stat.label}>
-                  <p className="font-serif text-3xl font-semibold text-brown">{stat.value}</p>
+                  <p className="font-serif text-2xl font-semibold text-brown">{stat.value}</p>
                   <p className="mt-1 max-w-[6rem] text-xs leading-snug text-brown-light">{stat.label}</p>
                 </div>
               ))}
@@ -832,48 +836,29 @@ function ExploringResults() {
           </div>
         </div>
 
-        {/* Field filter — governs both the signals and skill-profile sections below */}
-        <div className="sticky top-0 z-10 border-b border-beige-border bg-white/95 px-6 py-4 backdrop-blur sm:px-10 lg:px-14">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-brown-light">
-              {selectedField === 'all' ? 'Showing results across every field' : <>Showing results for <span className="font-semibold text-brown">{careerCards.find((c) => c.id === selectedField)?.name}</span></>}
-            </p>
-            <div className="flex flex-wrap gap-1.5 rounded-full border border-beige-border bg-cream-dark/50 p-1">
-              <button
-                type="button"
-                onClick={() => setSelectedField('all')}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${selectedField === 'all' ? 'bg-brown text-white' : 'text-brown-light hover:text-brown'}`}
-              >
-                All fields
-              </button>
-              {careerCards.map((career) => (
-                <button
-                  key={career.id}
-                  type="button"
-                  onClick={() => setSelectedField(career.id)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${selectedField === career.id ? 'bg-brown text-white' : 'text-brown-light hover:text-brown'}`}
-                >
-                  {career.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 sm:p-10 lg:p-14">
-        <div className="max-w-4xl">
-          <section className="rounded-3xl border border-beige-border bg-cream-dark/60 p-6 sm:p-7">
-            <div className="flex items-start gap-3">
+        <div className="p-5 sm:p-8 lg:p-10">
+        <div className="max-w-none">
+          <section className="rounded-2xl border border-beige-border bg-cream-dark/60 p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-3">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brown text-xs font-semibold text-white">1</span>
               <div>
                 <h2 className="font-serif text-2xl font-semibold text-brown">What stands out most</h2>
-                <p className="mt-2 text-sm text-brown-light">Your strongest signals, filtered by the field selected above.</p>
+                <p className="mt-1 text-sm text-brown-light">The signals most relevant to each direction.</p>
               </div>
+              </div>
+              <label className="text-sm font-semibold text-brown">
+                View by field
+                <select value={selectedSignalField} onChange={(event) => setSelectedSignalField(event.target.value)} className="mt-1 block w-full rounded-lg border border-beige-border bg-white px-3 py-2 text-sm font-medium text-brown sm:w-52">
+                  <option value="all">All fields</option>
+                  {careerCards.map((career) => <option key={career.id} value={career.id}>{career.name}</option>)}
+                </select>
+              </label>
             </div>
-            <div className="mt-6 space-y-3">
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
               {strongestSignals.length > 0
                 ? strongestSignals.map((signal, index) => (
-                  <div key={`${signal.text}-${index}`} className="flex items-start gap-3 rounded-2xl border border-beige-border bg-white p-4">
+                  <div key={`${signal.text}-${index}`} className="flex items-start gap-3 rounded-xl border border-beige-border bg-white p-3">
                     <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-journey-green text-journey-green-dark"><Sparkles className="h-4 w-4" aria-hidden="true" /></div>
                     <div>
                       <p className="text-base text-brown-light">{signal.text}</p>
@@ -881,27 +866,36 @@ function ExploringResults() {
                     </div>
                   </div>
                 ))
-                : <p className="rounded-2xl border border-dashed border-beige-border bg-white p-5 text-sm text-brown-light">No strongest signals were found for this field yet. Try another field above.</p>}
+                : <p className="rounded-xl border border-dashed border-beige-border bg-white p-4 text-sm text-brown-light md:col-span-2">No strongest signals were found for this field yet. Try another field above.</p>}
             </div>
           </section>
 
-          <section className="mt-8 rounded-3xl border border-beige-border bg-white p-6 shadow-card sm:p-7">
-            <div className="flex items-start gap-3">
+          <section className="mt-5 rounded-2xl border border-beige-border bg-white p-5 shadow-card sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-3">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brown text-xs font-semibold text-white">2</span>
               <div>
                 <h2 className="font-serif text-2xl font-semibold text-brown">Your overall skill profile</h2>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-brown-light">A fuller picture of what you already do well and what will help you build readiness, filtered by the field selected above.</p>
+                <p className="mt-1 max-w-xl text-sm leading-relaxed text-brown-light">What you already do well and where to build readiness.</p>
               </div>
+              </div>
+              <label className="text-sm font-semibold text-brown">
+                View by field
+                <select value={selectedProfileField} onChange={(event) => setSelectedProfileField(event.target.value)} className="mt-1 block w-full rounded-lg border border-beige-border bg-cream-dark px-3 py-2 text-sm font-medium text-brown sm:w-52">
+                  <option value="all">All fields</option>
+                  {careerCards.map((career) => <option key={career.id} value={career.id}>{career.name}</option>)}
+                </select>
+              </label>
             </div>
-            <div className="mt-7 grid gap-6 lg:grid-cols-2">
+            <div className="mt-5 grid gap-5 lg:grid-cols-2">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-journey-green-dark" aria-hidden="true" />
                   <h3 className="font-semibold text-brown">Strengths</h3>
                 </div>
-                <div className="mt-4 space-y-4">
+                <div className="mt-3 space-y-3">
                   {filteredStrengths.length > 0 ? filteredStrengths.map((skill) => (
-                    <article key={`${skill.career}-${skill.name}`} className="rounded-2xl border border-beige-border border-l-4 border-l-journey-green-dark bg-cream-dark/40 p-5">
+                    <article key={`${skill.career}-${skill.name}`} className="rounded-xl border border-beige-border border-l-4 border-l-journey-green-dark bg-cream-dark/40 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <h4 className="text-lg font-semibold text-brown">{skill.name}</h4>
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-journey-green px-2.5 py-1 text-xs font-semibold text-journey-green-dark"><CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />{skill.proficiency}</span>
@@ -917,14 +911,15 @@ function ExploringResults() {
                   <span className="h-2 w-2 rounded-full bg-orange" aria-hidden="true" />
                   <h3 className="font-semibold text-brown">Areas for development</h3>
                 </div>
-                <div className="mt-4 space-y-4">
+                <div className="mt-3 space-y-3">
                   {filteredDevelopmentAreas.length > 0 ? filteredDevelopmentAreas.map((skill) => (
-                    <article key={`${skill.career}-${skill.name}`} className="rounded-2xl border border-beige-border border-l-4 border-l-orange bg-orange-pill/30 p-5">
+                    <article key={`${skill.career}-${skill.name}`} className="rounded-xl border border-beige-border border-l-4 border-l-orange bg-orange-pill/30 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <h4 className="text-lg font-semibold text-brown">{skill.name}</h4>
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-pill px-2.5 py-1 text-xs font-semibold text-brown"><ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />{skill.proficiency}</span>
                       </div>
                       <p className="mt-1 text-xs font-medium text-brown-light">{skill.career}</p>
+                      {skill.category && <p className="mt-1 text-xs capitalize text-brown-light">Question category: {skill.category}</p>}
                       <p className="mt-3 text-sm leading-relaxed text-brown-light">{skill.explanation}</p>
                     </article>
                   )) : <p className="rounded-2xl border border-dashed border-beige-border bg-orange-pill/30 p-5 text-sm text-brown-light">No development areas are available for this field yet.</p>}
@@ -933,7 +928,7 @@ function ExploringResults() {
             </div>
           </section>
 
-          <section className="mt-8 overflow-hidden rounded-3xl border border-orange/25 bg-orange-pill">
+          <section className="mt-5 overflow-hidden rounded-2xl border border-orange/25 bg-orange-pill">
             <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
               <div className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brown text-white"><Zap className="h-5 w-5" aria-hidden="true" /></span>
@@ -957,15 +952,15 @@ function ExploringResults() {
                     const percentage = getCareerPercentage(careerScores, career.id)
                     const Icon = career.icon
                     return (
-                      <article key={career.id} className="group flex h-full flex-col rounded-2xl border border-beige-border bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover">
+                      <article key={career.id} className="group flex h-full flex-col rounded-xl border border-beige-border bg-white p-4 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover">
                         <div className="flex items-start justify-between gap-4">
                           <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${career.accent}`}><Icon className="h-6 w-6" aria-hidden="true" /></div>
                           <div className="text-right"><p className="text-2xl font-bold text-brown">{percentage}%</p><p className="text-xs font-medium text-brown-light">match</p></div>
                         </div>
-                        <h3 className="mt-5 font-serif text-2xl font-semibold text-brown">{career.name}</h3>
+                        <h3 className="mt-3 font-serif text-xl font-semibold text-brown">{career.name}</h3>
                         <p className="mt-2 min-h-12 text-sm leading-relaxed text-brown-light">{career.description}</p>
                         <div className="mt-5 h-2 overflow-hidden rounded-full bg-brown/10"><div className="h-full rounded-full bg-orange transition-all duration-500" style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }} /></div>
-                        <button type="button" onClick={() => handleGenerateRoadmap({ ...career, percentage })} disabled={Boolean(generatingCareer)} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brown px-4 py-3 font-semibold text-white transition-all duration-200 hover:bg-orange hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60">
+                        <button type="button" onClick={() => handleGenerateRoadmap({ ...career, percentage })} disabled={Boolean(generatingCareer)} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brown px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-orange hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60">
                           {generatingCareer === career.id ? <><Loader className="h-4 w-4 animate-spin" aria-hidden="true" /> Generating roadmap...</> : <><Zap className="h-4 w-4" aria-hidden="true" /> Generate Roadmap <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></>}
                         </button>
                       </article>
@@ -977,14 +972,22 @@ function ExploringResults() {
           </section>
 
           {/* Info note */}
-          <div className="mt-12 flex items-start gap-3 rounded-2xl border border-beige-border bg-cream-dark/40 p-5">
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-beige-border bg-cream-dark/40 p-4">
             <p className="text-sm leading-relaxed text-brown-light">
               <span className="font-semibold text-brown">Note:</span> These career scores are calculated from your Journey 1 assessment results.
             </p>
           </div>
 
           {/* CTA */}
-          <div className="mt-12 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button
+              to="/dashboard"
+              variant="ghost"
+              size="lg"
+              className="flex-1"
+            >
+              Back to Home
+            </Button>
             <Button
               to="/explore/domain-selection"
               variant="dark"
@@ -993,14 +996,6 @@ function ExploringResults() {
               className="flex-1"
             >
               Explore a Domain
-            </Button>
-            <Button
-              to="/dashboard"
-              variant="ghost"
-              size="lg"
-              className="flex-1"
-            >
-              Back to Home
             </Button>
           </div>
         </div>
