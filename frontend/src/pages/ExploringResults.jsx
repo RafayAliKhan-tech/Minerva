@@ -533,9 +533,10 @@ const normalizeCareerId = (value) => {
   return aliases[normalized] || normalized
 }
 const getCareerPercentage = (careerScores, careerId) => {
+  const normalizedCareerId = normalizeCareerId(careerId)
   const score = Array.isArray(careerScores)
-    ? careerScores.find((item) => normalizeCareerId(item?.career_id || item?.career || item?.name) === normalizeCareerId(careerId))
-    : careerScores?.[careerId]
+    ? careerScores.find((item) => normalizeCareerId(item?.career_id || item?.career || item?.name) === normalizedCareerId)
+    : Object.entries(careerScores || {}).find(([key]) => normalizeCareerId(key) === normalizedCareerId)?.[1]
   const value = typeof score === 'object' ? score?.percentage : score
   return Number(value ?? 0)
 }
