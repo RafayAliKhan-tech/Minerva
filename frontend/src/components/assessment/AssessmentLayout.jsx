@@ -10,6 +10,7 @@ function AssessmentLayout({
   onBack,
   title,
   subtitle,
+  contentClassName = 'max-w-3xl',
 }) {
   return (
     <div className="min-h-screen bg-cream py-8 sm:py-12 lg:py-16">
@@ -69,7 +70,7 @@ function AssessmentLayout({
         )}
 
         {/* Main content */}
-        <div className="max-w-3xl">{children}</div>
+        <div className={contentClassName}>{children}</div>
       </Container>
     </div>
   )

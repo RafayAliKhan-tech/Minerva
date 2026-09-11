@@ -304,24 +304,49 @@ function ExploringResults() {
     <AssessmentLayout
       onBack={() => navigate('/')}
       showProgress={false}
+      contentClassName="max-w-6xl"
     >
       {/* Main card */}
-      <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
-        <div className="max-w-3xl">
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="font-serif text-4xl font-semibold text-brown sm:text-5xl">
-              Here's What We Discovered About You
-            </h1>
-            <p className="mt-4 text-base text-brown-light">
-              Based on your responses, here's your Journey 1 career analysis.
-            </p>
+      <div className="overflow-hidden rounded-[2rem] border border-beige-border bg-white shadow-card">
+        <div className="border-b border-beige-border bg-gradient-to-br from-[#f8f7f4] via-white to-[#efede9] px-6 py-10 sm:px-10 sm:py-12 lg:px-14">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-beige-border bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brown-light">
+                <Sparkles className="h-3.5 w-3.5 text-orange" aria-hidden="true" />
+                Journey 1 complete
+              </div>
+              <h1 className="mt-5 max-w-xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-brown sm:text-5xl lg:text-6xl">
+                A clearer view of where you can go next.
+              </h1>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-brown-light sm:text-lg">
+                Your assessment highlights the patterns, capabilities, and career directions that are most relevant to you right now.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-beige-border bg-white/80 p-5 shadow-sm lg:min-w-56">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brown-light">Your result</p>
+              <p className="mt-2 font-serif text-2xl font-semibold text-brown">Personalized insights</p>
+              <p className="mt-2 text-sm leading-relaxed text-brown-light">Use these signals as a starting point, not a limit.</p>
+            </div>
           </div>
-
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            {[
+              { value: strongestSignals.length, label: 'strongest signals' },
+              { value: filteredStrengths.length + filteredDevelopmentAreas.length, label: 'profile insights' },
+              { value: careerCards.length, label: 'career directions' },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-beige-border bg-white/70 px-4 py-4">
+                <p className="font-serif text-3xl font-semibold text-brown">{stat.value}</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.13em] text-brown-light">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="p-6 sm:p-10 lg:p-14">
+        <div className="max-w-4xl">
           <section className="rounded-3xl border border-beige-border bg-cream-dark/60 p-6 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brown-light">1. Your strongest signals</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange">01 / Strongest signals</p>
                 <h2 className="mt-1 font-serif text-2xl font-semibold text-brown">What stands out most</h2>
                 <p className="mt-2 text-sm text-brown-light">Choose a field to see the signals most relevant to that direction.</p>
               </div>
@@ -353,7 +378,7 @@ function ExploringResults() {
               <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-journey-green text-journey-green-dark"><Sparkles className="h-5 w-5" aria-hidden="true" /></div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brown-light">2. Overall skill profile</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange">02 / Overall skill profile</p>
                 <h2 className="mt-1 font-serif text-2xl font-semibold text-brown">Strengths and areas to grow</h2>
                 <p className="mt-2 text-sm leading-relaxed text-brown-light">A more detailed view of what you already do well and what will help you build readiness.</p>
               </div>
@@ -397,7 +422,7 @@ function ExploringResults() {
           </section>
 
           <section className="mt-8 rounded-3xl border border-orange/20 bg-orange-pill p-6 sm:p-7">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brown-light">3. Recommended next step</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange">03 / Recommended next step</p>
             <h2 className="mt-1 font-serif text-2xl font-semibold text-brown">Turn your insight into a roadmap</h2>
             <p className="mt-2 text-sm leading-relaxed text-brown-light">{typeof journey1Data.recommended_next_step === 'string' ? journey1Data.recommended_next_step : 'Choose the career direction that feels most motivating, then generate a practical roadmap to build on your strengths.'}</p>
             <button type="button" onClick={() => setShowCareerMatches((current) => !current)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brown px-5 py-3 font-semibold text-white transition hover:bg-orange">
@@ -460,6 +485,7 @@ function ExploringResults() {
               Back to Home
             </Button>
           </div>
+        </div>
         </div>
       </div>
     </AssessmentLayout>
