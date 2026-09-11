@@ -56,14 +56,20 @@ function DomainSelection() {
               <p className="mt-3 text-sm text-red-600">Please select a career before continuing.</p>
             )}
           </div>
-          <Button
-            onClick={handleContinue}
-            variant="dark"
-            size="lg"
-            disabled={!selectedCareer || isLoading || Boolean(error)}
-          >
-            Continue →
-          </Button>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Button to="/" variant="ghost" size="lg" className="flex-1">
+              Back to Home
+            </Button>
+            <Button
+              onClick={handleContinue}
+              variant="dark"
+              size="lg"
+              disabled={!selectedCareer || isLoading || Boolean(error)}
+              className="flex-1"
+            >
+              Continue →
+            </Button>
+          </div>
         </div>
 
         <div className="mt-12 rounded-2xl bg-orange-pill p-6">

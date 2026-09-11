@@ -97,6 +97,14 @@ function ExploringIntro() {
           {/* CTA */}
           <div className="mt-12 flex flex-col gap-3 sm:flex-row">
             <Button
+              to="/"
+              variant="ghost"
+              size="lg"
+              className="flex-1"
+            >
+              Back to Home
+            </Button>
+            <Button
               onClick={handleStart}
               variant="dark"
               size="lg"
@@ -104,14 +112,6 @@ function ExploringIntro() {
               className="flex-1"
             >
               {isStarting ? 'Starting...' : 'Start Exploring'}
-            </Button>
-            <Button
-              to="/"
-              variant="ghost"
-              size="lg"
-              className="flex-1"
-            >
-              Back to Home
             </Button>
           </div>
           {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
