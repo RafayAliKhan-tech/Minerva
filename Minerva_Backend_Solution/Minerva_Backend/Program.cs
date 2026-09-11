@@ -557,7 +557,10 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    // await dbContext.Database.MigrateAsync();
+    // Apply pending schema changes before any request can use Identity or
+    // application tables. Without this, a fresh/stale production database
+    // causes registration to fail inside UserManager.CreateAsync.
+    await dbContext.Database.MigrateAsync();
     await Minerva_Backend.Helpers.AssessmentSeeder.SeedAssessmentQuestions(dbContext);
     await Minerva_Backend.Helpers.CareerSeeder.SeedCareers(dbContext);
     await Minerva_Backend.Helpers.Journey1Seeder.SeedJourney1Questions(dbContext);
