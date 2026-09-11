@@ -190,6 +190,72 @@ def _apply_runtime_settings(
     return result
 
 
+def _ensure_journey1_from_scratch_skills(
+    profile: Dict[str, Any],
+    resources: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """
+    Give a selected zero-evidence Journey 1 career a real foundation path.
+
+    Some Journey 1 scoring payloads omit skill records entirely for a 0%
+    career. Without this profile, planner.py correctly has no objectives and
+    returns an empty roadmap. The curated resource catalog is the source for
+    the available skills and target levels; no user proficiency is inferred.
+    """
+
+    if profile.get("journey") != "exploring" or profile.get("skills"):
+        return profile
+
+    career = profile.get("career")
+    if not career:
+        return profile
+
+    skill_targets: Dict[str, int] = {}
+    for resource in resources:
+        if not isinstance(resource, dict):
+            continue
+
+        resource_careers = resource.get("career", [])
+        if isinstance(resource_careers, str):
+            resource_careers = [resource_careers]
+        if career not in resource_careers:
+            continue
+
+        resource_level = resource.get("level")
+        if not isinstance(resource_level, int):
+            continue
+
+        for skill_id, skill_level in (resource.get("skills") or {}).items():
+            target_level = skill_level if isinstance(skill_level, int) else resource_level
+            skill_targets[skill_id] = max(
+                target_level,
+                skill_targets.get(skill_id, 0),
+            )
+
+    if not skill_targets:
+        return profile
+
+    result = deepcopy(profile)
+    result["skills"] = [
+        {
+            "skill_id": skill_id,
+            "current_level": None,
+            "target_level": target_level,
+            "gap": None,
+            "gap_label": "No Evidence",
+            "priority": "High",
+            "category": "core",
+            "weight": 1.0,
+            "confidence": 0.0,
+            "evidence_status": "no_evidence",
+            "from_scratch": True,
+        }
+        for skill_id, target_level in sorted(skill_targets.items())
+    ]
+    result["from_scratch"] = True
+    return result
+
+
 # ============================================================================
 # STAGES 2-7 — LEVEL RULES -> RETRIEVAL -> PLANNER -> TIMELINE -> SCHEMA ->
 # VALIDATOR, for exactly ONE profile
@@ -283,6 +349,7 @@ def _run_pipeline_once(
     if report.is_valid:
         roadmap["meta"]["engine_mode"] = "groq_with_module_fallbacks" if use_model else "deterministic"
         roadmap["meta"]["validation"] = report.to_dict()
+        _annotate_learning_path(roadmap, profile_with_rules, resources)
 
         # Only touches roadmaps that are genuinely empty (no gaps found,
         # nothing to plan). Non-empty roadmaps (learning_objectives or
@@ -314,6 +381,7 @@ def _run_pipeline_once(
         fallback_roadmap["meta"]["engine_mode"] = "deterministic_recovery"
         fallback_roadmap["meta"]["validation"] = fallback_report.to_dict()
         fallback_roadmap["meta"]["initial_validation_failure"] = report.to_dict()
+        _annotate_learning_path(fallback_roadmap, profile_with_rules, resources)
 
         # Same empty-roadmap handling as the primary path above.
         if not fallback_roadmap.get("learning_objectives") and not fallback_roadmap.get("phases"):
@@ -333,6 +401,59 @@ def _run_pipeline_once(
         career_context=profile_with_rules.get("career"),
         first_report=report,
         recovery_report=fallback_report,
+    )
+
+
+def _annotate_learning_path(
+    roadmap: Dict[str, Any],
+    profile: Dict[str, Any],
+    resources: Sequence[Dict[str, Any]],
+) -> None:
+    """Expose the deterministic starting rule used by a from-scratch roadmap."""
+
+    from_scratch = any(
+        skill.get("from_scratch") is True
+        or skill.get("strategy") == "from_scratch_progression"
+        for skill in profile.get("level_rules", [])
+    )
+    if not from_scratch:
+        return
+
+    resource_by_id = {
+        resource.get("resource_id"): resource
+        for resource in resources
+        if resource.get("resource_id")
+    }
+    scheduled_ids = [
+        resource_id
+        for week in roadmap.get("timeline", {}).get("weeks", [])
+        for resource_id in week.get("resource_ids", week.get("resources", []))
+        if resource_id in resource_by_id
+    ]
+    scheduled_levels = [
+        resource_by_id[resource_id].get("level")
+        for resource_id in scheduled_ids
+        if isinstance(resource_by_id[resource_id].get("level"), int)
+    ]
+    career_levels = [
+        resource.get("level")
+        for resource in resources
+        if profile.get("career") in (
+            resource.get("career")
+            if isinstance(resource.get("career"), list)
+            else [resource.get("career")]
+        )
+        and isinstance(resource.get("level"), int)
+    ]
+
+    roadmap["meta"]["learning_strategy"] = "from_scratch_progression"
+    roadmap["meta"]["starting_phase"] = "foundation"
+    roadmap["meta"]["from_scratch"] = True
+    roadmap["meta"]["lowest_available_resource_level"] = (
+        min(career_levels) if career_levels else None
+    )
+    roadmap["meta"]["first_scheduled_resource_level"] = (
+        scheduled_levels[0] if scheduled_levels else None
     )
 
 
@@ -409,6 +530,7 @@ def generate_roadmap(
             if len(profiles) != 1:
                 raise RoadmapEngineError(f"Journey 1 adapter returned an unexpected number of profiles for career={career!r}.")
             prepared = _apply_runtime_settings(profiles[0], weekly_hours, goal, target_role)
+            prepared = _ensure_journey1_from_scratch_skills(prepared, resources)
             return _run_pipeline_once(prepared, resources, **pipeline_kwargs)
 
         roadmaps: List[Dict[str, Any]] = []
@@ -424,6 +546,7 @@ def generate_roadmap(
             _log(f"\n[{index}/{total_profiles}] Career: {career}")
             _log(f"  → Level rules + resource retrieval...")
             prepared = _apply_runtime_settings(raw_profile, weekly_hours, goal, target_role)
+            prepared = _ensure_journey1_from_scratch_skills(prepared, resources)
             _log(f"  ✓ Profile prepared")
 
             if use_model:
@@ -454,6 +577,7 @@ def generate_roadmap(
     _log(f"[INFO] Journey {journey}: processing career={career}")
     _log("  → Level rules + resource retrieval...")
     prepared = _apply_runtime_settings(profile, weekly_hours, goal, target_role)
+    prepared = _ensure_journey1_from_scratch_skills(prepared, resources)
     _log("  ✓ Profile prepared")
     _log("  → Running planner + timeline...")
     roadmap = _run_pipeline_once(prepared, resources, **pipeline_kwargs)
