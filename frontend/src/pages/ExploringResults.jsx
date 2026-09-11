@@ -1747,7 +1747,7 @@ function ExploringResults() {
   const [generatingCareer, setGeneratingCareer] = useState('')
   const [selectedField, setSelectedField] = useState('all')
   const [showCareerMatches, setShowCareerMatches] = useState(false)
-  const [expandedSignalCareers, setExpandedSignalCareers] = useState({})
+  const [expandedSignalGroups, setExpandedSignalGroups] = useState({})
 
   useEffect(() => {
     ;(async () => {
@@ -1826,6 +1826,23 @@ function ExploringResults() {
     })),
     selectedField,
   )
+
+  const groupedStrongestSignals = strongestSignals.reduce((groups, signal) => {
+    const careerId = normalizeCareerId(signal.career) || 'general'
+    const career = careerCards.find((item) => item.id === careerId)
+    const key = career?.id || careerId
+    if (!groups[key]) {
+      groups[key] = {
+        id: key,
+        name: career?.name || signal.career || 'General strengths',
+        icon: career?.icon || Sparkles,
+        accent: career?.accent || 'text-brown bg-cream-dark border-beige-border',
+        signals: [],
+      }
+    }
+    groups[key].signals.push(signal)
+    return groups
+  }, {})
 
   const handleGenerateRoadmap = async (careerMatch) => {
     const realAssessmentId = sessionStorage.getItem('journey1AssessmentId')
@@ -1966,109 +1983,80 @@ function ExploringResults() {
         <div className="max-w-4xl">
           <section className="rounded-3xl border border-beige-border bg-cream-dark/60 p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brown text-sm font-semibold text-white shadow-sm">01</span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brown text-sm font-bold tracking-wide text-white shadow-sm">01</span>
               <div>
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-orange" aria-hidden="true" />
                   <h2 className="font-serif text-2xl font-semibold text-brown sm:text-3xl">What stands out most</h2>
                 </div>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-brown-light">
-                  The strongest patterns from your assessment, organized by career direction.
+                  Your strongest signals, grouped by career direction.
                 </p>
               </div>
             </div>
 
             <div className="mt-7 space-y-3">
-              {strongestSignals.length > 0
-                ? Object.entries(
-                    strongestSignals.reduce((groups, signal) => {
-                      const career = signal.career || 'Your profile'
-                      if (!groups[career]) groups[career] = []
-                      groups[career].push(signal)
-                      return groups
-                    }, {})
-                  ).map(([career, signals]) => {
-                    const isOpen = expandedSignalCareers[career] !== false
-                    const matchingCareer = careerCards.find(
-                      (item) => normalizeCareerId(item.name) === normalizeCareerId(career)
-                    )
-                    const SignalIcon = matchingCareer?.icon || Sparkles
-                    return (
-                      <article
-                        key={career}
-                        className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-200 ${
-                          isOpen ? 'border-beige-border shadow-card' : 'border-beige-border hover:border-orange/40'
-                        }`}
+              {Object.keys(groupedStrongestSignals).length > 0
+                ? Object.values(groupedStrongestSignals).map((group) => {
+                  const Icon = group.icon
+                  const isExpanded = expandedSignalGroups[group.id] ?? true
+                  return (
+                    <article key={group.id} className={`overflow-hidden rounded-2xl border bg-white transition-all duration-200 ${isExpanded ? 'border-beige-border shadow-card' : 'border-beige-border hover:border-orange/40'}`}>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedSignalGroups((current) => ({ ...current, [group.id]: !isExpanded }))}
+                        className="flex w-full items-center gap-4 p-5 text-left transition-colors hover:bg-cream-dark/30 sm:p-6"
+                        aria-expanded={isExpanded}
                       >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setExpandedSignalCareers((current) => ({
-                              ...current,
-                              [career]: !isOpen,
-                            }))
-                          }
-                          className="flex w-full items-center gap-4 p-5 text-left transition-colors hover:bg-cream-dark/30 sm:p-6"
-                          aria-expanded={isOpen}
-                        >
-                          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${
-                            matchingCareer?.accent || 'text-orange-700 bg-orange-50 border-orange-100'
-                          }`}>
-                            <SignalIcon className="h-6 w-6" aria-hidden="true" />
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${group.accent}`}>
+                          <Icon className="h-6 w-6" aria-hidden="true" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-serif text-lg font-semibold text-brown sm:text-xl">{group.name}</h3>
+                            <span className="rounded-full bg-cream-dark px-2.5 py-1 text-[11px] font-semibold text-brown-light">
+                              {group.signals.length} {group.signals.length === 1 ? 'signal' : 'signals'}
+                            </span>
                           </div>
+                          <p className="mt-1 text-xs font-medium text-brown-light">Click to view the signals</p>
+                        </div>
 
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="font-serif text-lg font-semibold text-brown sm:text-xl">{career}</h3>
-                              <span className="rounded-full bg-cream-dark px-2.5 py-1 text-[11px] font-semibold text-brown-light">
-                                {signals.length} {signals.length === 1 ? 'signal' : 'signals'}
-                              </span>
-                            </div>
-                            <p className="mt-1 text-xs font-medium text-brown-light">
-                              Strongest signal{signals.length === 1 ? '' : 's'} for this direction
-                            </p>
-                          </div>
+                        <ChevronDown className={`h-5 w-5 shrink-0 text-brown-light transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} aria-hidden="true" />
+                      </button>
 
-                          <ChevronDown
-                            className={`h-5 w-5 shrink-0 text-brown-light transition-transform duration-200 ${
-                              isOpen ? 'rotate-180' : ''
-                            }`}
-                            aria-hidden="true"
-                          />
-                        </button>
-
-                        {isOpen && (
-                          <div className="border-t border-beige-border bg-cream-dark/25 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
-                            <div className="space-y-3">
-                              {signals.map((signal, index) => (
-                                <div
-                                  key={`${signal.text}-${index}`}
-                                  className="group flex items-start gap-3 rounded-xl border border-beige-border bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-journey-green-dark/30 hover:shadow-sm"
-                                >
-                                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-journey-green text-journey-green-dark">
-                                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="text-sm font-medium leading-relaxed text-brown sm:text-base">{signal.text}</p>
-                                    <span className="mt-2 inline-flex items-center rounded-full bg-cream-dark px-2.5 py-1 text-[11px] font-semibold text-brown-light">
-                                      {career}
-                                    </span>
-                                  </div>
+                      {isExpanded && (
+                        <div className="border-t border-beige-border bg-cream-dark/20 p-4 sm:p-5">
+                          <div className="grid gap-3">
+                            {group.signals.map((signal, index) => (
+                              <div
+                                key={`${signal.text}-${index}`}
+                                className="flex items-start gap-3 rounded-xl border border-beige-border bg-white p-4 transition-colors hover:border-journey-green-dark/30"
+                              >
+                                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-journey-green text-journey-green-dark">
+                                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                                 </div>
-                              ))}
-                            </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium leading-relaxed text-brown sm:text-[15px]">{signal.text}</p>
+                                  <span className="mt-2 inline-flex rounded-full bg-cream-dark px-2.5 py-1 text-[11px] font-semibold text-brown-light">
+                                    {group.name}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        )}
-                      </article>
-                    )
-                  })
+                        </div>
+                      )}
+                    </article>
+                  )
+                })
                 : <p className="rounded-2xl border border-dashed border-beige-border bg-white p-5 text-sm text-brown-light">No strongest signals were found for this field yet. Try another field above.</p>}
             </div>
           </section>
 
           <section className="mt-8 rounded-3xl border border-beige-border bg-white p-6 shadow-card sm:p-7">
             <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brown text-sm font-semibold text-white shadow-sm">2</span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brown text-sm font-bold tracking-wide text-white shadow-sm">02</span>
               <div>
                 <h2 className="font-serif text-2xl font-semibold text-brown">Your overall skill profile</h2>
                 <p className="mt-2 max-w-xl text-sm leading-relaxed text-brown-light">A fuller picture of what you already do well and what will help you build readiness, filtered by the field selected above.</p>
@@ -2082,24 +2070,20 @@ function ExploringResults() {
                 </div>
                 <div className="mt-4 space-y-4">
                   {filteredStrengths.length > 0 ? filteredStrengths.map((skill) => (
-                    <article key={`${skill.career}-${skill.name}`} className="group rounded-2xl border border-beige-border bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-journey-green-dark/30 hover:shadow-card">
-                      <div className="flex items-start gap-4">
+                    <article key={`${skill.career}-${skill.name}`} className="group rounded-2xl border border-beige-border bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
+                      <div className="flex items-start gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-journey-green text-journey-green-dark">
                           <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                              <h4 className="text-lg font-semibold text-brown">{skill.name}</h4>
-                              <p className="mt-1 text-xs font-medium text-brown-light">{skill.career}</p>
-                            </div>
-                            <span className="inline-flex shrink-0 items-center rounded-full bg-journey-green px-3 py-1.5 text-xs font-semibold text-journey-green-dark">
-                              {skill.proficiency}
-                            </span>
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <h4 className="text-lg font-semibold text-brown">{skill.name}</h4>
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-journey-green px-2.5 py-1 text-xs font-semibold text-journey-green-dark">{skill.proficiency}</span>
                           </div>
-                          <p className="mt-4 text-sm leading-relaxed text-brown-light">{skill.explanation}</p>
+                          <p className="mt-1 text-xs font-medium text-brown-light">{skill.career}</p>
                         </div>
                       </div>
+                      <p className="mt-4 border-t border-beige-border pt-4 text-sm leading-relaxed text-brown-light">{skill.explanation}</p>
                     </article>
                   )) : <p className="rounded-2xl border border-dashed border-beige-border bg-cream-dark/40 p-5 text-sm text-brown-light">No strengths are available for this field yet.</p>}
                 </div>
@@ -2111,24 +2095,20 @@ function ExploringResults() {
                 </div>
                 <div className="mt-4 space-y-4">
                   {filteredDevelopmentAreas.length > 0 ? filteredDevelopmentAreas.map((skill) => (
-                    <article key={`${skill.career}-${skill.name}`} className="group rounded-2xl border border-beige-border bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-orange/40 hover:shadow-card">
-                      <div className="flex items-start gap-4">
+                    <article key={`${skill.career}-${skill.name}`} className="group rounded-2xl border border-orange/20 bg-orange-pill/20 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
+                      <div className="flex items-start gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-pill text-brown">
                           <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                              <h4 className="text-lg font-semibold text-brown">{skill.name}</h4>
-                              <p className="mt-1 text-xs font-medium text-brown-light">{skill.career}</p>
-                            </div>
-                            <span className="inline-flex shrink-0 items-center rounded-full bg-orange-pill px-3 py-1.5 text-xs font-semibold text-brown">
-                              {skill.proficiency}
-                            </span>
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <h4 className="text-lg font-semibold text-brown">{skill.name}</h4>
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-brown">{skill.proficiency}</span>
                           </div>
-                          <p className="mt-4 text-sm leading-relaxed text-brown-light">{skill.explanation}</p>
+                          <p className="mt-1 text-xs font-medium text-brown-light">{skill.career}</p>
                         </div>
                       </div>
+                      <p className="mt-4 border-t border-orange/15 pt-4 text-sm leading-relaxed text-brown-light">{skill.explanation}</p>
                     </article>
                   )) : <p className="rounded-2xl border border-dashed border-beige-border bg-orange-pill/30 p-5 text-sm text-brown-light">No development areas are available for this field yet.</p>}
                 </div>
@@ -2139,7 +2119,7 @@ function ExploringResults() {
           <section className="mt-8 overflow-hidden rounded-3xl border border-orange/25 bg-orange-pill">
             <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brown text-white"><Zap className="h-5 w-5" aria-hidden="true" /></span>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brown text-sm font-bold tracking-wide text-white shadow-sm">03</span>
                 <div>
                   <h2 className="font-serif text-2xl font-semibold text-brown">Turn your insight into a roadmap</h2>
                   <p className="mt-2 max-w-md text-sm leading-relaxed text-brown-light">{typeof journey1Data.recommended_next_step === 'string' ? journey1Data.recommended_next_step : 'Choose the career direction that feels most motivating, then generate a practical roadmap to build on your strengths.'}</p>
@@ -2155,12 +2135,12 @@ function ExploringResults() {
                 <h3 className="font-serif text-xl font-semibold text-brown">Career matches</h3>
                 <p className="mt-1 text-sm text-brown-light">Compare your options and generate a roadmap when you are ready.</p>
                 {roadmapError && <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-                <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {careerCards.map((career) => {
                     const percentage = getCareerPercentage(careerScores, career.id)
                     const Icon = career.icon
                     return (
-                      <article key={career.id} className="group flex h-full min-h-[390px] flex-col rounded-2xl border border-beige-border bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover">
+                      <article key={career.id} className="group flex h-full flex-col rounded-2xl border border-beige-border bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover">
                         <div className="flex items-start justify-between gap-4">
                           <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${career.accent}`}><Icon className="h-6 w-6" aria-hidden="true" /></div>
                           <div className="text-right"><p className="text-2xl font-bold text-brown">{percentage}%</p><p className="text-xs font-medium text-brown-light">match</p></div>
@@ -2187,12 +2167,12 @@ function ExploringResults() {
           </div>
 
           {/* CTA */}
-          <div className="mt-12 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+          <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button
               to="/dashboard"
               variant="ghost"
               size="lg"
-              className="w-full sm:w-auto sm:min-w-[180px]"
+              className="w-full sm:w-auto"
             >
               Back to Home
             </Button>
@@ -2201,7 +2181,7 @@ function ExploringResults() {
               variant="dark"
               size="lg"
               icon={ArrowRight}
-              className="w-full sm:w-auto sm:min-w-[210px]"
+              className="w-full sm:w-auto"
             >
               Explore a Domain
             </Button>
