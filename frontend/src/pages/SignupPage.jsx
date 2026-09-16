@@ -65,7 +65,7 @@ function SignupPage() {
         <label className="auth-input"><LockKeyhole /><input required type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirm password" /></label>
         <div className="auth-options"><label><input id="agree" type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I agree to the Minerva terms and privacy policy.</label></div>
         {formError && <p className="auth-form-error" role="alert">{formError}</p>}
-        <Button type="submit" variant="dark" size="lg" className="auth-submit" icon={ArrowRight} disabled={isSubmitting}>
+        <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight} disabled={isSubmitting}>
           {isSubmitting ? 'Creating Account...' : 'Create Account'}
         </Button>
       </form><p className="auth-switch">Already have an account? <Button to="/login" variant="ghost" size="sm" className="auth-link">Log in</Button></p>
