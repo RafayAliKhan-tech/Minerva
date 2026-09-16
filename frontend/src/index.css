@@ -1681,9 +1681,20 @@ a {
   box-shadow: none;
 }
 
+.auth-page-shell .site-navbar.navbar-seamless-page {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 .auth-page-shell .auth-footer {
   background: #000000;
   color: #ffffff;
+}
+
+.auth-page-shell .auth-footer {
+  background: transparent !important;
+  border-top-color: transparent !important;
 }
 
 .auth-page-shell .auth-footer p {
