@@ -11,15 +11,16 @@ function Layout({ showFooter = true }) {
   const { pathname } = useLocation()
   const { isAuthenticated } = useAuth()
   const isAuthPage = AUTH_ROUTES.includes(pathname)
+  const isChatPage = pathname === '/chat'
 
   return (
-    <div className={`page-shell${isAuthPage ? ' auth-page-shell' : ''}`}>
+    <div className={`page-shell${isAuthPage ? ' auth-page-shell' : ''}${isChatPage ? ' chat-app-shell' : ''}`}>
       <Navbar />
-      <main className={`page-main-content${isAuthPage ? ' auth-page-main' : ''}`}>
+      <main className={`page-main-content${isAuthPage ? ' auth-page-main' : ''}${isChatPage ? ' chat-app-main' : ''}`}>
         <Outlet />
       </main>
-      {showFooter && <Footer compact={isAuthPage} />}
-      {isAuthenticated && <Link to="/chat" aria-label="Open Minerva chat" className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#c38d66] text-white shadow-lg transition-transform hover:-translate-y-1"><MessageCircle size={23} /></Link>}
+      {showFooter && !isChatPage && <Footer compact={isAuthPage} />}
+      {isAuthenticated && !isChatPage && <Link to="/chat" aria-label="Open Minerva chat" className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#c38d66] text-white shadow-lg transition-transform hover:-translate-y-1"><MessageCircle size={23} /></Link>}
     </div>
   )
 }

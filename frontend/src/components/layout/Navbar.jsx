@@ -95,6 +95,7 @@ function Navbar() {
   const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
   const isSeamlessPage = SEAMLESS_NAV_ROUTES.has(location.pathname)
   const isAuthActionOnlyPage = AUTH_ACTION_ONLY_ROUTES.has(location.pathname)
+  const isChatPage = location.pathname === '/chat'
   const isAuthPage = AUTH_NAV_ROUTES.has(location.pathname)
   const visibleNavLinks = isAuthPage || isAuthenticated
     ? navLinks.filter((link) => !PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS.has(link.label))
@@ -112,7 +113,7 @@ function Navbar() {
         }`
 
   return (
-    <header className={`site-navbar fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-200 ${isLanding ? 'landing-navbar' : ''} ${isSeamlessPage ? 'navbar-seamless-page navbar-dark' : navbarTheme} ${headerClass}`}>
+    <header className={`site-navbar ${isChatPage ? 'chat-app-navbar' : 'fixed inset-x-0 top-0 z-50'} transition-[background-color,border-color,box-shadow] duration-200 ${isLanding ? 'landing-navbar' : ''} ${isSeamlessPage || isChatPage ? 'navbar-seamless-page navbar-dark' : navbarTheme} ${headerClass}`}>
       <Container>
         <nav className="flex h-16 items-center justify-between sm:h-20" aria-label="Main navigation">
           <Logo />

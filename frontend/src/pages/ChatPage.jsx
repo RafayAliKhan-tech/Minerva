@@ -224,7 +224,7 @@ function ChatPage() {
                 ) : null}
               </div>
             )}
-            <div className="chat-messages">
+            <div className={`chat-messages${!loadingHistory && !messages.length ? ' chat-messages-empty' : ''}`}>
               {loadingHistory && (
                 <div className="chat-message assistant">
                   <span><Sparkles size={14} /></span>

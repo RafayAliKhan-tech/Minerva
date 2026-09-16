@@ -2034,6 +2034,138 @@ a {
 .chat-composer input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; color: #f5f1ec; padding: 0 9px; }
 .chat-composer button { display: grid; place-items: center; width: 38px; height: 38px; border: 0; background: #f5f1ec; color: #1c1b1a; cursor: pointer; }
 
+html:has(.chat-app-shell),
+body:has(.chat-app-shell) {
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-app-shell {
+  display: flex;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: #1c1b1a;
+}
+
+.chat-app-shell .chat-app-navbar {
+  position: relative;
+  inset: auto;
+  z-index: 10;
+  flex: 0 0 64px;
+  height: 64px;
+  border-bottom: 1px solid rgba(245, 240, 234, 0.12);
+  background: #151514 !important;
+}
+
+.chat-app-shell .chat-app-navbar .container {
+  height: 100%;
+}
+
+.chat-app-shell .chat-app-navbar nav {
+  height: 64px;
+}
+
+.chat-app-shell .chat-app-navbar #mobile-menu > div:last-child {
+  background: #1c1b1a;
+}
+
+.chat-app-main {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.chat-app-main .chat-page {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+.chat-app-main .chat-page > .container {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  padding: 0 24px;
+}
+
+.chat-app-main .chat-heading {
+  display: none;
+}
+
+.chat-app-main .chat-shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.chat-app-main .chat-sidebar {
+  width: 280px;
+  min-width: 280px;
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid rgba(245, 240, 234, 0.12);
+  border-bottom: 0;
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.chat-app-main .chat-window {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: 24px 16px 14px;
+  overflow: hidden;
+}
+
+.chat-app-main .chat-messages {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  align-content: start;
+  padding: 8px max(0px, calc((100% - 860px) / 2));
+}
+
+.chat-app-main .chat-messages-empty {
+  align-content: center;
+  justify-items: center;
+}
+
+.chat-app-main .chat-messages-empty .chat-message {
+  width: min(100%, 520px);
+}
+
+.chat-app-main .chat-starters {
+  width: min(100%, 860px);
+  margin: 16px auto 12px;
+}
+
+.chat-app-main .chat-composer {
+  width: min(100%, 860px);
+  flex: 0 0 auto;
+  margin: 0 auto;
+}
+
+.chat-app-main .chat-message {
+  max-width: min(70%, 720px);
+  overflow-wrap: anywhere;
+}
+
 .interview-role-select { display: grid; gap: 8px; min-width: 210px; }
 .interview-role-select label { color: #8f8880; font-size: 0.62rem; letter-spacing: 0.14em; }
 .interview-role-select select { padding: 12px; border: 1px solid rgba(245, 240, 234, 0.22); background: #282624; color: #f5f1ec; }
@@ -2586,6 +2718,44 @@ body {
 .roadmap-week-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; min-width: 0; }
 .roadmap-week-heading > div { min-width: 0; }
 .roadmap-week-heading strong { display: block; color: #a06e45; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+
+@media (max-width: 800px) {
+  .chat-app-main .chat-page > .container {
+    padding: 0 14px;
+  }
+
+  .chat-app-main .chat-sidebar {
+    display: none;
+  }
+
+  .chat-app-main .chat-window {
+    padding: 16px 0 12px;
+  }
+
+  .chat-app-main .chat-message {
+    max-width: 92%;
+  }
+}
+
+@media (max-width: 520px) {
+  .chat-app-shell .chat-app-navbar,
+  .chat-app-shell .chat-app-navbar nav {
+    height: 60px;
+    flex-basis: 60px;
+  }
+
+  .chat-app-main .chat-page > .container {
+    padding: 0 12px;
+  }
+
+  .chat-app-main .chat-window {
+    padding: 12px 0 10px;
+  }
+
+  .chat-app-main .chat-starters {
+    margin-top: 12px;
+  }
+}
 .roadmap-week-heading h3 { margin: 4px 0 0; color: #334542; font-size: .98rem; overflow-wrap: anywhere; }
 .roadmap-week-heading > span { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; color: #78817e; font-size: .7rem; }
 .roadmap-page .roadmap-week-card p { margin: 8px 0 12px; color: #687370; font-size: .78rem; overflow-wrap: anywhere; }
