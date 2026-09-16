@@ -23,7 +23,8 @@ const AUTH_NAV_ROUTES = new Set([
   '/verify-email',
 ])
 
-const SEAMLESS_NAV_ROUTES = new Set(['/login', '/signup', '/dashboard'])
+const SEAMLESS_NAV_ROUTES = new Set(['/login', '/signup', '/forgot-password', '/dashboard'])
+const LOGIN_TEXT_LINK_ROUTES = new Set(['/login', '/signup'])
 
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -93,6 +94,7 @@ function Navbar() {
 
   const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
   const isSeamlessPage = SEAMLESS_NAV_ROUTES.has(location.pathname)
+  const isLoginTextLinkPage = LOGIN_TEXT_LINK_ROUTES.has(location.pathname)
   const isAuthPage = AUTH_NAV_ROUTES.has(location.pathname)
   const visibleNavLinks = isAuthPage || isAuthenticated
     ? navLinks.filter((link) => !PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS.has(link.label))
@@ -149,6 +151,13 @@ function Navbar() {
                   </div>}
                 </div>
               </>
+            ) : isLoginTextLinkPage ? (
+              <Link
+                to="/login"
+                className="navbar-auth-text text-sm font-semibold text-white transition-opacity hover:opacity-75"
+              >
+                Login
+              </Link>
             ) : isLanding ? (
               <Link
                 to="/signup"
@@ -226,7 +235,7 @@ function Navbar() {
             ))}
           </ul>
           <div className="mt-6 flex flex-col gap-3 border-t border-[#E0E0E0] pt-6">
-            {isAuthenticated ? <><Button to="/dashboard" variant="light" size="md" className="w-full">Dashboard</Button><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
+            {isAuthenticated ? <><Button to="/dashboard" variant="light" size="md" className="w-full">Dashboard</Button><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : isLoginTextLinkPage ? <Link to="/login" className="navbar-auth-text px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-75">Login</Link> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
           </div>
         </div>
       </div>
