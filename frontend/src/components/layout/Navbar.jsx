@@ -125,7 +125,7 @@ function Navbar() {
               </Link>
             ) : (
               <>
-                <Button to="/login" variant="ghost" size="sm">
+                <Button to="/login" variant="light" size="sm">
                   Log In
                 </Button>
                 <Button to="/signup" variant="light" size="sm" icon={ArrowRight}>
