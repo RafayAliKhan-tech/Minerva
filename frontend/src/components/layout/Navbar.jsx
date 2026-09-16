@@ -12,8 +12,15 @@ const PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS = new Set([
   'Home',
   'How It Works',
   'Features',
-  'Roadmap',
   'About Us',
+])
+
+const AUTH_NAV_ROUTES = new Set([
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
 ])
 
 function Navbar() {
@@ -83,7 +90,8 @@ function Navbar() {
       : 'bg-[#F5F5F5]/85'
 
   const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
-  const visibleNavLinks = isAuthenticated
+  const isAuthPage = AUTH_NAV_ROUTES.has(location.pathname)
+  const visibleNavLinks = isAuthPage || isAuthenticated
     ? navLinks.filter((link) => !PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS.has(link.label))
     : navLinks
   const displayName = getDisplayName(user)
