@@ -64,7 +64,7 @@ function Footer({ compact = false }) {
 
   if (compact) {
     return (
-      <footer className="auth-footer border-t border-[#E0E0E0] bg-[#F5F5F5]">
+      <footer className="auth-footer border-t border-[#E0E0E0] bg-transparent">
         <Container className="auth-footer-inner">
           <p>&copy; {new Date().getFullYear()} Minerva. All rights reserved.</p>
         </Container>
