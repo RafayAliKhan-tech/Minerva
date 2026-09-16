@@ -1,6 +1,31 @@
 import Logo from '../common/Logo'
 import Container from '../common/Container'
 import { footerLinks } from '../../data/footer'
+import { Link, useLocation } from 'react-router-dom'
+
+function FooterLink({ link }) {
+  const location = useLocation()
+
+  const handleClick = (event) => {
+    if (!link.href.startsWith('/#') || location.pathname !== '/') return
+
+    const target = document.getElementById(link.href.slice(2))
+    if (!target) return
+
+    event.preventDefault()
+    target.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  return (
+    <Link
+      to={link.href}
+      onClick={handleClick}
+      className="text-sm text-[#707070] transition-colors hover:text-[#1A1A1A]"
+    >
+      {link.label}
+    </Link>
+  )
+}
 
 function Footer({ compact = false }) {
   if (compact) {
@@ -33,7 +58,7 @@ function Footer({ compact = false }) {
               <ul className="space-y-3">
                 {footerLinks.platform.map((link) => (
                   <li key={link.label}>
-                    <span className="text-sm text-[#707070]">{link.label}</span>
+                    <FooterLink link={link} />
                   </li>
                 ))}
               </ul>
@@ -45,7 +70,7 @@ function Footer({ compact = false }) {
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
                   <li key={link.label}>
-                    <span className="text-sm text-[#707070]">{link.label}</span>
+                    <FooterLink link={link} />
                   </li>
                 ))}
               </ul>
@@ -57,7 +82,7 @@ function Footer({ compact = false }) {
               <ul className="space-y-3">
                 {footerLinks.support.map((link) => (
                   <li key={link.label}>
-                    <span className="text-sm text-[#707070]">{link.label}</span>
+                    <FooterLink link={link} />
                   </li>
                 ))}
               </ul>

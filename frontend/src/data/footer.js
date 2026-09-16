@@ -1,30 +1,18 @@
 export const footerLinks = {
   platform: [
-    { label: 'Career Explorer', href: '/explore' },
-    { label: 'AI Assessment', href: '/explore' },
-    { label: 'Skill Roadmap', href: '/explore/roadmap' },
-    { label: 'Job Matching', href: '/explore/resume/career-match' },
-    { label: 'Mock Interviews', href: '/mock-interview' },
+    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'Features', href: '/#features' },
+    { label: 'Career Exploration', href: '/explore/assessment' },
+    { label: 'Resume Analysis', href: '/explore/resume/analysis' },
+    { label: 'Learning Roadmap', href: '/explore/roadmap' },
   ],
   company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Success Stories', href: '/#success-stories' },
-    { label: 'Careers', href: '/about' },
-    { label: 'Blog', href: '/about' },
-    { label: 'Press', href: '/about' },
+    { label: 'Home', href: '/' },
+    { label: 'About Us', href: '/#about' },
+    { label: 'Get Started', href: '/signup' },
   ],
   support: [
-    { label: 'Help Center', href: '/#about' },
-    { label: 'Contact Us', href: '/#about' },
-    { label: 'Privacy Policy', href: '/#about' },
-    { label: 'Terms of Service', href: '/#about' },
-    { label: 'FAQ', href: '/#about' },
+    { label: 'Mock Interviews', href: '/mock-interview' },
+    { label: 'Sign In', href: '/login' },
   ],
 }
-
-export const socialLinks = [
-  { label: 'Instagram', href: 'https://instagram.com', icon: 'instagram' },
-  { label: 'LinkedIn', href: 'https://linkedin.com', icon: 'linkedin' },
-  { label: 'Twitter', href: 'https://twitter.com', icon: 'twitter' },
-  { label: 'YouTube', href: 'https://youtube.com', icon: 'youtube' },
-]
