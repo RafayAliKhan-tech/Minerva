@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Loader, CheckCircle2, XCircle, Zap } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
+import ResumeAnalysisCard from '../components/common/ResumeAnalysisCard'
 import { useAuth } from '../auth/AuthContext'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 import { generateRoadmap, getRoute3Result } from '../api/minervaApi'
@@ -180,6 +181,8 @@ function ResumeResults() {
 
         {list(data.strengths).length > 0 && <div className="rounded-3xl border border-journey-green bg-journey-green/10 p-8"><h3 className="text-xl font-semibold text-brown mb-6">Strengths</h3><div className="space-y-3">{renderList(list(data.strengths))}</div></div>}
         {list(data.weaknesses || data.areasToImprove).length > 0 && <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8"><h3 className="text-xl font-semibold text-brown mb-6">Weaknesses</h3><div className="space-y-3">{renderList(list(data.weaknesses || data.areasToImprove))}</div></div>}
+
+        <ResumeAnalysisCard variant="light" />
 
         {/* CTA */}
         {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}

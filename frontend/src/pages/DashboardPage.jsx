@@ -2,6 +2,7 @@ import { useMemo, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowUpRight, BriefcaseBusiness, MessageCircle, PlayCircle, Telescope, Compass, Zap, Trash2 } from 'lucide-react'
 import Container from '../components/common/Container'
+import ResumeAnalysisCard from '../components/common/ResumeAnalysisCard'
 import { useAuth } from '../auth/AuthContext'
 import { getJourneyAssessment, getJourney1Result, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
 import { getSkillInsights, getSkillInsightText } from '../utils/skillInsights'
@@ -186,6 +187,7 @@ function DashboardPage() {
 
         <section className="dashboard-section-heading"><div><p className="dashboard-kicker">READY WHEN YOU ARE</p><h2>Choose your next move.</h2></div></section>
         <section className="dashboard-grid dashboard-action-grid">
+          <ResumeAnalysisCard />
           <Link to="/chat" className="dashboard-action-card"><MessageCircle size={22} /><span>Ask Minerva</span><p>Talk through a decision with your profile context in view.</p><ArrowUpRight size={16} /></Link>
           <Link to="/mock-interview" className="dashboard-action-card"><PlayCircle size={22} /><span>Practice an interview</span><p>Build confidence with a role-specific mock interview.</p><ArrowUpRight size={16} /></Link>
         </section>
