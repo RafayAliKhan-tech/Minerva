@@ -2058,6 +2058,7 @@ body:has(.chat-app-shell) {
 .chat-app-main {
   display: flex;
   height: 100%;
+  width: 100vw;
   min-height: 0;
   flex: 1 1 100%;
   overflow: hidden;
@@ -2083,6 +2084,7 @@ body:has(.chat-app-shell) {
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
+  margin: 0;
   max-width: none;
   min-height: 0;
   height: 100%;
@@ -2145,6 +2147,7 @@ body:has(.chat-app-shell) {
 .chat-history-brand img {
   width: 112px;
   height: auto;
+  filter: brightness(0) invert(1);
 }
 
 .chat-history-brand button {
