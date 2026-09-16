@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Bot, Clock3, Loader, MoreVertical, Plus, Search, Send, Sparkles, X } from 'lucide-react'
+import { ArrowUpRight, Clock3, Loader, MoreVertical, Plus, Search, Send, Sparkles, X } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
 import { sendChatMessage, getChatHistory, getProfile } from '../api/minervaApi'
@@ -11,7 +11,7 @@ import {
   extractSessionId,
 } from '../api/backendContract'
 import { getStoredHighestScoredField } from '../utils/skillProfile'
-import { getUserEmail } from '../utils/userData'
+import { getDisplayName, getUserEmail } from '../utils/userData'
 
 const SESSION_KEY = 'minervaChatSessionId'
 const HISTORY_KEY = 'minervaChatSessions'
@@ -292,26 +292,6 @@ function ChatPage() {
           <Link to="/dashboard" className="dashboard-text-link">Dashboard <ArrowUpRight size={15} /></Link>
         </div>
         <div className={`chat-shell${historyOpen ? ' chat-history-open' : ''}`}>
-          <aside className="chat-sidebar">
-            <div className="chat-bot-mark"><Bot size={23} /></div>
-            <h2>Minerva</h2>
-            <p>Career intelligence from the backend profile, not a local fallback.</p>
-            <div className="chat-context">
-              <span>IN VIEW</span>
-              {profileReady && highestScoredField ? (
-                <>
-                  <b>{highestScoredField}</b>
-                  <small>Highest scored field from backend profile</small>
-                </>
-              ) : (
-                <>
-                  <b>Incomplete profile</b>
-                  <small>{profileError || 'The backend has not provided a highest scored field yet. Complete an assessment first.'}</small>
-                </>
-              )}
-            </div>
-            <Link to="/explore/roadmap" className="dashboard-outline-action">Open roadmap <ArrowUpRight size={15} /></Link>
-          </aside>
           <aside className="chat-history-sidebar" aria-label="Chat history">
             <div className="chat-history-heading">
               <div><Clock3 size={16} /><strong>Chat History</strong></div>
@@ -344,6 +324,13 @@ function ChatPage() {
                 )
               })}
               {!sessions.length && <p className="chat-history-empty">Your conversations will appear here.</p>}
+            </div>
+            <div className="chat-history-profile">
+              <span>PROFILE</span>
+              <strong>{getDisplayName(user)}</strong>
+              <small>{getUserEmail(user) || 'Signed-in Minerva account'}</small>
+              {profileReady && highestScoredField && <small>Focus: {highestScoredField}</small>}
+              <Link to="/dashboard">View profile <ArrowUpRight size={13} /></Link>
             </div>
           </aside>
           <section className="chat-window">

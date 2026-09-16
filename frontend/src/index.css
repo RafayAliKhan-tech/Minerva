@@ -2216,9 +2216,50 @@ body:has(.chat-app-shell) {
 }
 
 .chat-history-list {
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   padding: 0 8px 14px;
+}
+
+.chat-history-profile {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 12px;
+  border-top: 1px solid rgba(245, 240, 234, 0.12);
+}
+
+.chat-history-profile > span {
+  color: #d7b58f;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+}
+
+.chat-history-profile strong {
+  overflow: hidden;
+  color: #f5f1ec;
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-history-profile small {
+  overflow: hidden;
+  color: #8f8880;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-history-profile a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  color: #d7b58f;
+  font-size: 0.64rem;
+  text-decoration: none;
 }
 
 .chat-history-group {
