@@ -2042,14 +2042,31 @@ a {
 html:has(.chat-app-shell),
 body:has(.chat-app-shell) {
   height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+}
+
+body:has(.chat-app-shell) #root,
+body:has(.chat-app-shell) .page-shell {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .chat-app-shell {
   display: flex;
+  position: relative;
   height: 100dvh;
+  width: 100vw;
   max-height: 100dvh;
+  max-width: 100vw;
   min-height: 0;
+  margin: 0;
+  padding: 0;
   flex-direction: column;
   overflow: hidden;
   background: #1c1b1a;
@@ -2058,7 +2075,7 @@ body:has(.chat-app-shell) {
 .chat-app-main {
   display: flex;
   height: 100%;
-  width: 100vw;
+  width: 100%;
   min-height: 0;
   flex: 1 1 100%;
   overflow: hidden;
@@ -2341,7 +2358,7 @@ body:has(.chat-app-shell) {
   overflow-y: auto;
   overflow-x: hidden;
   align-content: start;
-  padding: 8px max(0px, calc((100% - 860px) / 2));
+  padding: 8px 32px;
 }
 
 .chat-app-main .chat-messages::-webkit-scrollbar {
@@ -2369,19 +2386,19 @@ body:has(.chat-app-shell) {
 
 .chat-app-main .chat-starters {
   flex: 0 0 auto;
-  width: min(100%, 860px);
+  width: calc(100% - 64px);
   margin: 16px auto 12px;
 }
 
 .chat-app-main .chat-composer {
   flex: 0 0 auto;
-  width: min(100%, 860px);
+  width: calc(100% - 64px);
   margin: 0 auto;
   border-radius: 12px;
 }
 
 .chat-app-main .chat-message {
-  max-width: min(70%, 720px);
+  max-width: min(80%, 1000px);
   overflow-wrap: anywhere;
   border-radius: 14px;
 }
@@ -3084,4 +3101,18 @@ body {
   .roadmap-resource-card a,
   .roadmap-resource-card > span { justify-self: start; max-width: 100%; text-align: left; }
   .roadmap-page .roadmap-aside { padding: 22px; }
+}
+
+.chat-app-main .chat-messages {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.chat-app-main .chat-composer {
+  width: calc(100% - 64px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.chat-app-main .chat-message {
+  max-width: min(80%, 1000px);
 }
