@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 
-const AUTH_ROUTES = ['/login', '/signup']
+const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email']
 
 function Layout({ showFooter = true }) {
   const { pathname } = useLocation()

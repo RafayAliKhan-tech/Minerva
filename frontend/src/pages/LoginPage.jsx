@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import api from '../api/axiosInstance'
@@ -14,6 +15,8 @@ const categoryOptions = [
   { key: 'jobhunting', title: "I'm Job Hunting", description: 'You need fast opportunities, market-aligned skills, and interview prep.' },
 ]
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,6 +25,7 @@ function LoginPage() {
   const [loginSucceeded, setLoginSucceeded] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('exploring')
   const [formError, setFormError] = useState('')
+  const [formSuccess, setFormSuccess] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -29,6 +33,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (location.state?.registeredEmail) setEmail(location.state.registeredEmail)
+    if (location.state?.resetSuccess) setFormSuccess(location.state.resetSuccess)
   }, [location.state])
 
   const handleSubmit = async (e) => {
@@ -36,6 +41,12 @@ function LoginPage() {
     if (isSubmitting) return
     setIsSubmitting(true)
     setFormError('')
+    setFormSuccess('')
+    if (!EMAIL_PATTERN.test(email.trim())) {
+      setFormError('Please enter a valid email address.')
+      setIsSubmitting(false)
+      return
+    }
     try {
       const res = await api.post('/api/auth/loginuser', { Email: email, Password: password })
       const payload = res.data || {}
@@ -97,6 +108,8 @@ function LoginPage() {
       <form onSubmit={handleSubmit} className="auth-form">
         <label className="auth-input"><UserRound /><input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /></label>
         <label className="auth-input"><LockKeyhole /><input required type={showPwd ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" /><button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Hide password' : 'Show password'}>{showPwd ? <EyeOff /> : <Eye />}</button></label>
+        <p className="auth-forgot-link"><Link to="/forgot-password">Forgot Password?</Link></p>
+        {formSuccess && <p className="auth-form-success" role="status">{formSuccess}</p>}
         {formError && <p className="auth-form-error" role="alert">{formError}</p>}
         <div className="auth-options"><label><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label></div>
         <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight} disabled={isSubmitting} aria-busy={isSubmitting}>

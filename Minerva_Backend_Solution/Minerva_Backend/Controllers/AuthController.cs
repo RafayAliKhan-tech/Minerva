@@ -30,5 +30,33 @@ namespace Minerva_Backend.Controllers
             }
             return Ok(result);
         }
+
+        [HttpPost("RequestPasswordReset")]
+        public async Task<IActionResult> RequestPasswordResetAsync([FromBody] ForgotPasswordDTO dto)
+        {
+            var result = await _authService.RequestPasswordReset(dto);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("ValidatePasswordResetToken")]
+        public async Task<IActionResult> ValidatePasswordResetTokenAsync([FromBody] ValidateResetTokenDTO dto)
+        {
+            var result = await _authService.ValidatePasswordResetToken(dto);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordDTO dto)
+        {
+            var result = await _authService.ResetPassword(dto);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmEmailDTO dto)
+        {
+            var result = await _authService.ConfirmEmail(dto);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
     }
 }
