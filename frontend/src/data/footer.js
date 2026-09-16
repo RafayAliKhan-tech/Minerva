@@ -11,7 +11,7 @@ export const footerLinks = {
     { label: 'About Us', href: '/#about' },
     { label: 'Get Started', href: '/signup' },
   ],
-  support: [
+  explore: [
     { label: 'Mock Interviews', href: '/mock-interview' },
     { label: 'Sign In', href: '/login' },
   ],
