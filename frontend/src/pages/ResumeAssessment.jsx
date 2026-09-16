@@ -48,12 +48,13 @@ function ResumeAssessment() {
       showProgress={true}
       currentStep={currentQuestion + 1}
       totalSteps={questions.length}
+      contentClassName="max-w-none"
     >
       <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
-        <div className="max-w-2xl">
+        <div>
           {/* Question */}
-          <div className="mb-12">
-            <h1 className="font-serif text-3xl font-semibold text-brown sm:text-4xl">
+          <div className="mb-10">
+            <h1 className="resume-question-heading">
               {question.prompt}
             </h1>
           </div>
@@ -80,24 +81,22 @@ function ResumeAssessment() {
           </div>
 
           {/* CTA */}
-          <div className="flex gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <Button
+              onClick={() => navigate('/explore/resume/analysis')}
+              variant="ghost"
+              size="lg"
+            >
+              Back
+            </Button>
             <Button
               onClick={handleNext}
               variant="dark"
               size="lg"
               icon={ArrowRight}
-              className="flex-1"
-              disabled={!answers[question.id]?.trim()}
+              disabled={!answers[question.id] || (typeof answers[question.id] === 'string' && !answers[question.id].trim())}
             >
               {isLastQuestion ? 'Complete Assessment' : 'Next Question'}
-            </Button>
-            <Button
-              onClick={() => navigate('/explore/resume/analysis')}
-              variant="ghost"
-              size="lg"
-              className="flex-1"
-            >
-              Back
             </Button>
           </div>
         </div>

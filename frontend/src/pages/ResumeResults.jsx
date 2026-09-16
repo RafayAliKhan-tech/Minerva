@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Loader, CheckCircle2, XCircle, Zap } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
-import ResumeAnalysisCard from '../components/common/ResumeAnalysisCard'
+import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
 import { useAuth } from '../auth/AuthContext'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 import { generateRoadmap, getRoute3Result } from '../api/minervaApi'
@@ -80,7 +80,7 @@ function ResumeResults() {
 
   if (!result && !error || isLoading) {
     return (
-      <AssessmentLayout onBack={() => navigate(-1)} showProgress={false}>
+      <AssessmentLayout onBack={() => navigate(-1)} showProgress={false} contentClassName="max-w-none">
         <div style={{ textAlign: 'center', padding: '2rem' }}>
           <Loader size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
           <p>Evaluating your assessment...</p>
@@ -91,7 +91,7 @@ function ResumeResults() {
 
   if (error) {
     return (
-      <AssessmentLayout onBack={() => navigate(-1)} showProgress={false}>
+      <AssessmentLayout onBack={() => navigate(-1)} showProgress={false} contentClassName="max-w-none">
         <div className="rounded-3xl border border-red-200 bg-red-50 p-8">
           <p style={{ color: '#dc2626', marginBottom: '1rem' }}>{error}</p>
           <Button onClick={() => navigate('/explore/resume')} variant="dark" size="lg">
@@ -153,7 +153,7 @@ function ResumeResults() {
   }
 
   return (
-    <AssessmentLayout onBack={() => navigate(-1)} showProgress={false}>
+    <AssessmentLayout onBack={() => navigate(-1)} showProgress={false} contentClassName="max-w-none">
       <div className="space-y-10">
         {/* Score Card */}
         <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8">
@@ -182,7 +182,7 @@ function ResumeResults() {
         {list(data.strengths).length > 0 && <div className="rounded-3xl border border-journey-green bg-journey-green/10 p-8"><h3 className="text-xl font-semibold text-brown mb-6">Strengths</h3><div className="space-y-3">{renderList(list(data.strengths))}</div></div>}
         {list(data.weaknesses || data.areasToImprove).length > 0 && <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8"><h3 className="text-xl font-semibold text-brown mb-6">Weaknesses</h3><div className="space-y-3">{renderList(list(data.weaknesses || data.areasToImprove))}</div></div>}
 
-        <ResumeAnalysisCard variant="light" />
+        <ResumeAnalysisResultCard analysis={data} />
 
         {/* CTA */}
         {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import SkillBar from '../components/assessment/SkillBar'
 import Button from '../components/common/Button'
@@ -14,6 +14,8 @@ import {
 
 function ResumeInsights() {
   const navigate = useNavigate()
+  const { state } = useLocation()
+  const analysis = state?.analysis
 
   const skills = [
     { name: 'HTML/CSS', percentage: 85 },
@@ -44,7 +46,7 @@ function ResumeInsights() {
               Your Current Skill Profile
             </h1>
             <p className="mt-4 text-base text-brown-light">
-              Based on your resume analysis
+              {analysis ? 'Your latest resume analysis and identified strengths.' : 'Based on your resume analysis'}
             </p>
           </div>
 
