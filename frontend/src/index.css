@@ -2057,7 +2057,7 @@ body:has(.chat-app-shell) {
   flex: 0 0 64px;
   height: 64px;
   border-bottom: 1px solid rgba(245, 240, 234, 0.12);
-  background: #151514 !important;
+  background: #1c1b1a !important;
 }
 
 .chat-app-shell .chat-app-navbar .container {
@@ -2134,6 +2134,8 @@ body:has(.chat-app-shell) {
 }
 
 .chat-app-main .chat-messages {
+  display: grid;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
@@ -2151,13 +2153,14 @@ body:has(.chat-app-shell) {
 }
 
 .chat-app-main .chat-starters {
+  flex: 0 0 auto;
   width: min(100%, 860px);
   margin: 16px auto 12px;
 }
 
 .chat-app-main .chat-composer {
-  width: min(100%, 860px);
   flex: 0 0 auto;
+  width: min(100%, 860px);
   margin: 0 auto;
 }
 
@@ -2730,6 +2733,18 @@ body {
 
   .chat-app-main .chat-window {
     padding: 16px 0 12px;
+  }
+
+  .chat-app-main .chat-starters {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .chat-app-main .chat-starters button {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 
   .chat-app-main .chat-message {
