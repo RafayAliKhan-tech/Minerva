@@ -14,7 +14,7 @@ import StatementInspector from '../components/assessment/StatementInspector'
 import ChoiceExplanation from '../components/assessment/ChoiceExplanation'
 import UIInspection from '../components/assessment/UIInspection'
 import MultipleChoice from '../components/assessment/MultipleChoice'
-import { getStoredResponses, useJourney2Assessment } from '../auth/Journey2AssessmentContext'
+import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
 
 const getInitialState = (activity, saved = {}) => {
   switch (activity?.type) {
@@ -126,7 +126,7 @@ function DomainAssessment() {
   useEffect(() => {
     if (!questions.length && !error) loadQuestions(domainId).catch(() => null)
     if (!activity) return
-    const responses = getStoredResponses()
+    const responses = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
     const savedResponse = responses[activity.id] || responses[activity.activityId] || responses[activity.questionId] || {}
     setCurrentState(getInitialState(activity, savedResponse))
     setTimeUp(false)
@@ -165,7 +165,7 @@ function DomainAssessment() {
   const saveResponse = (auto = false) => {
     if (!activity || saved) return
     const response = buildResponse(activity, { ...currentState, timeTaken: getTimeTaken() }, auto, canContinue)
-    const responses = getStoredResponses()
+    const responses = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
     responses[activity.id] = response
     sessionStorage.setItem('journey2Responses', JSON.stringify(responses))
     setSaved(true)
