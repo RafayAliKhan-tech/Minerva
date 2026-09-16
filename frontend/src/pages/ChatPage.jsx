@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Clock3, Loader, MoreVertical, Plus, Search, Send, Sparkles, X } from 'lucide-react'
+import { ArrowUpRight, Clock3, Loader, MoreVertical, Plus, Send, Sparkles, X } from 'lucide-react'
 import Container from '../components/common/Container'
+import Logo from '../components/common/Logo'
 import { useAuth } from '../auth/AuthContext'
 import { sendChatMessage, getChatHistory, getProfile } from '../api/minervaApi'
 import {
@@ -293,14 +294,13 @@ function ChatPage() {
         </div>
         <div className={`chat-shell${historyOpen ? ' chat-history-open' : ''}`}>
           <aside className="chat-history-sidebar" aria-label="Chat history">
-            <div className="chat-history-heading">
-              <div><Clock3 size={16} /><strong>Chat History</strong></div>
+            <div className="chat-history-brand">
+              <Logo />
               <button type="button" onClick={() => setHistoryOpen(false)} aria-label="Close chat history"><X size={16} /></button>
             </div>
             <button type="button" className="chat-new-button" onClick={startNewChat}>
               <Plus size={15} /> New Chat
             </button>
-            <div className="chat-history-search"><Search size={14} /><span>Search conversations</span></div>
             <div className="chat-history-list">
               {['Today', 'Yesterday', 'Previous 7 Days', 'Older'].map((group) => {
                 const groupedSessions = sessions.filter((session) => getSessionGroup(session.updatedAt) === group)
@@ -326,6 +326,7 @@ function ChatPage() {
               {!sessions.length && <p className="chat-history-empty">Your conversations will appear here.</p>}
             </div>
             <div className="chat-history-profile">
+              <span className="chat-history-avatar" aria-hidden="true">{getDisplayName(user).trim().charAt(0).toUpperCase() || 'M'}</span>
               <span>PROFILE</span>
               <strong>{getDisplayName(user)}</strong>
               <small>{getUserEmail(user) || 'Signed-in Minerva account'}</small>
@@ -334,16 +335,9 @@ function ChatPage() {
             </div>
           </aside>
           <section className="chat-window">
-            <header className="chat-conversation-header">
-              <button type="button" className="chat-history-toggle" onClick={() => setHistoryOpen((open) => !open)} aria-label="Toggle chat history">
-                <Clock3 size={17} />
-              </button>
-              <div>
-                <strong>{sessions.find((session) => session.id === sessionId)?.title || 'New conversation'}</strong>
-                <span>{messages.length} {messages.length === 1 ? 'message' : 'messages'} · Minerva AI</span>
-              </div>
-              <div className="chat-conversation-actions"><Search size={16} /><MoreVertical size={17} /></div>
-            </header>
+            <button type="button" className="chat-history-toggle" onClick={() => setHistoryOpen((open) => !open)} aria-label="Toggle chat history">
+              <Clock3 size={17} />
+            </button>
             {(historyError || sendError || profileError) && (
               <div className="api-error-banner" role="alert">
                 <p>{sendError || historyError || profileError}</p>
@@ -402,7 +396,7 @@ function ChatPage() {
               <input
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Ask about your next move..."
+                placeholder="Type your message..."
                 disabled={sending}
               />
               <button type="submit" aria-label="Send message" disabled={sending || !input.trim()}>

@@ -15,7 +15,7 @@ function Layout({ showFooter = true }) {
 
   return (
     <div className={`page-shell${isAuthPage ? ' auth-page-shell' : ''}${isChatPage ? ' chat-app-shell' : ''}`}>
-      <Navbar />
+      {!isChatPage && <Navbar />}
       <main className={`page-main-content${isAuthPage ? ' auth-page-main' : ''}${isChatPage ? ' chat-app-main' : ''}`}>
         <Outlet />
       </main>
