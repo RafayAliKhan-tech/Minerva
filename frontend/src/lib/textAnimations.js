@@ -49,7 +49,6 @@ function hideChars(chars) {
   gsap.set(chars, {
     opacity: 0,
     y: 22,
-    filter: 'blur(4px)',
   })
 }
 
@@ -68,7 +67,6 @@ export function initSplitTextReveals(root, { immediate = false } = {}) {
     gsap.set(units, {
       opacity: 0,
       y: 22,
-      filter: 'blur(8px)',
       display: 'inline-block',
     })
 
@@ -103,14 +101,12 @@ export function initBlurReveals(root) {
     gsap.set(element, {
       opacity: 0,
       y: 20,
-      filter: 'blur(5px)',
     })
 
     const heroReveal = element.closest('.hero-copy')
     const tween = gsap.to(element, {
       opacity: 1,
       y: 0,
-      filter: 'blur(0px)',
       duration: 0.55,
       ease: 'power3.out',
       delay: heroReveal ? 0.2 : 0,
@@ -202,14 +198,12 @@ export function initHeroTitleAnimation(root) {
     gsap.set(chars, {
       opacity: 0,
       y: 22,
-      filter: 'blur(5px)',
       display: 'inline-block',
     })
 
     gsap.to(chars, {
       opacity: 1,
       y: 0,
-      filter: 'blur(0px)',
       duration: 0.52,
       stagger: 0.018,
       ease: 'expo.out',
