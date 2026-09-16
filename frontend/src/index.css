@@ -1640,6 +1640,17 @@ a {
   color: #ffffff;
 }
 
+.site-navbar.navbar-seamless-page {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.site-navbar.navbar-seamless-page #mobile-menu > div:last-child {
+  background: transparent;
+  box-shadow: none;
+}
+
 .auth-page-shell .site-navbar img {
   filter: brightness(0) invert(1);
 }
