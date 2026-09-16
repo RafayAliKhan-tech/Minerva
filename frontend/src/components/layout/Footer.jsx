@@ -73,7 +73,7 @@ function Footer({ compact = false }) {
   }
 
   return (
-    <footer className="site-footer border-t border-[#dedbd6] bg-[#f5f4f1]" id="about">
+    <footer className="site-footer border-t border-[#dedbd6]" id="about">
       <Container className="py-12 sm:py-14 lg:py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
