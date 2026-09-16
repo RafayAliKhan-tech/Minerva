@@ -25,9 +25,21 @@ function Navbar() {
   const isLanding = location.pathname === '/'
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20)
+    let frameId = 0
+    const handleScroll = () => {
+      if (frameId) return
+      frameId = window.requestAnimationFrame(() => {
+        const nextScrolled = window.scrollY > 20
+        setScrolled((current) => (current === nextScrolled ? current : nextScrolled))
+        frameId = 0
+      })
+    }
+
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (frameId) window.cancelAnimationFrame(frameId)
+    }
   }, [])
 
   useEffect(() => {
@@ -64,11 +76,11 @@ function Navbar() {
 
   const headerClass = isLanding
     ? scrolled || mobileOpen
-      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm backdrop-blur-md'
+      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm'
       : 'bg-transparent'
     : scrolled || mobileOpen
-      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm backdrop-blur-md'
-      : 'bg-[#F5F5F5]/85 backdrop-blur-sm'
+      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm'
+      : 'bg-[#F5F5F5]/85'
 
   const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
   const visibleNavLinks = isAuthenticated
@@ -87,7 +99,7 @@ function Navbar() {
         }`
 
   return (
-    <header className={`site-navbar fixed inset-x-0 top-0 z-50 transition-all duration-300 ${isLanding ? 'landing-navbar' : ''} ${navbarTheme} ${headerClass}`}>
+    <header className={`site-navbar fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-200 ${isLanding ? 'landing-navbar' : ''} ${navbarTheme} ${headerClass}`}>
       <Container>
         <nav className="flex h-16 items-center justify-between sm:h-20" aria-label="Main navigation">
           <Logo />
@@ -167,14 +179,14 @@ function Navbar() {
         aria-hidden={!mobileOpen}
       >
         <div
-          className={`absolute inset-0 bg-[#1A1A1A]/20 transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-[#1A1A1A]/20 transition-opacity duration-200 ${
             mobileOpen ? 'opacity-100' : 'opacity-0'
           }`}
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
         <div
-          className={`absolute inset-x-0 top-0 border-b border-[#E0E0E0] bg-[#F5F5F5] px-4 py-6 shadow-lg transition-all duration-300 sm:px-6 ${
+          className={`absolute inset-x-0 top-0 border-b border-[#E0E0E0] bg-[#F5F5F5] px-4 py-6 shadow-lg transition-[transform,opacity] duration-200 sm:px-6 ${
             mobileOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
           }`}
         >
