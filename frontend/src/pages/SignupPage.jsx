@@ -55,7 +55,7 @@ function SignupPage() {
   }
 
   return <section className="auth-stage"><Container className="auth-stage-inner">
-    <div className="auth-form-column"><p className="auth-eyebrow">Create your account</p><h1 className="auth-title">Start Your Career<br /><span>Journey </span></h1><p className="auth-description">Join Minerva and get AI-powered guidance to discover, plan, and grow your future in Computer Science.</p>
+    <div className="auth-form-column"><h1 className="auth-title">Start Your Career<br /><span>Journey </span></h1><p className="auth-description">Join Minerva and get AI-powered guidance to discover, plan, and grow your future in Computer Science.</p>
       <form onSubmit={handleSubmit} className="auth-form">
         <label className="auth-input"><Mail /><input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /></label>
         <label className="auth-input"><LockKeyhole /><input required type={showPwd ? 'text' : 'password'} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" /><button type="button" onClick={() => setShowPwd(!showPwd)} aria-label={showPwd ? 'Hide password' : 'Show password'}>{showPwd ? <EyeOff /> : <Eye />}</button></label>
