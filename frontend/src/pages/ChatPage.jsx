@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Bot, Send, Sparkles, Loader } from 'lucide-react'
+import { ArrowUpRight, Bot, Clock3, Loader, MoreVertical, Plus, Search, Send, Sparkles, X } from 'lucide-react'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
 import { sendChatMessage, getChatHistory, getProfile } from '../api/minervaApi'
@@ -14,6 +14,7 @@ import { getStoredHighestScoredField } from '../utils/skillProfile'
 import { getUserEmail } from '../utils/userData'
 
 const SESSION_KEY = 'minervaChatSessionId'
+const HISTORY_KEY = 'minervaChatSessions'
 const starters = ['What should I learn next?', 'Which role fits my strengths?', 'Help me prepare for an interview']
 
 const chatErrorMessage = (error, fallback) => {
@@ -44,6 +45,45 @@ const persistSessionId = (sessionId, user) => {
   }
 }
 
+const getHistoryKey = (user) => {
+  const email = getUserEmail(user).trim().toLowerCase()
+  return email ? `${HISTORY_KEY}:${email}` : HISTORY_KEY
+}
+
+const readSessions = (user) => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(getHistoryKey(user)) || '[]')
+    return Array.isArray(stored) ? stored.filter((session) => session?.id) : []
+  } catch {
+    return []
+  }
+}
+
+const persistSessions = (sessions, user) => {
+  try {
+    localStorage.setItem(getHistoryKey(user), JSON.stringify(sessions))
+  } catch {
+    // Keep the chat usable when local storage is unavailable.
+  }
+}
+
+const formatSessionTitle = (text) => {
+  const title = String(text || '').trim().replace(/\s+/g, ' ')
+  return title.length > 42 ? `${title.slice(0, 42).trim()}...` : title
+}
+
+const getSessionGroup = (timestamp) => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const daysAgo = Math.floor((startOfToday - startOfDate) / 86400000)
+  if (daysAgo <= 0) return 'Today'
+  if (daysAgo === 1) return 'Yesterday'
+  if (daysAgo <= 7) return 'Previous 7 Days'
+  return 'Older'
+}
+
 function ChatPage() {
   const { user } = useAuth()
   const [input, setInput] = useState('')
@@ -57,7 +97,25 @@ function ChatPage() {
   const [sendError, setSendError] = useState('')
   const [profileError, setProfileError] = useState('')
   const [pendingRetry, setPendingRetry] = useState('')
+  const [sessions, setSessions] = useState([])
+  const [historyOpen, setHistoryOpen] = useState(false)
   const messagesRef = useRef(null)
+
+  const upsertSession = (id, title, timestamp = Date.now()) => {
+    if (!id) return
+    setSessions((currentSessions) => {
+      const existing = currentSessions.find((session) => session.id === String(id))
+      const nextSession = {
+        id: String(id),
+        title: existing?.title || formatSessionTitle(title) || 'New conversation',
+        createdAt: existing?.createdAt || timestamp,
+        updatedAt: timestamp,
+      }
+      const nextSessions = [nextSession, ...currentSessions.filter((session) => session.id !== String(id))]
+      persistSessions(nextSessions, user)
+      return nextSessions
+    })
+  }
 
   const captureSessionId = (payload) => {
     const nextSessionId = extractSessionId(payload)
@@ -82,7 +140,10 @@ function ChatPage() {
       const response = await getChatHistory(id)
       console.log('Chat history response:', response)
       captureSessionId(response)
-      setMessages(extractHistoryMessages(response))
+      const historyMessages = extractHistoryMessages(response)
+      setMessages(historyMessages)
+      const firstUserMessage = historyMessages.find((message) => message.from === 'user')
+      if (firstUserMessage) upsertSession(id, firstUserMessage.text)
     } catch (error) {
       setMessages([])
       setHistoryError(chatErrorMessage(error, 'Unable to load chat history from the backend.'))
@@ -116,6 +177,7 @@ function ChatPage() {
 
   useEffect(() => {
     const storedSessionId = readStoredSessionId(user)
+    setSessions(readSessions(user))
     setSessionId(storedSessionId)
     setMessages([])
     setHistoryError('')
@@ -127,6 +189,36 @@ function ChatPage() {
       setLoadingHistory(false)
     }
   }, [user])
+
+  const startNewChat = () => {
+    setSessionId('')
+    setMessages([])
+    setInput('')
+    setHistoryError('')
+    setSendError('')
+    setPendingRetry('')
+    setHistoryOpen(false)
+    try {
+      sessionStorage.removeItem(getSessionKey(user))
+    } catch {
+      // Keep the new-chat action usable when session storage is unavailable.
+    }
+  }
+
+  const selectSession = (id) => {
+    if (!id || id === sessionId) {
+      setHistoryOpen(false)
+      return
+    }
+    setSessionId(String(id))
+    persistSessionId(id, user)
+    setMessages([])
+    setHistoryError('')
+    setSendError('')
+    setPendingRetry('')
+    setHistoryOpen(false)
+    loadHistory(String(id))
+  }
 
   useEffect(() => {
     const conversation = messagesRef.current
@@ -158,6 +250,7 @@ function ChatPage() {
       }
 
       const nextSessionId = captureSessionId(response)
+      upsertSession(nextSessionId, message)
       const answer = extractChatAnswer(response)
 
       if (nextSessionId) {
@@ -198,7 +291,7 @@ function ChatPage() {
           </div>
           <Link to="/dashboard" className="dashboard-text-link">Dashboard <ArrowUpRight size={15} /></Link>
         </div>
-        <div className="chat-shell">
+        <div className={`chat-shell${historyOpen ? ' chat-history-open' : ''}`}>
           <aside className="chat-sidebar">
             <div className="chat-bot-mark"><Bot size={23} /></div>
             <h2>Minerva</h2>
@@ -219,7 +312,51 @@ function ChatPage() {
             </div>
             <Link to="/explore/roadmap" className="dashboard-outline-action">Open roadmap <ArrowUpRight size={15} /></Link>
           </aside>
+          <aside className="chat-history-sidebar" aria-label="Chat history">
+            <div className="chat-history-heading">
+              <div><Clock3 size={16} /><strong>Chat History</strong></div>
+              <button type="button" onClick={() => setHistoryOpen(false)} aria-label="Close chat history"><X size={16} /></button>
+            </div>
+            <button type="button" className="chat-new-button" onClick={startNewChat}>
+              <Plus size={15} /> New Chat
+            </button>
+            <div className="chat-history-search"><Search size={14} /><span>Search conversations</span></div>
+            <div className="chat-history-list">
+              {['Today', 'Yesterday', 'Previous 7 Days', 'Older'].map((group) => {
+                const groupedSessions = sessions.filter((session) => getSessionGroup(session.updatedAt) === group)
+                if (!groupedSessions.length) return null
+                return (
+                  <div className="chat-history-group" key={group}>
+                    <span>{group}</span>
+                    {groupedSessions.map((session) => (
+                      <button
+                        type="button"
+                        className={`chat-history-item${session.id === sessionId ? ' is-active' : ''}`}
+                        key={session.id}
+                        onClick={() => selectSession(session.id)}
+                        title={session.title}
+                      >
+                        <span>{session.title}</span>
+                        <MoreVertical size={14} />
+                      </button>
+                    ))}
+                  </div>
+                )
+              })}
+              {!sessions.length && <p className="chat-history-empty">Your conversations will appear here.</p>}
+            </div>
+          </aside>
           <section className="chat-window">
+            <header className="chat-conversation-header">
+              <button type="button" className="chat-history-toggle" onClick={() => setHistoryOpen((open) => !open)} aria-label="Toggle chat history">
+                <Clock3 size={17} />
+              </button>
+              <div>
+                <strong>{sessions.find((session) => session.id === sessionId)?.title || 'New conversation'}</strong>
+                <span>{messages.length} {messages.length === 1 ? 'message' : 'messages'} · Minerva AI</span>
+              </div>
+              <div className="chat-conversation-actions"><Search size={16} /><MoreVertical size={17} /></div>
+            </header>
             {(historyError || sendError || profileError) && (
               <div className="api-error-banner" role="alert">
                 <p>{sendError || historyError || profileError}</p>
