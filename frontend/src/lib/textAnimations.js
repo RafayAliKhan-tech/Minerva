@@ -6,7 +6,7 @@ gsap.registerPlugin(ScrollTrigger)
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$'
 
-export function scrambleTo(element, finalText, { duration = 0.85 } = {}) {
+export function scrambleTo(element, finalText, { duration = 0.55 } = {}) {
   if (!element) return
   const target = finalText ?? element.textContent ?? ''
   const proxy = { progress: 0 }
@@ -33,12 +33,11 @@ export function scrambleTo(element, finalText, { duration = 0.85 } = {}) {
   })
 }
 
-function revealChars(chars, { stagger = 0.028, duration = 0.75 } = {}) {
+function revealChars(chars, { stagger = 0.018, duration = 0.52 } = {}) {
   if (!chars?.length) return
   gsap.to(chars, {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     duration,
     stagger,
     ease: 'expo.out',
@@ -50,7 +49,7 @@ function hideChars(chars) {
   gsap.set(chars, {
     opacity: 0,
     y: 22,
-    filter: 'blur(8px)',
+    filter: 'blur(4px)',
   })
 }
 
@@ -104,7 +103,7 @@ export function initBlurReveals(root) {
     gsap.set(element, {
       opacity: 0,
       y: 20,
-      filter: 'blur(12px)',
+      filter: 'blur(5px)',
     })
 
     const heroReveal = element.closest('.hero-copy')
@@ -112,9 +111,9 @@ export function initBlurReveals(root) {
       opacity: 1,
       y: 0,
       filter: 'blur(0px)',
-      duration: 0.9,
+      duration: 0.55,
       ease: 'power3.out',
-      delay: heroReveal ? 0.55 : 0,
+      delay: heroReveal ? 0.2 : 0,
       scrollTrigger: heroReveal
         ? undefined
         : {
@@ -139,7 +138,7 @@ export function initScrambleReveals(root) {
     const trigger = ScrollTrigger.create({
       trigger: element,
       start: 'top 88%',
-      onEnter: () => scrambleTo(element, finalText, { duration: 0.85 }),
+      onEnter: () => scrambleTo(element, finalText, { duration: 0.55 }),
       once: true,
     })
     triggers.push(trigger)
@@ -203,7 +202,7 @@ export function initHeroTitleAnimation(root) {
     gsap.set(chars, {
       opacity: 0,
       y: 22,
-      filter: 'blur(12px)',
+      filter: 'blur(5px)',
       display: 'inline-block',
     })
 
@@ -211,10 +210,10 @@ export function initHeroTitleAnimation(root) {
       opacity: 1,
       y: 0,
       filter: 'blur(0px)',
-      duration: 0.75,
-      stagger: 0.028,
+      duration: 0.52,
+      stagger: 0.018,
       ease: 'expo.out',
-      delay: 0.15 + lineIndex * 0.12,
+      delay: 0.05 + lineIndex * 0.07,
     })
   })
 

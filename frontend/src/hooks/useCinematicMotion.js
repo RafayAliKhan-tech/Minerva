@@ -27,6 +27,8 @@ export function useCinematicMotion(rootRef) {
       const heroCopy = root.querySelector('.hero-copy')
       const heroTitle = root.querySelector('.hero-title')
       const bgLayer = root.querySelector('.layer-bg')
+      let pointerFrame = 0
+      let pointerPosition = { x: 0, y: 0 }
 
       const cleanupText = [
         initHeroTitleAnimation(root),
@@ -49,10 +51,18 @@ export function useCinematicMotion(rootRef) {
         const rect = root.getBoundingClientRect()
         const x = (event.clientX - rect.left) / rect.width - 0.5
         const y = (event.clientY - rect.top) / rect.height - 0.5
-        setParallaxVars(x * 2, y * 2)
+        pointerPosition = { x: x * 2, y: y * 2 }
+        if (pointerFrame) return
+        pointerFrame = window.requestAnimationFrame(() => {
+          setParallaxVars(pointerPosition.x, pointerPosition.y)
+          pointerFrame = 0
+        })
       }
 
-      const handlePointerLeave = () => setParallaxVars(0, 0)
+      const handlePointerLeave = () => {
+        pointerPosition = { x: 0, y: 0 }
+        setParallaxVars(0, 0)
+      }
 
       root.addEventListener('pointermove', handlePointerMove)
       root.addEventListener('pointerleave', handlePointerLeave)
@@ -61,7 +71,7 @@ export function useCinematicMotion(rootRef) {
         gsap.to(heroTransform, {
           y: -10,
           rotateY: 2,
-          duration: 5.5,
+          duration: 4.2,
           ease: 'sine.inOut',
           repeat: -1,
           yoyo: true,
@@ -70,11 +80,11 @@ export function useCinematicMotion(rootRef) {
         if (heroCopy) {
           gsap.to(heroCopy, {
             y: -4,
-            duration: 4.8,
+            duration: 3.8,
             ease: 'sine.inOut',
             repeat: -1,
             yoyo: true,
-            delay: 0.8,
+            delay: 0.2,
           })
         }
 
@@ -95,7 +105,6 @@ export function useCinematicMotion(rootRef) {
               opacity: 0,
               y: -72,
               scale: 0.91,
-              filter: 'blur(6px)',
               ease: 'power2.out',
             },
             0.15,
@@ -105,7 +114,6 @@ export function useCinematicMotion(rootRef) {
             {
               opacity: 0,
               y: 40,
-              filter: 'blur(8px)',
               ease: 'power2.out',
             },
             0.2,
@@ -129,12 +137,11 @@ export function useCinematicMotion(rootRef) {
       gsap.utils.toArray('.path-card').forEach((card, index) => {
         gsap.fromTo(
           card,
-          { y: 48, opacity: 0, filter: 'blur(10px)' },
+          { y: 32, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            filter: 'blur(0px)',
-            duration: 0.9,
+            duration: 0.6,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: card,
@@ -160,12 +167,11 @@ export function useCinematicMotion(rootRef) {
       gsap.utils.toArray('.journey-item').forEach((item, index) => {
         gsap.fromTo(
           item,
-          { x: index % 2 === 0 ? -36 : 36, opacity: 0, filter: 'blur(8px)' },
+          { x: index % 2 === 0 ? -28 : 28, opacity: 0 },
           {
             x: 0,
             opacity: 1,
-            filter: 'blur(0px)',
-            duration: 0.85,
+            duration: 0.58,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: item,
@@ -186,7 +192,7 @@ export function useCinematicMotion(rootRef) {
             y: 0,
             opacity: 1,
             rotateY: 0,
-            duration: 1.1,
+            duration: 0.75,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: stackIllustration,
@@ -206,7 +212,7 @@ export function useCinematicMotion(rootRef) {
             rotateX: (0.5 - y) * 14,
             rotateY: (x - 0.5) * 14,
             translateY: -8,
-            duration: 0.45,
+            duration: 0.22,
             ease: 'power3.out',
           })
         }
@@ -216,7 +222,7 @@ export function useCinematicMotion(rootRef) {
             rotateX: 0,
             rotateY: 0,
             translateY: 0,
-            duration: 0.75,
+            duration: 0.38,
             ease: 'power3.out',
           })
         }
@@ -228,6 +234,7 @@ export function useCinematicMotion(rootRef) {
       return () => {
         root.removeEventListener('pointermove', handlePointerMove)
         root.removeEventListener('pointerleave', handlePointerLeave)
+        if (pointerFrame) window.cancelAnimationFrame(pointerFrame)
         cleanupText.forEach((fn) => fn())
       }
     }, root)
