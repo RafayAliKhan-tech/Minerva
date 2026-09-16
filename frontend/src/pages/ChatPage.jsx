@@ -57,7 +57,7 @@ function ChatPage() {
   const [sendError, setSendError] = useState('')
   const [profileError, setProfileError] = useState('')
   const [pendingRetry, setPendingRetry] = useState('')
-  const messagesEndRef = useRef(null)
+  const messagesRef = useRef(null)
 
   const captureSessionId = (payload) => {
     const nextSessionId = extractSessionId(payload)
@@ -129,7 +129,13 @@ function ChatPage() {
   }, [user])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const conversation = messagesRef.current
+    if (!conversation) return
+
+    conversation.scrollTo({
+      top: conversation.scrollHeight,
+      behavior: 'smooth',
+    })
   }, [messages, sending])
 
   const send = async (text = input) => {
@@ -224,7 +230,10 @@ function ChatPage() {
                 ) : null}
               </div>
             )}
-            <div className={`chat-messages${!loadingHistory && !messages.length ? ' chat-messages-empty' : ''}`}>
+            <div
+              ref={messagesRef}
+              className={`chat-messages${!loadingHistory && !messages.length ? ' chat-messages-empty' : ''}`}
+            >
               {loadingHistory && (
                 <div className="chat-message assistant">
                   <span><Sparkles size={14} /></span>
@@ -255,7 +264,6 @@ function ChatPage() {
                   </p>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
             {messages.length === 0 && !loadingHistory && (
               <div className="chat-starters">
