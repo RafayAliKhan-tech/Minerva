@@ -1632,6 +1632,40 @@ a {
   color: #707070;
 }
 
+.auth-page-shell .site-navbar {
+  background: #000000 !important;
+  color: #ffffff;
+}
+
+.auth-page-shell .site-navbar img {
+  filter: brightness(0) invert(1);
+}
+
+.auth-page-shell .site-navbar .nav-link,
+.auth-page-shell .site-navbar .nav-link:hover,
+.auth-page-shell .site-navbar nav > button {
+  color: #ffffff !important;
+}
+
+.auth-page-shell .site-navbar #mobile-menu > div:last-child {
+  background: #000000;
+}
+
+.auth-page-shell .site-navbar #mobile-menu .nav-link,
+.auth-page-shell .site-navbar #mobile-menu a,
+.auth-page-shell .site-navbar #mobile-menu a:hover {
+  color: #ffffff !important;
+}
+
+.auth-page-shell .auth-footer {
+  background: #000000;
+  color: #ffffff;
+}
+
+.auth-page-shell .auth-footer p {
+  color: #ffffff;
+}
+
 .auth-footer-inner {
   display: flex;
   min-height: 64px;
