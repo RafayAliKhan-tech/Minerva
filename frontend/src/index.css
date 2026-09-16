@@ -1630,9 +1630,6 @@ a {
 
 .auth-footer {
   min-height: 64px;
-  border-top-color: rgba(245, 245, 245, 0.12);
-  background: #ffffff;
-  color: #707070;
 }
 
 .auth-page-shell .site-navbar {
@@ -1688,7 +1685,6 @@ a {
 }
 
 .auth-page-shell .auth-footer {
-  background: #000000;
   color: #ffffff;
 }
 
@@ -1711,7 +1707,6 @@ a {
 
 .auth-footer-inner p {
   margin: 0;
-  color: #707070;
   font-size: 0.75rem;
 }
 
