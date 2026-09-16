@@ -8,6 +8,14 @@ import { navLinks } from '../../data/navigation'
 import { useAuth } from '../../auth/AuthContext'
 import { getDisplayName } from '../../utils/userData'
 
+const PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS = new Set([
+  'Home',
+  'How It Works',
+  'Features',
+  'Roadmap',
+  'About Us',
+])
+
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -63,6 +71,9 @@ function Navbar() {
       : 'bg-[#F5F5F5]/85 backdrop-blur-sm'
 
   const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
+  const visibleNavLinks = isAuthenticated
+    ? navLinks.filter((link) => !PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS.has(link.label))
+    : navLinks
   const displayName = getDisplayName(user)
   const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'M'
 
@@ -82,7 +93,7 @@ function Navbar() {
           <Logo />
 
           <ul className="hidden items-center gap-1 lg:flex xl:gap-2">
-            {navLinks.map((link) => (
+            {visibleNavLinks.map((link) => (
               <li key={link.label}>
                 {link.href.startsWith('/#') ? (
                   <a
@@ -168,7 +179,7 @@ function Navbar() {
           }`}
         >
           <ul className="flex flex-col gap-1">
-            {navLinks.map((link) => (
+            {visibleNavLinks.map((link) => (
               <li key={link.label}>
                 {link.href.startsWith('/#') ? (
                   <a
