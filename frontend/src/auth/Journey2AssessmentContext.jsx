@@ -3,6 +3,17 @@ import { getJourney2Careers, getJourney2Questions, getJourney2Result, submitJour
 
 const Journey2AssessmentContext = createContext(null)
 
+export const getStoredResponses = () => {
+  try {
+    const raw = sessionStorage.getItem('journey2Responses')
+    const parsed = raw ? JSON.parse(raw) : {}
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+  } catch (error) {
+    console.warn('Unable to read stored Journey 2 responses.', error)
+    return {}
+  }
+}
+
 const unwrapList = (response, key) => {
   if (Array.isArray(response)) return response
   if (Array.isArray(response?.[key])) return response[key]
@@ -109,7 +120,7 @@ export function Journey2AssessmentProvider({ children }) {
   const submitAssessment = async () => {
     if (!selectedCareer || !questions.length) throw new Error('Journey 2 career and questions are not loaded.')
     const careerId = selectedCareer.career_id || selectedCareer.careerId || selectedCareer.id
-    const stored = JSON.parse(sessionStorage.getItem('journey2Responses') || '{}')
+    const stored = getStoredResponses()
     const answers = {}
     const missingAnswers = []
     questions.forEach((question) => {
