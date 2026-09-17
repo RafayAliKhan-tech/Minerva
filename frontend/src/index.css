@@ -1694,7 +1694,7 @@ a {
 }
 
 .auth-page-shell .auth-footer {
-  background: transparent !important;
+  background: inherit !important;
   border-top-color: transparent !important;
 }
 

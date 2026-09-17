@@ -8,21 +8,6 @@ import { navLinks } from '../../data/navigation'
 import { useAuth } from '../../auth/AuthContext'
 import { getDisplayName } from '../../utils/userData'
 
-const PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS = new Set([
-  'Home',
-  'How It Works',
-  'Features',
-  'About Us',
-])
-
-const AUTH_NAV_ROUTES = new Set([
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/reset-password',
-  '/verify-email',
-])
-
 const SEAMLESS_NAV_ROUTES = new Set(['/login', '/signup', '/forgot-password', '/dashboard'])
 const AUTH_ACTION_ONLY_ROUTES = new Set(['/login', '/signup', '/forgot-password'])
 
@@ -96,10 +81,7 @@ function Navbar() {
   const isSeamlessPage = SEAMLESS_NAV_ROUTES.has(location.pathname)
   const isAuthActionOnlyPage = AUTH_ACTION_ONLY_ROUTES.has(location.pathname)
   const isChatPage = location.pathname === '/chat'
-  const isAuthPage = AUTH_NAV_ROUTES.has(location.pathname)
-  const visibleNavLinks = isAuthPage || isAuthenticated
-    ? navLinks.filter((link) => !PUBLIC_NAV_LABELS_HIDDEN_FOR_AUTHENTICATED_USERS.has(link.label))
-    : navLinks
+  const visibleNavLinks = isLanding ? navLinks : []
   const displayName = getDisplayName(user)
   const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'M'
 
@@ -153,9 +135,14 @@ function Navbar() {
                 </div>
               </>
             ) : isAuthActionOnlyPage ? (
-              <Button to="/signup" variant="light" size="sm" icon={ArrowRight}>
-                Get Started
-              </Button>
+              <>
+                <Link to="/login" className="nav-link text-sm font-medium text-white transition-colors hover:text-white">
+                  Login
+                </Link>
+                <Button to="/signup" variant="light" size="sm" icon={ArrowRight}>
+                  Get Started
+                </Button>
+              </>
             ) : isLanding ? (
               <Link
                 to="/signup"
@@ -233,7 +220,7 @@ function Navbar() {
             ))}
           </ul>
           <div className="mt-6 flex flex-col gap-3 border-t border-[#E0E0E0] pt-6">
-            {isAuthenticated ? <><Button to="/dashboard" variant="light" size="md" className="w-full">Dashboard</Button><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : isAuthActionOnlyPage ? <Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
+            {isAuthenticated ? <><Button to="/dashboard" variant="light" size="md" className="w-full">Dashboard</Button><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : isAuthActionOnlyPage ? <><Link to="/login" className="nav-link px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:text-white">Login</Link><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
           </div>
         </div>
       </div>
