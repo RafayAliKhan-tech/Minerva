@@ -51,6 +51,7 @@ function FooterSection({ name, links, onAnchorClick }) {
 
 function Footer({ compact = false }) {
   const location = useLocation()
+  const isWhiteFooterPage = location.pathname === '/' || location.pathname === '/dashboard'
 
   const handleAnchorClick = (event, href) => {
     if (!href.startsWith('/#') || location.pathname !== '/') return
@@ -73,7 +74,7 @@ function Footer({ compact = false }) {
   }
 
   return (
-    <footer className="site-footer border-t border-[#dedbd6] bg-transparent" id="about">
+    <footer className={`site-footer border-t border-[#dedbd6] ${isWhiteFooterPage ? 'bg-white' : 'bg-transparent'}`} id="about">
       <Container className="py-12 sm:py-14 lg:py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
