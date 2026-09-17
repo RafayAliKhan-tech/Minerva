@@ -5,8 +5,24 @@ import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
 import { getStoredSkillProfileView } from '../utils/skillProfile'
 
-const level = (value) => value === null || value === undefined ? 'No evidence yet' : `Level ${value}`
-const skillText = (skill) => `${skill.name} · ${level(skill.current)} → ${level(skill.target)}`
+const MAX_SKILL_LEVEL = 4
+const proficiency = (value) => {
+  if (value >= MAX_SKILL_LEVEL) return 'Expert'
+  if (value >= 3) return 'Intermediate'
+  if (value >= 1) return 'Beginner'
+  return 'Not yet assessed'
+}
+
+const SkillProgress = ({ value, label, tone = '' }) => {
+  const normalized = Math.max(0, Math.min(MAX_SKILL_LEVEL, Number(value) || 0))
+  return (
+    <span className={`skill-profile-progress ${tone}`}>
+      <span className="skill-profile-progress-label">{label}</span>
+      <span className="skill-profile-progress-track"><i style={{ width: `${(normalized / MAX_SKILL_LEVEL) * 100}%` }} /></span>
+      <b>{normalized}</b>
+    </span>
+  )
+}
 
 function SkillProfilePage() {
   const navigate = useNavigate()
@@ -51,16 +67,16 @@ function SkillProfilePage() {
               {field ? (
                 <div className="skill-profile-grid">
                   <article className="skill-profile-card skill-profile-goal-card">
-                    <header><Target size={18} /><div><h3>Goals</h3><p>Current level compared with the target for {field.label}.</p></div></header>
-                    <div className="skill-profile-list">{field.skills.map((skill) => <div key={skill.skill_id || skill.name}><strong>{skill.name}</strong><span>{skillText(skill)}</span></div>)}</div>
+                    <header><Target size={18} /><div><h3>Goals</h3><p>Your current progress compared with the target for {field.label}.</p></div></header>
+                    <div className="skill-profile-list">{field.skills.map((skill) => <div key={skill.skill_id || skill.name}><strong>{skill.name}</strong><span className="skill-profile-progress-pair"><SkillProgress value={skill.current} label="Current" tone="current" /><SkillProgress value={skill.target} label="Target" tone="target" /></span></div>)}</div>
                   </article>
                   <article className="skill-profile-card">
-                    <header><Star size={18} /><div><h3>Strengths</h3><p>Skills closest to the target level.</p></div></header>
-                    <div className="skill-profile-list">{field.strengths.length ? field.strengths.map((skill) => <div key={skill.skill_id || skill.name}><strong>{skill.name}</strong><span>{level(skill.current)}</span></div>) : <p className="skill-profile-muted">Your strongest signals will appear as more evidence is collected.</p>}</div>
+                    <header><Star size={18} /><div><h3>Strengths</h3><p>Skills closest to their target.</p></div></header>
+                    <div className="skill-profile-list">{field.strengths.length ? field.strengths.map((skill) => <div key={skill.skill_id || skill.name}><strong>{skill.name}</strong><span>{proficiency(skill.current)}</span></div>) : <p className="skill-profile-muted">Your strongest signals will appear as more evidence is collected.</p>}</div>
                   </article>
                   <article className="skill-profile-card">
                     <header><ShieldAlert size={18} /><div><h3>Weak areas</h3><p>Skills with the most room to grow.</p></div></header>
-                    <div className="skill-profile-list">{field.weakAreas.length ? field.weakAreas.map((skill) => <div key={skill.skill_id || skill.name}><strong>{skill.name}</strong><span>{skill.gap === null ? 'No evidence yet' : `${skill.gap} level${skill.gap === 1 ? '' : 's'} to close`}</span></div>) : <p className="skill-profile-muted">No significant gaps were identified for this field.</p>}</div>
+                    <div className="skill-profile-list">{field.weakAreas.length ? field.weakAreas.map((skill) => <div key={skill.skill_id || skill.name}><strong>{skill.name}</strong><span>{skill.gap === null || skill.gap === 0 ? 'Not yet assessed' : `${skill.gap} step${skill.gap === 1 ? '' : 's'} to target`}</span></div>) : <p className="skill-profile-muted">No significant gaps were identified for this field.</p>}</div>
                   </article>
                 </div>
               ) : <p className="skill-profile-muted">Generate a roadmap for a field to see its translated goals.</p>}

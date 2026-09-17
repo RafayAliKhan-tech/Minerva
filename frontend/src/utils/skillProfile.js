@@ -90,6 +90,8 @@ const asNumber = (value) => {
   return Number.isFinite(number) ? number : null
 }
 
+const MAX_SKILL_LEVEL = 4
+
 const getSkillRecords = (source) => {
   const value = findProperty(unwrap(source), [
     'skillprofile',
@@ -153,9 +155,14 @@ const getCareerMessage = (source) => {
 const normalizeSkill = (skill) => ({
   ...skill,
   name: skill?.skill_name || skill?.skillName || skill?.name || skill?.skill_id || 'Unnamed skill',
-  current: asNumber(skill?.current_level ?? skill?.currentLevel),
-  target: asNumber(skill?.target_level ?? skill?.targetLevel),
-  gap: asNumber(skill?.gap),
+  current: Math.min(MAX_SKILL_LEVEL, asNumber(skill?.current_level ?? skill?.currentLevel) ?? 0),
+  target: Math.min(MAX_SKILL_LEVEL, asNumber(skill?.target_level ?? skill?.targetLevel) ?? 0),
+  gap: (() => {
+    const current = asNumber(skill?.current_level ?? skill?.currentLevel)
+    const target = asNumber(skill?.target_level ?? skill?.targetLevel)
+    if (current === null || target === null) return null
+    return Math.max(0, Math.min(MAX_SKILL_LEVEL, target) - Math.min(MAX_SKILL_LEVEL, current))
+  })(),
 })
 
 const translateSource = (source, journey, roadmaps) => {
@@ -170,7 +177,7 @@ const translateSource = (source, journey, roadmaps) => {
     const fieldSkills = skills.filter((skill) => !skill.career || normalizeCareerId(skill.career) === normalizeCareerId(field))
     const strengths = fieldSkills.filter((skill) => skill.current !== null && skill.target !== null && skill.current >= skill.target - 1)
       .sort((a, b) => (b.current || 0) - (a.current || 0))
-    const weakAreas = fieldSkills.filter((skill) => skill.current === null || (skill.target !== null && skill.current < skill.target - 1) || skill.gap > 0)
+    const weakAreas = fieldSkills.filter((skill) => skill.current === 0 || (skill.target !== null && skill.current < skill.target - 1) || skill.gap > 0)
       .sort((a, b) => (b.gap || 0) - (a.gap || 0))
     return { id: field, label: careerLabel(field), skills: fieldSkills, strengths, weakAreas }
   })
