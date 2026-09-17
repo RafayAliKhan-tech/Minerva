@@ -2837,6 +2837,9 @@ a {
   .journey1-assessment-actions > div svg { width: 15px; }
   .journey1-assessment-actions button { min-width: 150px; padding: 10px 18px; background: #e96e27; }
   .journey1-assessment-timeup { color: #d76725; font-size: .7rem; }
+  .journey1-assessment-unsupported { padding: 24px; border: 1px solid #f3d7c2; border-radius: 12px; color: #7c4d31; background: #fff8f1; }
+  .journey1-assessment-unsupported p { margin: 0; font-weight: 700; }
+  .journey1-assessment-unsupported small { display: block; margin-top: 5px; color: #927f73; font-size: .72rem; }
 
   .journey1-assessment-sidebar { display: grid; gap: 12px; }
   .journey1-progress-card,

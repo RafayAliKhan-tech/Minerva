@@ -256,6 +256,12 @@ function ExploringActivity() {
             {activity.type === 'multiple-choice' && (
               <MultipleChoice question={activity} selectedOption={selectedOption} onOptionSelect={(optionId) => setSelectedOptions((current) => ({ ...current, [currentQuestionId]: optionId }))} isAnswered={submitted} canAnswer={!timeUp} />
             )}
+            {!['logic-puzzle', 'priority-board', 'ui-inspection', 'multiple-choice'].includes(activity.type) && (
+              <div className="journey1-assessment-unsupported">
+                <p>This activity type is not available yet.</p>
+                <small>Received activity type: {activity.type || 'unknown'}</small>
+              </div>
+            )}
           </div>
 
           <div className="journey1-assessment-footer">

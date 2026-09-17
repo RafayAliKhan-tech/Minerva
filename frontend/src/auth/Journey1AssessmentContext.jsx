@@ -13,16 +13,29 @@ const getQuestionList = (response) => {
   return []
 }
 
-const normalizeQuestions = (response) => getQuestionList(response).map((question) => ({
-  ...question,
-  activityId: question.activityId ?? question.activity_id ?? question.questionId ?? question.question_id ?? question.id,
-  questionId: question.questionId ?? question.question_id ?? question.id ?? question.activityId ?? question.activity_id,
-  title: question.title ?? question.questionText ?? question.question_text ?? question.text,
-  description: question.description ?? question.instruction ?? question.questionText ?? question.question_text ?? question.text,
-  instruction: question.instruction ?? question.description,
-  options: question.options,
-  type: String(question.type ?? question.interaction ?? 'multiple-choice').replace('_', '-'),
-}))
+const normalizeQuestions = (response) => getQuestionList(response).map((question) => {
+  const type = String(question.type ?? question.interaction ?? question.questionType ?? question.question_type ?? 'multiple-choice')
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-')
+
+  return {
+    ...question,
+    activityId: question.activityId ?? question.activity_id ?? question.questionId ?? question.question_id ?? question.id,
+    questionId: question.questionId ?? question.question_id ?? question.id ?? question.activityId ?? question.activity_id,
+    title: question.title ?? question.questionText ?? question.question_text ?? question.question ?? question.text,
+    description: question.description ?? question.instruction ?? question.questionText ?? question.question_text ?? question.question ?? question.text,
+    instruction: question.instruction ?? question.description,
+    options: question.options ?? question.Options ?? question.choices ?? question.Choices ?? [],
+    type: {
+      mcq: 'multiple-choice',
+      multiplechoice: 'multiple-choice',
+      choice: 'multiple-choice',
+      logic: 'logic-puzzle',
+      priority: 'priority-board',
+      ui: 'ui-inspection',
+    }[type] || type,
+  }
+})
 
 export function Journey1AssessmentProvider({ children }) {
   const [questions, setQuestions] = useState([])
@@ -35,7 +48,7 @@ export function Journey1AssessmentProvider({ children }) {
     try {
       const response = await getJourney1Questions()
       const nextQuestions = normalizeQuestions(response)
-      if (!nextQuestions.length || nextQuestions.some((question) => !question.questionId || !question.title || !Array.isArray(question.options))) {
+      if (!nextQuestions.length || nextQuestions.some((question) => !question.questionId || !question.title)) {
         throw new Error('The Journey 1 API returned invalid or empty questions.')
       }
       setQuestions(nextQuestions)
