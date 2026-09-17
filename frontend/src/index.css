@@ -3166,7 +3166,7 @@ a {
   .journey2-selection-back { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px 3px; padding: 7px 0; border: 0; color: #405361; background: transparent; font-size: .82rem; font-weight: 600; cursor: pointer; }
   .journey2-selection-back:hover { color: #d76725; }
   .journey2-selection-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(310px, .83fr); gap: 18px; align-items: stretch; }
-  .journey2-selection-card, .journey2-selection-aside { min-height: 580px; border: 1px solid #e7ebeb; border-radius: 14px; box-shadow: 0 13px 30px rgba(35, 51, 60, .06); }
+  .journey2-selection-card, .journey2-selection-aside { min-height: 580px; border: 1px solid #e7ebeb; border-radius: 14px; box-shadow: 0 13px 30px rgba(35, 51, 60, .06);margin-top: 28px; }
   .journey2-selection-card { padding: 25px 29px; background: #fff; }
   .journey2-selection-badge { display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 999px; color: #ca641f; background: #fff1e4; font-size: .75rem; font-weight: 700; }
   .journey2-selection-badge svg { color: #e56f29; }
