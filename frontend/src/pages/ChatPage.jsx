@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Clock3, Loader, MoreVertical, Plus, Send, Sparkles, X } from 'lucide-react'
-import Container from '../components/common/Container'
+// import Container from '../components/common/Container'
 import Logo from '../components/common/Logo'
 import { useAuth } from '../auth/AuthContext'
 import { sendChatMessage, getChatHistory, getProfile } from '../api/minervaApi'
@@ -283,7 +283,7 @@ function ChatPage() {
 
   return (
     <main className="chat-page">
-      <Container>
+      <div className="chat-page-container">
         {/* <div className="chat-heading"> 
            <div>
             <p className="dashboard-kicker">CONTEXT-AWARE AI ASSISTANT</p>
@@ -405,7 +405,7 @@ function ChatPage() {
             </form>
           </section>
         </div>
-      </Container>
+      </div>
     </main>
   )
 }

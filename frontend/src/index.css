@@ -5489,3 +5489,21 @@ body:has(.chat-app-shell) .page-shell,
 .chat-app-main .chat-history-sidebar {
   background: #fff;
 }
+
+.chat-page {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.chat-page-container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
