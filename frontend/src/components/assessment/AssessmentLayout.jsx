@@ -90,9 +90,10 @@ function AssessmentLayout({
   title,
   subtitle,
   contentClassName = 'max-w-3xl',
+  className = '',
 }) {
   return (
-    <div className="min-h-screen bg-cream py-8 sm:py-12 lg:py-16">
+    <div className={`min-h-screen bg-cream py-8 sm:py-12 lg:py-16 ${className}`}>
       <Container>
         {/* Back button */}
         {onBack && (

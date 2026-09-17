@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BarChart3, Check, FileText, Lightbulb, Target } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
@@ -49,24 +49,28 @@ function ResumeAssessment() {
       currentStep={currentQuestion + 1}
       totalSteps={questions.length}
       contentClassName="max-w-none"
+      className="resume-assessment-layout"
     >
-      <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
-        <div>
-          {/* Question */}
-          <div className="mb-10">
-            <h1 className="resume-question-heading">
-              {question.prompt}
-            </h1>
+      <div className="resume-assessment-page">
+        <section className="resume-assessment-card">
+          <div className="resume-assessment-badge"><FileText size={17} /> Journey 3 Assessment</div>
+          <div className="resume-assessment-progress">
+            <div><strong>Question {currentQuestion + 1} of {questions.length}</strong><strong>{Math.round(((currentQuestion + 1) / questions.length) * 100)}%</strong></div>
+            <div className="resume-assessment-progress-track"><span style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }} /></div>
           </div>
 
-          {/* Input */}
-          <div className="mb-12">
+          <div className="resume-assessment-question">
+            <h1>{question.prompt}</h1>
+            {question.description && <p>{question.description}</p>}
+          </div>
+
+          <div className="resume-assessment-answer">
             {question.options?.length > 0 ? (
-              <div className="space-y-3">
+              <div className="resume-assessment-options">
                 {question.options.map((option) => {
                   const optionId = option.id ?? option.value
                   const optionText = option.text ?? option.label ?? option.value
-                  return <button key={optionId} type="button" onClick={() => handleAnswer(optionId)} className={`w-full rounded-xl border p-4 text-left transition-colors ${answers[question.id] === optionId ? 'border-orange bg-orange-pill/30' : 'border-beige-border bg-white hover:border-orange/50'}`}>{optionText}</button>
+                  return <button key={optionId} type="button" onClick={() => handleAnswer(optionId)} className={answers[question.id] === optionId ? 'is-selected' : ''}>{optionText}</button>
                 })}
               </div>
             ) : (
@@ -74,18 +78,19 @@ function ResumeAssessment() {
                 value={answers[question.id] || ''}
                 onChange={(e) => handleAnswer(e.target.value)}
                 placeholder="Your answer here..."
-                className="w-full rounded-xl border border-beige-border p-4 min-h-32 text-[#23211f] focus:outline-none focus:border-orange"
-                style={{ borderColor: answers[question.id] ? '#f4a460' : '#e8ddd1', fontFamily: 'inherit', color: '#23211f' }}
+                className="resume-assessment-textarea"
               />
             )}
           </div>
 
-          {/* CTA */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="resume-assessment-actions">
             <Button
               onClick={() => navigate('/explore/resume/analysis')}
               variant="ghost"
               size="lg"
+              icon={ArrowLeft}
+              iconPosition="left"
+              className="resume-assessment-back"
             >
               Back
             </Button>
@@ -94,12 +99,20 @@ function ResumeAssessment() {
               variant="dark"
               size="lg"
               icon={ArrowRight}
+              className="resume-assessment-next"
               disabled={!answers[question.id] || (typeof answers[question.id] === 'string' && !answers[question.id].trim())}
             >
               {isLastQuestion ? 'Complete Assessment' : 'Next Question'}
             </Button>
           </div>
-        </div>
+        </section>
+
+        <aside className="resume-assessment-guide">
+          <div className="resume-guide-heading"><span><Target size={21} /></span><div><h2>Assessment Guide</h2><p>This assessment helps us understand your analytical thinking, problem-solving approach, and how well you can work with real-world data and machine learning concepts.</p></div></div>
+          <div className="resume-guide-section"><div className="resume-guide-section-title"><span><BarChart3 size={20} /></span><h2>Key Focus Areas</h2></div><ul><li><Check size={14} />Data Analysis &amp; Interpretation</li><li><Check size={14} />Feature Engineering</li><li><Check size={14} />Problem-Solving</li><li><Check size={14} />Machine Learning Knowledge</li><li><Check size={14} />Analytical Reasoning</li></ul></div>
+          <div className="resume-guide-tip"><span><Lightbulb size={21} /></span><div><h2>Take your time</h2><p>There are {questions.length} questions in total.<br />You can move forward after completing each one.</p></div></div>
+          <div className="resume-guide-art" aria-hidden="true"><BarChart3 size={116} strokeWidth={1.1} /></div>
+        </aside>
       </div>
     </AssessmentLayout>
   )

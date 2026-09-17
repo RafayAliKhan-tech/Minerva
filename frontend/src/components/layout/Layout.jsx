@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email']
+const AUTH_PAGES_WITHOUT_FOOTER = ['/login', '/signup', '/forgot-password']
 
 function Layout({ showFooter = true }) {
   const { pathname } = useLocation()
@@ -13,6 +14,7 @@ function Layout({ showFooter = true }) {
   const isAuthPage = AUTH_ROUTES.includes(pathname)
   const isChatPage = pathname === '/chat'
   const hideChatbotForGuests = ['/', '/login', '/signup'].includes(pathname)
+  const shouldShowFooter = showFooter && !AUTH_PAGES_WITHOUT_FOOTER.includes(pathname)
 
   return (
     <div className={`page-shell${isAuthPage ? ' auth-page-shell' : ''}${isChatPage ? ' chat-app-shell' : ''}`}>
@@ -20,7 +22,7 @@ function Layout({ showFooter = true }) {
       <main className={`page-main-content${isAuthPage ? ' auth-page-main' : ''}${isChatPage ? ' chat-app-main' : ''}`}>
         <Outlet />
       </main>
-      {showFooter && !isChatPage && <Footer compact={isAuthPage} />}
+      {shouldShowFooter && !isChatPage && <Footer compact={isAuthPage} />}
       {(!hideChatbotForGuests || isAuthenticated) && <Link to="/chat" aria-label="Open Minerva chat" className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#c38d66] text-white shadow-lg transition-transform hover:-translate-y-1"><MessageCircle size={23} /></Link>}
     </div>
   )

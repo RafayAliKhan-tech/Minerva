@@ -2217,6 +2217,324 @@ a {
 .resume-analysis-result-card-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .resume-analysis-result-card-dark .resume-analysis-result-card-link { color: #f2dfc7; }
 .resume-analysis-result-card-light .resume-analysis-result-card-link { color: #9a6846; }
+
+.resume-assessment-layout {
+  background:
+    radial-gradient(circle at 8% 5%, rgba(195, 141, 102, .08), transparent 18%),
+    radial-gradient(circle at 98% 82%, rgba(195, 141, 102, .08), transparent 20%),
+    #f7f8f8;
+}
+
+.resume-assessment-layout > .container {
+  max-width: 1230px;
+}
+
+.resume-assessment-layout > .container > .mb-8 {
+  margin-bottom: 17px;
+}
+
+.resume-assessment-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, .92fr);
+  gap: 15px;
+  align-items: stretch;
+}
+
+.resume-assessment-card,
+.resume-assessment-guide {
+  border: 1px solid #e5e8e9;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 14px 34px rgba(31, 42, 49, .06);
+}
+
+.resume-assessment-card {
+  padding: 20px 29px 25px;
+}
+
+.resume-assessment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  color: #b6764a;
+  background: #fbf1e8;
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.resume-assessment-progress {
+  margin-top: 20px;
+}
+
+.resume-assessment-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  color: #27333b;
+  font-size: .72rem;
+}
+
+.resume-assessment-progress-track {
+  height: 7px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e9edef;
+}
+
+.resume-assessment-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #c38d66;
+  transition: width .3s ease;
+}
+
+.resume-assessment-question {
+  margin: 45px 0 24px;
+}
+
+.resume-assessment-question h1 {
+  max-width: 720px;
+  margin: 0;
+  color: #26343d;
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.resume-assessment-question p {
+  max-width: 700px;
+  margin: 18px 0 0;
+  color: #6e7f8c;
+  font-size: .9rem;
+  line-height: 1.55;
+}
+
+.resume-assessment-answer {
+  min-height: 132px;
+}
+
+.resume-assessment-textarea {
+  display: block;
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  padding: 14px;
+  border: 1px solid #d8e0e4;
+  border-radius: 9px;
+  outline: none;
+  color: #26343d;
+  background: #fff;
+  font: inherit;
+  font-size: .82rem;
+}
+
+.resume-assessment-textarea:focus {
+  border-color: #c38d66;
+  box-shadow: 0 0 0 3px rgba(195, 141, 102, .1);
+}
+
+.resume-assessment-options {
+  display: grid;
+  gap: 10px;
+}
+
+.resume-assessment-options button {
+  padding: 14px 16px;
+  border: 1px solid #d8e0e4;
+  border-radius: 9px;
+  color: #26343d;
+  background: #fff;
+  text-align: left;
+  transition: border-color .2s, background .2s;
+}
+
+.resume-assessment-options button:hover,
+.resume-assessment-options button.is-selected {
+  border-color: #c38d66;
+  background: #fbf1e8;
+}
+
+.resume-assessment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 36px;
+}
+
+.resume-assessment-back {
+  padding: 9px 0 !important;
+  color: #26343d !important;
+  font-size: .8rem !important;
+}
+
+.resume-assessment-next {
+  padding: 11px 25px !important;
+  background: #c38d66 !important;
+  font-size: .78rem !important;
+}
+
+.resume-assessment-guide {
+  position: relative;
+  overflow: hidden;
+  padding: 23px 23px 0;
+  border-color: #eadfd4;
+  background: linear-gradient(160deg, #fffdfa, #fffaf5 68%, #fbf0e5);
+}
+
+.resume-guide-heading,
+.resume-guide-section-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.resume-guide-heading > span,
+.resume-guide-section-title > span,
+.resume-guide-tip > span {
+  display: grid;
+  flex: 0 0 auto;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border-radius: 50%;
+  color: #bd7d4f;
+  background: #fbf0e5;
+}
+
+.resume-guide-heading h2,
+.resume-guide-section-title h2,
+.resume-guide-tip h2 {
+  margin: 2px 0 7px;
+  color: #26343d;
+  font-size: .92rem;
+  font-weight: 700;
+}
+
+.resume-guide-heading p {
+  margin: 0;
+  color: #687984;
+  font-size: .77rem;
+  line-height: 1.5;
+}
+
+.resume-guide-section {
+  margin-top: 21px;
+  padding-top: 13px;
+  border-top: 1px solid #eee4db;
+}
+
+.resume-guide-section-title {
+  align-items: center;
+}
+
+.resume-guide-section-title > span {
+  width: 43px;
+  height: 43px;
+}
+
+.resume-guide-section-title h2 {
+  margin: 0;
+}
+
+.resume-guide-section ul {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0 0 0 56px;
+  list-style: none;
+  color: #71808b;
+  font-size: .74rem;
+}
+
+.resume-guide-section li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resume-guide-section li svg {
+  flex: 0 0 auto;
+  padding: 2px;
+  border-radius: 50%;
+  color: #fff;
+  background: #c38d66;
+}
+
+.resume-guide-tip {
+  display: flex;
+  gap: 14px;
+  margin-top: 23px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  background: rgba(195, 141, 102, .08);
+}
+
+.resume-guide-tip > span {
+  width: 43px;
+  height: 43px;
+}
+
+.resume-guide-tip h2 {
+  margin-top: 1px;
+}
+
+.resume-guide-tip p {
+  margin: 0;
+  color: #71808b;
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
+.resume-guide-art {
+  display: flex;
+  justify-content: center;
+  margin: 8px -23px 0;
+  padding-top: 5px;
+  color: rgba(195, 141, 102, .25);
+}
+
+@media (max-width: 900px) {
+  .resume-assessment-page {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-assessment-guide {
+    min-height: 390px;
+  }
+}
+
+@media (max-width: 640px) {
+  .resume-assessment-card {
+    padding: 18px;
+  }
+
+  .resume-assessment-question {
+    margin-top: 30px;
+  }
+
+  .resume-assessment-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .resume-assessment-back,
+  .resume-assessment-next {
+    width: 100%;
+  }
+
+  .resume-assessment-guide {
+    padding: 20px 18px 0;
+  }
+
+  .resume-guide-art {
+    margin-right: -18px;
+    margin-left: -18px;
+  }
+}
 @media (max-width: 520px) {
   .resume-question-heading { font-size: 1.7rem; line-height: 1.2; }
 }
