@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Upload, File, X } from 'lucide-react'
 
-function FileUpload({ onFileSelect, accept = '.pdf,.docx', maxSize = 5 }) {
+function FileUpload({ onFileSelect, accept = '.pdf,.docx', maxSize = 5, className = '' }) {
   const [file, setFile] = useState(null)
   const [error, setError] = useState(null)
   const fileInputRef = useRef(null)
@@ -62,7 +62,7 @@ function FileUpload({ onFileSelect, accept = '.pdf,.docx', maxSize = 5 }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${className}`}>
       {/* Upload area */}
       <div
         onDragEnter={handleDrag}

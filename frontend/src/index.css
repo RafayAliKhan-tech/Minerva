@@ -1899,6 +1899,299 @@ a {
 .dashboard-progress-meta strong { color: #e7d1b5; }
 .dashboard-resume-card h2 { margin-top: 48px; font-size: 1.2rem; }
 .dashboard-resume-card .dashboard-outline-action { margin-top: 26px; }
+
+.resume-upload-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, .9fr);
+  gap: 24px;
+  align-items: stretch;
+  max-width: 1195px;
+  margin: 16px auto 0;
+}
+
+.resume-upload-card,
+.resume-upload-benefits {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e9e5df;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 14px 34px rgba(35, 33, 31, .055);
+}
+
+.resume-upload-card {
+  padding: 24px 50px 28px;
+}
+
+.resume-upload-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  border-radius: 999px;
+  color: #b7794c;
+  background: #fbf2e9;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.resume-upload-eyebrow svg,
+.resume-benefit-heading-icon,
+.resume-upload-next-icon {
+  color: #bd7d4f;
+}
+
+.resume-upload-card h1 {
+  margin: 18px 0 10px;
+  color: #182129;
+  font-size: clamp(2.35rem, 4vw, 3.25rem);
+  font-weight: 800;
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+
+.resume-upload-lede {
+  max-width: 560px;
+  margin: 0;
+  color: #68727a;
+  font-size: .98rem;
+  line-height: 1.5;
+}
+
+.resume-file-upload {
+  margin-top: 22px;
+}
+
+.resume-file-upload > .relative {
+  border-color: #d8d8d5;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.resume-file-upload > .relative:hover {
+  border-color: #bd7d4f;
+}
+
+.resume-file-upload > .relative > div {
+  min-height: 190px;
+  padding: 25px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.resume-file-upload > .relative > div > div {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 13px;
+  border-radius: 50%;
+  color: #bd7d4f;
+  background: #fbf2e9;
+}
+
+.resume-file-upload h3 {
+  color: #222a30;
+  font-size: .96rem;
+}
+
+.resume-file-upload p {
+  color: #7a838a;
+}
+
+.resume-upload-error {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: .8rem;
+}
+
+.resume-upload-error p {
+  margin: 0;
+}
+
+.resume-upload-next {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #ece9e5;
+  color: #68727a;
+  font-size: .76rem;
+  line-height: 1.55;
+}
+
+.resume-upload-next-icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fbf2e9;
+}
+
+.resume-upload-next p {
+  margin: 0;
+}
+
+.resume-upload-next strong {
+  color: #273038;
+}
+
+.resume-upload-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.resume-back-button {
+  padding: 9px 18px !important;
+  border: 1px solid #cbd0d2;
+  color: #293138 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: .78rem !important;
+}
+
+.resume-analyze-button {
+  min-width: 185px;
+  padding: 11px 21px !important;
+  background: #c38d66 !important;
+  font-size: .78rem !important;
+}
+
+.resume-upload-benefits {
+  padding: 24px 25px 0;
+  border-color: #eadfD4;
+  background: linear-gradient(160deg, #fffdfa 0%, #fffaf5 70%, #fbf0e5 100%);
+}
+
+.resume-upload-benefits h2 {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0;
+  color: #20282f;
+  font-size: 1.05rem;
+  letter-spacing: -.02em;
+}
+
+.resume-benefit-heading-icon {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border-radius: 14px;
+  background: #fbf0e5;
+}
+
+.resume-benefit-list {
+  display: grid;
+  gap: 22px;
+  margin-top: 20px;
+}
+
+.resume-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.resume-benefit > span {
+  display: grid;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 4px solid #fff;
+  border-radius: 13px;
+  color: #bd7d4f;
+  background: #fbf0e5;
+  box-shadow: 0 2px 8px rgba(189, 125, 79, .08);
+}
+
+.resume-benefit h3 {
+  margin: 4px 0 4px;
+  color: #252d33;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.resume-benefit p {
+  max-width: 225px;
+  margin: 0;
+  color: #707980;
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
+.resume-benefit-art {
+  display: flex;
+  justify-content: center;
+  margin: 18px -25px 0;
+  padding-top: 12px;
+  color: rgba(195, 141, 102, .34);
+  transform: rotate(5deg);
+}
+
+@media (max-width: 900px) {
+  .resume-upload-page {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-upload-benefits {
+    min-height: 330px;
+  }
+
+  .resume-benefit-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .resume-upload-page {
+    margin-top: 0;
+  }
+
+  .resume-upload-card {
+    padding: 22px 18px 24px;
+  }
+
+  .resume-upload-card h1 {
+    font-size: 2.35rem;
+  }
+
+  .resume-upload-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .resume-back-button,
+  .resume-analyze-button {
+    width: 100%;
+  }
+
+  .resume-upload-benefits {
+    padding: 22px 18px 0;
+  }
+
+  .resume-benefit-list {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-benefit-art {
+    margin-right: -18px;
+    margin-left: -18px;
+  }
+}
+
 .dashboard-section-heading { margin: 82px 0 20px; align-items: end; }
 .dashboard-section-heading h2 { margin: 7px 0 0; color: #f5f1ec; font-size: clamp(1.7rem, 3vw, 2.6rem); letter-spacing: -0.045em; }
 .dashboard-action-grid { grid-template-columns: repeat(2, 1fr); }

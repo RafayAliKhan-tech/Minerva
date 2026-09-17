@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import FileUpload from '../components/assessment/FileUpload'
 import Button from '../components/common/Button'
-import { ArrowRight, Loader } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BarChart3, FileText, GitBranch, Lightbulb, Loader, Star, Target } from 'lucide-react'
 import { uploadResume } from '../api/minervaApi'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 import { saveResumeFile } from '../utils/userData'
@@ -57,57 +57,56 @@ function ResumeUpload() {
   }
 
   return (
-    <AssessmentLayout onBack={() => navigate('/')} showProgress={false}>
-      <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
-        <div className="max-w-2xl">
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="font-serif text-4xl font-semibold text-brown sm:text-5xl">
-              Let's start with your resume.
-            </h1>
-            <p className="mt-4 text-lg leading-relaxed text-brown-light">
-              Upload your resume so Minerva can understand your current skills, experience and career profile.
-            </p>
-          </div>
+    <AssessmentLayout showProgress={false} contentClassName="max-w-none">
+      <div className="resume-upload-page">
+        <div className="resume-upload-card">
+          <div className="resume-upload-eyebrow"><FileText size={18} /> Resume Analysis</div>
+          <h1>Let's start with your<br className="hidden sm:block" /> resume.</h1>
+          <p className="resume-upload-lede">
+            Upload your resume so Minerva can understand your current skills,
+            experience and career profile.
+          </p>
 
-          {/* File upload */}
-          <div className="mb-8">
-            <FileUpload onFileSelect={handleFileSelect} />
-          </div>
+          <FileUpload onFileSelect={handleFileSelect} className="resume-file-upload" />
 
-          {/* Error message */}
           {error && (
-            <div className="mb-8 rounded-2xl bg-red-50 p-4 border border-red-200">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="resume-upload-error">
+              <p>{error}</p>
             </div>
           )}
 
-          {/* Info */}
-          <div className="mb-12 rounded-2xl bg-orange-pill p-6">
-            <p className="text-sm text-brown">
-              <span className="font-semibold">What happens next:</span> We'll analyze your resume
-              to identify your skills, projects, education, and experience. Then we'll show you
-              career matches and skill gaps.
-            </p>
+          <div className="resume-upload-next">
+            <div className="resume-upload-next-icon"><Lightbulb size={18} /></div>
+            <p><strong>What happens next:</strong> We'll analyze your resume to identify your skills, projects, education, and experience. Then we'll show you career matches and skill gaps.</p>
           </div>
 
-          {/* CTA */}
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="resume-upload-actions">
+            <Button to="/" variant="ghost" size="lg" className="resume-back-button" icon={ArrowLeft} iconPosition="left">
+              Back to Home
+            </Button>
             <Button
               onClick={handleAnalyze}
-              variant="dark"
+              variant="secondary"
               size="lg"
               icon={loading ? Loader : ArrowRight}
               disabled={!selectedFile || loading}
-              className="flex-1"
+              className="resume-analyze-button"
             >
               {loading ? 'Uploading...' : 'Analyze My Resume'}
             </Button>
-            <Button to="/" variant="ghost" size="lg" className="flex-1">
-              Back to Home
-            </Button>
           </div>
         </div>
+
+        <aside className="resume-upload-benefits">
+          <h2><span className="resume-benefit-heading-icon"><FileText size={18} /></span>Why upload your resume?</h2>
+          <div className="resume-benefit-list">
+            <div className="resume-benefit"><span><Target size={19} /></span><div><h3>Personalized Insights</h3><p>Get accurate skill analysis and career recommendations.</p></div></div>
+            <div className="resume-benefit"><span><BarChart3 size={19} /></span><div><h3>Better Matches</h3><p>Find careers that fit your skills, interests and goals.</p></div></div>
+            <div className="resume-benefit"><span><Star size={19} /></span><div><h3>Identify Skill Gaps</h3><p>See what you need to learn to reach your dream career.</p></div></div>
+            <div className="resume-benefit"><span><GitBranch size={19} /></span><div><h3>Build Your Roadmap</h3><p>Get a clear plan with courses, projects and next steps.</p></div></div>
+          </div>
+          <div className="resume-benefit-art" aria-hidden="true"><FileText size={116} strokeWidth={1.1} /></div>
+        </aside>
       </div>
     </AssessmentLayout>
   )
