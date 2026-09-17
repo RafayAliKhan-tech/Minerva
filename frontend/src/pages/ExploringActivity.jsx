@@ -231,7 +231,6 @@ function ExploringActivity() {
     >
       <br></br>
       <br></br>
-      <br></br>
 
       <div className="journey1-assessment-grid">
         <main className="journey1-assessment-card">
