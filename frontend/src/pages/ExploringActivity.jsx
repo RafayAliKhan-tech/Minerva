@@ -229,6 +229,8 @@ function ExploringActivity() {
       contentClassName="max-w-none"
       className="journey1-assessment-layout"
     >
+      <br></br>
+      <br></br>
 
       <div className="journey1-assessment-grid">
         <main className="journey1-assessment-card">
