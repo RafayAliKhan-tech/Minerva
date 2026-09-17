@@ -284,14 +284,6 @@ function ChatPage() {
   return (
     <main className="chat-page">
       <div className="chat-page-container">
-        {/* <div className="chat-heading"> 
-           <div>
-            <p className="dashboard-kicker">CONTEXT-AWARE AI ASSISTANT</p>
-            <h1>Think out loud with Minerva.</h1>
-            <p>Your backend skill profile and highest scored field stay with the conversation.</p>
-          </div>
-          <Link to="/dashboard" className="dashboard-text-link">Dashboard <ArrowUpRight size={15} /></Link>
-        </div> */}
         <div className={`chat-shell${historyOpen ? ' chat-history-open' : ''}`}>
           <aside className="chat-history-sidebar" aria-label="Chat history">
             <div className="chat-history-brand">
