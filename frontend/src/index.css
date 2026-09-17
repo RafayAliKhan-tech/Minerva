@@ -5459,3 +5459,20 @@ body {
   .chat-app-main .chat-starters { align-items: stretch; flex-direction: column; }
   .chat-app-main .chat-starters button { width: 100%; }
 }
+
+html:has(.chat-app-shell),
+body:has(.chat-app-shell),
+body:has(.chat-app-shell) #root,
+body:has(.chat-app-shell) .page-shell,
+.chat-app-shell,
+.chat-app-main,
+.chat-app-main .chat-page,
+.chat-app-main .chat-page > .container,
+.chat-app-main .chat-shell,
+.chat-app-main .chat-window {
+  background: #fff;
+}
+
+.chat-app-main .chat-history-sidebar {
+  background: #fff;
+}
