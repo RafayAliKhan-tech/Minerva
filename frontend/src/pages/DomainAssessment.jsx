@@ -15,6 +15,7 @@ import ChoiceExplanation from '../components/assessment/ChoiceExplanation'
 import UIInspection from '../components/assessment/UIInspection'
 import MultipleChoice from '../components/assessment/MultipleChoice'
 import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
+import { ArrowLeft, BriefcaseBusiness, CheckCircle2, ClipboardList, Clock, Flag, Lightbulb, Target, Trophy } from 'lucide-react'
 
 const getInitialState = (activity, saved = {}) => {
   switch (activity?.type) {
@@ -223,18 +224,23 @@ function DomainAssessment() {
       onBack={handlePrevious}
       currentStep={activityIndex + 1}
       totalSteps={activities.length}
-        title={careerName}
+      title={careerName}
       subtitle={activity.description}
+      contentClassName="max-w-none"
+      className="journey2-assessment-layout"
     >
-      <div className="mb-6 flex justify-end">
-        <Timer
-          duration={180}
-          storageKey={`minerva:journey2:timer:${activity.id || activity.activityId || activity.questionId}`}
-          onTimeUp={() => setTimeUp(true)}
-          isActive={!saved}
-        />
-      </div>
+      <button className="journey2-assessment-back" type="button" onClick={handlePrevious} aria-label="Go back">
+        <ArrowLeft size={16} /> Back
+      </button>
 
+      <div className="journey2-assessment-grid">
+        <main className="journey2-assessment-card">
+          <div className="journey2-assessment-badge"><BriefcaseBusiness size={16} /> Journey 2 Assessment</div>
+          <div className="journey2-assessment-meta">Question {activityIndex + 1} of {activities.length}</div>
+          <h1>{activity.title}</h1>
+          <p className="journey2-assessment-description">{activity.description}</p>
+
+          <div className="journey2-assessment-content">
       {activity.type === 'code-debugger' && (
         <CodeDebugger
           codeLines={activity.codeLines}
@@ -384,21 +390,34 @@ function DomainAssessment() {
           canAnswer={!timeUp}
         />
       )}
-
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Button onClick={handlePrevious} variant="ghost" size="md" className="text-brown hover:text-orange">
-          {isFirstActivity ? 'Back' : 'Previous'}
-        </Button>
-
-        {timeUp && (
-          <div className="text-center text-sm text-orange font-medium">
-            Time's up! Your response was saved automatically.
           </div>
-        )}
 
-        <Button onClick={handleNext} variant="dark" size="md" disabled={!canContinue}>
-          {isLastActivity ? 'See Results' : 'Continue'}
-        </Button>
+          <div className="journey2-assessment-footer">
+            <div className="journey2-assessment-step"><span><i style={{ width: `${((activityIndex + 1) / activities.length) * 100}%` }} /></span>{activityIndex + 1} / {activities.length}</div>
+            {timeUp && <div className="journey2-assessment-timeup">Time's up! Your response was saved automatically.</div>}
+            <div className="journey2-assessment-actions">
+              <Timer duration={180} storageKey={`minerva:journey2:timer:${activity.id || activity.activityId || activity.questionId}`} onTimeUp={() => setTimeUp(true)} isActive={!saved} />
+              <Button onClick={handleNext} variant="dark" size="md" disabled={!canContinue}>{isLastActivity ? 'See Results →' : 'Next Question →'}</Button>
+            </div>
+          </div>
+        </main>
+
+        <aside className="journey2-assessment-sidebar">
+          <section className="journey2-progress-card">
+            <div className="journey2-sidebar-heading"><span><Target size={17} /></span><div><h2>Your Progress</h2><p>Complete all {activities.length} questions to finish this section.</p></div><strong>{Math.round(((activityIndex + 1) / activities.length) * 100)}%</strong></div>
+            <div className="journey2-progress-track"><i style={{ width: `${((activityIndex + 1) / activities.length) * 100}%` }} /></div>
+            <div className="journey2-estimate"><span><Clock size={17} /></span><div><small>Estimated time</small><strong>3 minutes</strong></div></div>
+          </section>
+          <section className="journey2-overview-card">
+            <div className="journey2-sidebar-title"><span><ClipboardList size={16} /></span><h2>Quick Overview</h2></div>
+            {[
+              [ClipboardList, 'Total Questions', `${activities.length}`],
+              [CheckCircle2, 'Question Type', activity.type === 'multiple-choice' ? 'Multiple Choice' : 'Interactive'],
+              [Trophy, 'Scoring', '1 point per correct answer'],
+            ].map(([Icon, label, value]) => <div className="journey2-overview-row" key={label}><Icon size={16} /><span>{label}</span><strong>{value}</strong></div>)}
+          </section>
+          <section className="journey2-keep-card"><Lightbulb size={19} /><div><h2>Keep Going!</h2><p>Each question brings you closer to understanding your strengths and building your future.</p></div><Flag size={18} /></section>
+        </aside>
       </div>
     </AssessmentLayout>
   )

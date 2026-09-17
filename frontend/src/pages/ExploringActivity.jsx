@@ -8,6 +8,7 @@ import PriorityBoard from '../components/assessment/PriorityBoard'
 import UIInspection from '../components/assessment/UIInspection'
 import MultipleChoice from '../components/assessment/MultipleChoice'
 import { useJourney1Assessment } from '../auth/Journey1AssessmentContext'
+import { ArrowLeft, Brain, CheckCircle2, ClipboardList, Flag, Lightbulb, Sparkles, Target, Trophy } from 'lucide-react'
 
 function ExploringActivity() {
   const { activityNum } = useParams()
@@ -225,72 +226,66 @@ function ExploringActivity() {
       totalSteps={questions.length}
       title={activity.title}
       subtitle={activity.description}
+      contentClassName="max-w-none"
+      className="journey1-assessment-layout"
     >
-      <div className="mb-6 flex justify-end">
-        <Timer
-          duration={180}
-          storageKey={`minerva:journey1:timer:${activity.id || activity.question_id}`}
-          onTimeUp={() => setTimeUp(true)}
-          isActive={!submitted}
-        />
-      </div>
+      <button className="journey1-assessment-back" type="button" onClick={handlePrevious} aria-label="Go back">
+        <ArrowLeft size={16} /> Back
+      </button>
 
-      {activity.type === 'logic-puzzle' && (
-        <LogicPuzzle
-          answer={logicAnswer}
-          onAnswerChange={setLogicAnswer}
-          hintUsed={hintUsed}
-          onUseHint={handleUseHint}
-          onSubmit={handleLogicSubmit}
-          isSubmitted={submitted}
-          isDisabled={timeUp}
-        />
-      )}
-
-      {activity.type === 'priority-board' && (
-        <PriorityBoard
-          cards={poolCards}
-          prioritySlots={prioritySlots.map((cardId) => activity.cards.find((card) => card.id === cardId))}
-          onSlotDrop={handleSlotDrop}
-          onReturnToPool={handleReturnToPool}
-          changes={priorityChanges}
-          isDisabled={timeUp}
-        />
-      )}
-
-      {activity.type === 'ui-inspection' && (
-        <UIInspection
-          areas={activity.areas}
-          selectedAreas={selectedAreas}
-          onToggleArea={toggleArea}
-          isDisabled={timeUp}
-        />
-      )}
-
-      {activity.type === 'multiple-choice' && (
-        <MultipleChoice
-          question={activity}
-          selectedOption={selectedOption}
-          onOptionSelect={(optionId) => setSelectedOptions((current) => ({ ...current, [currentQuestionId]: optionId }))}
-          isAnswered={submitted}
-          canAnswer={!timeUp}
-        />
-      )}
-
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Button onClick={handlePrevious} variant="ghost" size="md" className="text-brown hover:text-orange">
-          {isFirstActivity ? 'Back' : 'Previous'}
-        </Button>
-
-        {timeUp && (
-          <div className="text-center text-sm text-orange font-medium">
-            Time's up! Your response was saved automatically.
+      <div className="journey1-assessment-grid">
+        <main className="journey1-assessment-card">
+          <div className="journey1-assessment-card-top">
+            <div className="journey1-assessment-badge"><ClipboardList size={16} /> Journey 1 Assessment</div>
+            <div className="journey1-assessment-mode"><Brain size={18} /><span><strong>AI &amp; Machine Learning</strong><small>Exploring Mode</small></span></div>
           </div>
-        )}
+          <div className="journey1-assessment-question-meta">Question {activityIndex + 1} of {questions.length}</div>
+          <h1>{activity.title}</h1>
+          <p className="journey1-assessment-description">{activity.description}</p>
 
-        <Button onClick={handleNext} variant="dark" size="md" disabled={!canContinue}>
-          {isLastActivity ? 'See Analysis' : 'Continue'}
-        </Button>
+          <div className="journey1-assessment-question-body">
+            {activity.type === 'logic-puzzle' && (
+              <LogicPuzzle answer={logicAnswer} onAnswerChange={setLogicAnswer} hintUsed={hintUsed} onUseHint={handleUseHint} onSubmit={handleLogicSubmit} isSubmitted={submitted} isDisabled={timeUp} />
+            )}
+            {activity.type === 'priority-board' && (
+              <PriorityBoard cards={poolCards} prioritySlots={prioritySlots.map((cardId) => activity.cards.find((card) => card.id === cardId))} onSlotDrop={handleSlotDrop} onReturnToPool={handleReturnToPool} changes={priorityChanges} isDisabled={timeUp} />
+            )}
+            {activity.type === 'ui-inspection' && (
+              <UIInspection areas={activity.areas} selectedAreas={selectedAreas} onToggleArea={toggleArea} isDisabled={timeUp} />
+            )}
+            {activity.type === 'multiple-choice' && (
+              <MultipleChoice question={activity} selectedOption={selectedOption} onOptionSelect={(optionId) => setSelectedOptions((current) => ({ ...current, [currentQuestionId]: optionId }))} isAnswered={submitted} canAnswer={!timeUp} />
+            )}
+          </div>
+
+          <div className="journey1-assessment-footer">
+            <div className="journey1-assessment-step"><span><i style={{ width: `${((activityIndex + 1) / questions.length) * 100}%` }} /></span>{activityIndex + 1} / {questions.length}</div>
+            {timeUp && <div className="journey1-assessment-timeup">Time's up! Your response was saved automatically.</div>}
+            <div className="journey1-assessment-actions">
+              <Timer duration={180} storageKey={`minerva:journey1:timer:${activity.id || activity.question_id}`} onTimeUp={() => setTimeUp(true)} isActive={!submitted} />
+              <Button onClick={handleNext} variant="dark" size="md" disabled={!canContinue}>{isLastActivity ? 'See Analysis →' : 'Next Question →'}</Button>
+            </div>
+          </div>
+        </main>
+
+        <aside className="journey1-assessment-sidebar">
+          <section className="journey1-progress-card">
+            <div className="journey1-sidebar-heading"><span><Target size={17} /></span><div><h2>Your Progress</h2><p>Complete all {questions.length} questions to finish this section.</p></div><strong>{Math.round(((activityIndex + 1) / questions.length) * 100)}%</strong></div>
+            <div className="journey1-progress-track"><i style={{ width: `${((activityIndex + 1) / questions.length) * 100}%` }} /></div>
+            <div className="journey1-question-dots">{questions.map((_, index) => <span key={index} className={index === activityIndex ? 'is-active' : index < activityIndex ? 'is-complete' : ''}>{index + 1}</span>)}</div>
+          </section>
+          <section className="journey1-overview-card">
+            <div className="journey1-sidebar-title"><span><ClipboardList size={16} /></span><h2>Quick Overview</h2></div>
+            {[
+              [Sparkles, 'Mode', 'Exploring Mode'],
+              [ClipboardList, 'Total Questions', `${questions.length} (2 per career)`],
+              [CheckCircle2, 'Question Type', 'Interactive'],
+              [Trophy, 'Scoring', '1 point per correct answer'],
+              [Flag, 'Career Areas', '5 areas'],
+            ].map(([Icon, label, value]) => <div className="journey1-overview-row" key={label}><Icon size={16} /><span>{label}</span><strong>{value}</strong></div>)}
+          </section>
+          <section className="journey1-keep-card"><Lightbulb size={19} /><div><h2>Keep in Mind</h2><p>There are no negative marks. Choose the option you think is correct based on your understanding and what you've learned so far.</p></div></section>
+        </aside>
       </div>
     </AssessmentLayout>
   )

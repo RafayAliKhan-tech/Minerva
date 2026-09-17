@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
-import { Clock, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, Compass, Sparkles } from 'lucide-react'
 import { useJourney1Assessment } from '../auth/Journey1AssessmentContext'
 
 function ExploringIntro() {
@@ -28,94 +28,58 @@ function ExploringIntro() {
 
   return (
     <AssessmentLayout
-      onBack={() => navigate('/')}
-      showProgress={false}
+      contentClassName="max-w-none"
+      className="journey1-intro-layout"
     >
-      {/* Main card */}
-      <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
-        <div className="max-w-2xl">
-          {/* Title */}
-          <h1 className="font-serif text-4xl font-semibold text-brown sm:text-5xl">
-            You don't need to know your domain yet.
-          </h1>
+      <button className="journey1-intro-back" type="button" onClick={() => navigate('/dashboard')} aria-label="Back to home">
+        <ArrowLeft size={18} aria-hidden="true" />
+        Back
+      </button>
 
-          {/* Subtitle */}
-          <p className="mt-6 text-lg leading-relaxed text-brown-light">
-            Let's discover where your natural strengths and interests could take you.
-          </p>
+      <div className="journey1-intro-grid">
+        <section className="journey1-intro-card">
+          <div className="journey1-intro-card-content">
+            <div className="journey1-intro-badge"><Sparkles size={16} /> Journey 1 Introduction</div>
+            <h1>You don't need to know<br className="journey1-intro-title-break" /> your domain yet.</h1>
+            <p className="journey1-intro-subtitle">Let's discover where your natural strengths and interests could take you.</p>
 
-          {/* Info cards */}
-          <div className="mt-12 space-y-4">
-            {[
-              {
-                icon: Clock,
-                label: 'Estimated time',
-                value: '3 minutes',
-              },
-              {
-                icon: CheckCircle2,
-                label: 'What you\'ll get',
-                value: 'Your personalized mind profile & domain matches',
-              },
-            ].map((item) => {
-              const Icon = item.icon
-              return (
-                <div key={item.label} className="flex items-center gap-4 rounded-xl bg-cream-dark p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-pill text-orange">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-brown-light">
-                      {item.label}
-                    </p>
-                    <p className="text-base font-semibold text-brown">{item.value}</p>
-                  </div>
-                </div>
-              )
-            })}
+            <div className="journey1-intro-details">
+              <div className="journey1-intro-detail">
+                <span><Clock size={22} aria-hidden="true" /></span>
+                <div><small>Estimated time</small><strong>3 minutes</strong></div>
+              </div>
+              <div className="journey1-intro-detail">
+                <span><CheckCircle2 size={22} aria-hidden="true" /></span>
+                <div><small>What you'll get</small><strong>Your personalized mind profile &amp; domain matches</strong></div>
+              </div>
+            </div>
+
+            <div className="journey1-intro-actions">
+              <Button onClick={handleStart} variant="dark" size="lg" disabled={isStarting}>
+                {isStarting ? 'Starting...' : 'Start Exploring →'}
+              </Button>
+            </div>
+            {error && <p className="journey1-intro-error" role="alert">{error}</p>}
           </div>
+        </section>
 
-          {/* How it works */}
-          <div className="mt-12 rounded-2xl bg-orange-pill p-6">
-            <h3 className="font-semibold text-brown">How it works</h3>
-            <ol className="mt-4 space-y-3 text-sm text-brown-light">
-              <li className="flex gap-3">
-                <span className="font-bold text-orange">1.</span>
-                <span>Answer 3 short interactive activities</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-orange">2.</span>
-                <span>Minerva analyzes your thinking patterns</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-orange">3.</span>
-                <span>Get your personalized profile and domain matches</span>
-              </li>
-            </ol>
+        <aside className="journey1-intro-visual" aria-label="Discover your unique potential">
+          <div className="journey1-intro-sun" />
+          <div className="journey1-intro-cloud journey1-intro-cloud-one" />
+          <div className="journey1-intro-cloud journey1-intro-cloud-two" />
+          <div className="journey1-intro-mountain journey1-intro-mountain-one" />
+          <div className="journey1-intro-mountain journey1-intro-mountain-two" />
+          <div className="journey1-intro-path" />
+          <div className="journey1-intro-signs">
+            <span>Career</span><span>Skills</span><span>Interests</span><span>Future</span>
           </div>
-
-          {/* CTA */}
-          <div className="mt-12 flex flex-col gap-3 sm:flex-row">
-            <Button
-              to="/"
-              variant="ghost"
-              size="lg"
-              className="flex-1"
-            >
-              Back to Home
-            </Button>
-            <Button
-              onClick={handleStart}
-              variant="dark"
-              size="lg"
-              disabled={isStarting}
-              className="flex-1"
-            >
-              {isStarting ? 'Starting...' : 'Start Exploring'}
-            </Button>
+          <div className="journey1-intro-person"><div className="journey1-intro-head" /><div className="journey1-intro-body" /><div className="journey1-intro-bag" /></div>
+          <div className="journey1-intro-visual-copy">
+            <div className="journey1-intro-compass"><Compass size={24} /></div>
+            <h2>Discover Your<br />Unique Potential</h2>
+            <p>Understand your mind, your strengths, and the possibilities that fit you best.</p>
           </div>
-          {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
-        </div>
+        </aside>
       </div>
     </AssessmentLayout>
   )

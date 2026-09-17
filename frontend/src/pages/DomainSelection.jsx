@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
+import { ArrowLeft, BarChart3, Brain, BriefcaseBusiness, CheckCircle2, Code2, Compass, Monitor, ShieldCheck, Sparkles, Target } from 'lucide-react'
 
 function DomainSelection() {
   const navigate = useNavigate()
@@ -28,55 +29,55 @@ function DomainSelection() {
     <AssessmentLayout
       onBack={() => navigate('/')}
       showProgress={false}
-      title="What&apos;s the domain in your mind?"
-      subtitle="Choose the career path you&apos;re currently interested in. Minerva will test your thinking through real-world challenges."
+      contentClassName="max-w-none"
+      className="journey2-selection-layout"
     >
-      <div className="max-w-4xl">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-          {isLoading && <p className="text-center text-brown-light">Loading careers...</p>}
-          {error && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
-          {!isLoading && !error && careers.map((career) => {
-            const careerId = career.career_id || career.careerId || career.id
-            const careerName = career.career_name || career.careerName || career.name
-            return (
-              <button key={careerId} type="button" onClick={() => setSelectedCareer(career)} className={`rounded-2xl border-2 bg-white p-6 text-left transition-all sm:p-7 lg:p-8 ${selectedCareer === career ? 'border-orange bg-orange-pill/50 shadow-md' : 'border-beige-border hover:border-orange/40 hover:shadow-md'}`}>
-                <h3 className="font-serif text-lg font-semibold text-brown sm:text-xl">{careerName}</h3>
-                <p className="mt-2 text-sm text-brown-light">{careerId}</p>
-              </button>
-            )
-          })}
-        </div>
+      <button className="journey2-selection-back" type="button" onClick={() => navigate('/')} aria-label="Back to home">
+        <ArrowLeft size={16} /> Back
+      </button>
 
-        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-brown-light">
-              No domain is selected by default. Pick one to continue.
-            </p>
-            {!selectedCareer && !error && !isLoading && (
-              <p className="mt-3 text-sm text-red-600">Please select a career before continuing.</p>
-            )}
-          </div>
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Button to="/" variant="ghost" size="lg" className="flex-1">
-              Back to Home
-            </Button>
-            <Button
-              onClick={handleContinue}
-              variant="dark"
-              size="lg"
-              disabled={!selectedCareer || isLoading || Boolean(error)}
-              className="flex-1"
-            >
-              Continue →
-            </Button>
-          </div>
-        </div>
+      <div className="journey2-selection-grid">
+        <main className="journey2-selection-card">
+          <div className="journey2-selection-badge"><Target size={16} /> Journey 2 • Career Selection</div>
+          <h1>Choose Your Career Path</h1>
+          <p className="journey2-selection-subtitle">Select the career area you want to assess. Minerva will then test your skills through 5 practical questions.</p>
 
-        <div className="mt-12 rounded-2xl bg-orange-pill p-6">
-          <p className="text-sm text-brown">
-            <span className="font-semibold">Tip:</span> Each domain has its own set of practical activities, so pick the career path you want Minerva to test.
-          </p>
-        </div>
+          {isLoading && <p className="journey2-selection-status">Loading careers...</p>}
+          {error && <p className="journey2-selection-error" role="alert">{error}</p>}
+          {!isLoading && !error && (
+            <div className="journey2-career-grid">
+              {careers.map((career, index) => {
+                const careerId = career.career_id || career.careerId || career.id
+                const careerName = career.career_name || career.careerName || career.name
+                const normalizedName = String(careerName || '').toLowerCase()
+                const Icon = normalizedName.includes('design') ? Monitor : normalizedName.includes('software') || normalizedName.includes('development') ? Code2 : normalizedName.includes('data') ? BarChart3 : normalizedName.includes('machine') || normalizedName.includes('ai') ? Brain : normalizedName.includes('security') ? ShieldCheck : [BriefcaseBusiness, Compass, Sparkles][index % 3]
+                return (
+                  <button key={careerId} type="button" onClick={() => setSelectedCareer(career)} className={`journey2-career-card ${selectedCareer === career ? 'is-selected' : ''}`}>
+                    <span className={`journey2-career-icon journey2-career-icon-${index % 5}`}><Icon size={24} /></span>
+                    <span className="journey2-career-copy"><strong>{careerName}</strong><small>{career.description || career.summary || 'Build practical skills and solve real-world problems.'}</small></span>
+                    <span className="journey2-career-radio" aria-hidden="true" />
+                    <span className="journey2-career-arrow">›</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="journey2-selection-actions">
+            <p>{!selectedCareer && !error && !isLoading ? 'Choose a career path to continue.' : ''}</p>
+            <Button onClick={handleContinue} variant="dark" size="lg" disabled={!selectedCareer || isLoading || Boolean(error)}>Continue →</Button>
+          </div>
+        </main>
+
+        <aside className="journey2-selection-aside">
+          <div className="journey2-selection-aside-heading"><span><Target size={26} /></span><div><h2>Journey 2</h2><p>Assess Your Skills</p></div></div>
+          {[
+            [CheckCircle2, '5 Questions', 'You’ll answer 5 questions based on your selected career path.'],
+            [Sparkles, 'Real-World Focus', 'Questions are designed to reflect real career challenges and skills.'],
+            [BarChart3, 'Get Insights', 'At the end, you’ll receive a detailed analysis of your strengths and areas for improvement.'],
+          ].map(([Icon, title, text]) => <div className="journey2-selection-benefit" key={title}><span><Icon size={20} /></span><div><h3>{title}</h3><p>{text}</p></div></div>)}
+          <div className="journey2-selection-landscape"><div className="journey2-selection-sun" /><div className="journey2-selection-road" /><div className="journey2-selection-flag">⚑</div></div>
+        </aside>
       </div>
     </AssessmentLayout>
   )
