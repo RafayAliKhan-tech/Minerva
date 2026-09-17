@@ -4,8 +4,7 @@ import { ArrowUpRight, BriefcaseBusiness, MessageCircle, PlayCircle, Telescope, 
 import Container from '../components/common/Container'
 import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
 import { useAuth } from '../auth/AuthContext'
-import { getJourneyAssessment, getJourney1Result, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
-import { getSkillInsights, getSkillInsightText } from '../utils/skillInsights'
+import { getJourneyAssessment, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
 
 function DashboardPage() {
   const { user } = useAuth()
@@ -29,9 +28,6 @@ function DashboardPage() {
   const exploring = getJourneyAssessment(user, 'exploring')
   const careerInMind = getJourneyAssessment(user, 'domain')
   const resumeAssessment = getJourneyAssessment(user, 'resume')
-  const journey1Result = getJourney1Result(user)
-  const skillInsights = getSkillInsights(journey1Result)
-
   const journeyCards = [
     {
       title: 'I am exploring',
@@ -101,86 +97,28 @@ function DashboardPage() {
         {roadmaps.length > 0 && (
           <>
             <section className="dashboard-section-heading"><div><p className="dashboard-kicker">YOUR ROADMAPS</p><h2>Personalized learning paths.</h2></div></section>
-            <section className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+            <section className="dashboard-grid dashboard-roadmap-grid">
               {roadmaps.map((roadmap) => (
-                <article key={roadmap.id} className="dashboard-card" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div className="dashboard-card-top">
-                    <span>{roadmap.domain}</span>
-                    <Zap size={18} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/roadmap-detail/${roadmap.id}`, { state: roadmap })}
-                      style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
-                    >
-                      <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1a1a1a', marginBottom: '0.5rem' }}>
-                        {roadmap.domain} Roadmap
-                      </h3>
-                      <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem' }}>
-                        Match Score: <strong>{roadmap.matchScore}%</strong>
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: '#999', marginBottom: '1rem' }}>
-                        {roadmap.curriculum?.phases?.length || 0} phases • {roadmap.curriculum?.weeks || 0} weeks
-                      </p>
+                <article key={roadmap.id} className="dashboard-card dashboard-roadmap-card">
+                  <div className="dashboard-roadmap-top">
+                    <span className="dashboard-roadmap-icon"><Zap size={17} /></span>
+                    <button type="button" className="dashboard-roadmap-delete" onClick={() => handleDeleteRoadmap(roadmap.id)} aria-label={`Delete ${roadmap.domain} roadmap`} title="Delete roadmap">
+                      <Trash2 size={15} />
                     </button>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/roadmap-detail/${roadmap.id}`, { state: roadmap })}
-                      style={{
-                        flex: 1,
-                        padding: '0.75rem',
-                        backgroundColor: '#23211f',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        cursor: 'pointer',
-                        fontWeight: 600
-                      }}
-                    >
-                      Open route
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteRoadmap(roadmap.id)}
-                      style={{
-                        padding: '0.75rem',
-                        backgroundColor: '#f5f5f5',
-                        border: '1px solid #ddd',
-                        borderRadius: '0.5rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <Trash2 size={16} color="#666" />
-                    </button>
+                  <div className="dashboard-roadmap-content">
+                    <p className="dashboard-roadmap-eyebrow">PERSONALIZED PATH</p>
+                    <h3>{roadmap.domain || 'Career development'} <span>roadmap</span></h3>
+                    <p className="dashboard-roadmap-description">A focused learning path shaped around your assessment results.</p>
+                    <div className="dashboard-roadmap-stats">
+                      <div><strong>{roadmap.matchScore ?? 0}%</strong><span>match score</span></div>
+                      <div><strong>{roadmap.curriculum?.phases?.length || 0}</strong><span>phases</span></div>
+                      <div><strong>{roadmap.curriculum?.weeks || 0}</strong><span>weeks</span></div>
+                    </div>
                   </div>
+                  <button type="button" className="dashboard-roadmap-open" onClick={() => navigate(`/roadmap-detail/${roadmap.id}`, { state: roadmap })}>Open roadmap <ArrowUpRight size={15} /></button>
                 </article>
               ))}
-            </section>
-          </>
-        )}
-
-        {journey1Result && (skillInsights.strengths.length > 0 || skillInsights.weaknesses.length > 0) && (
-          <>
-            <section className="dashboard-section-heading"><div><p className="dashboard-kicker">YOUR PROFILE</p><h2>Strengths and next areas to grow.</h2></div></section>
-            <section className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-              <article className="dashboard-card dashboard-journey-green">
-                <div className="dashboard-card-top"><span>STRENGTHS</span><Compass size={18} /></div>
-                <div style={{ display: 'grid', gap: '0.6rem' }}>
-                  {skillInsights.strengths.map((skill) => <p key={`${skill.career}-${skill.name}`} style={{ margin: 0 }}>{getSkillInsightText(skill)}</p>)}
-                </div>
-              </article>
-              <article className="dashboard-card dashboard-journey-orange">
-                <div className="dashboard-card-top"><span>AREAS TO GROW</span><Zap size={18} /></div>
-                <div style={{ display: 'grid', gap: '0.6rem' }}>
-                  {skillInsights.weaknesses.map((skill) => <p key={`${skill.career}-${skill.name}`} style={{ margin: 0 }}>{getSkillInsightText(skill)}</p>)}
-                </div>
-              </article>
             </section>
           </>
         )}
