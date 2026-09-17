@@ -137,7 +137,7 @@ function DomainResults() {
 
   return (
     <AssessmentLayout onBack={() => navigate('/explore/domain-selection')} showProgress={false} contentClassName="max-w-none" className="journey2-results-layout">
-      <button className="journey2-results-back" type="button" onClick={() => navigate('/explore/domain-selection')}><ArrowLeft size={16} /> Back</button>
+      {/* <button className="journey2-results-back" type="button" onClick={() => navigate('/explore/domain-selection')}><ArrowLeft size={16} /> Back</button> */}
       <div className="journey2-results-grid">
         <main className="journey2-results-card">
           <div className="journey2-results-badge"><Trophy size={16} /> Journey 2 • Results</div>
@@ -153,7 +153,7 @@ function DomainResults() {
           {traits.length > 0 && <section className="journey2-result-traits"><h2>Skill Insights</h2>{traits.map((trait, index) => <SkillBar key={`${trait.name || trait.label || index}`} skill={trait.name || trait.label} percentage={Number(trait.score ?? trait.percentage ?? 0)} size="md" />)}</section>}
           {insights.length > 0 && <section className="journey2-result-insights"><h2>Insights</h2>{insights.map((insight, index) => <div key={index}><CheckCircle2 size={17} /><p>{typeof insight === 'string' ? insight : insight.text || insight.description || insight.title}</p></div>)}</section>}
           {error && <p className="journey2-results-error" role="alert">{error}</p>}
-          <div className="journey2-results-actions"><Button onClick={() => navigate('/explore/domain-selection')} variant="ghost" size="md"><ArrowLeft size={15} /> Back to Career Selection</Button><Button onClick={() => handleBuildRoadmap()} disabled={isGenerating || !matches.length} variant="dark" size="lg">{isGenerating ? 'Generating...' : 'View Detailed Insights →'}</Button></div>
+          <div className="journey2-results-actions"><Button onClick={() => navigate('/explore/domain-selection')} variant="ghost" size="md"><ArrowLeft size={15} /> Back </Button><Button onClick={() => handleBuildRoadmap()} disabled={isGenerating || !matches.length} variant="secondary" size="lg">{isGenerating ? 'Generating...' : 'View Detailed Insights →'}</Button></div>
         </main>
         <aside className="journey2-results-sidebar">
           <section className="journey2-performance-card"><div className="journey2-sidebar-title"><span><BarChart3 size={17} /></span><h2>Performance Overview</h2></div><div className="journey2-performance-stats"><strong>{score}%<small>Overall Readiness</small></strong><strong>{correctAnswers}/{totalQuestions}<small>Correct Answers</small></strong></div></section>

@@ -32,9 +32,9 @@ function DomainSelection() {
       contentClassName="max-w-none"
       className="journey2-selection-layout"
     >
-      <button className="journey2-selection-back" type="button" onClick={() => navigate('/')} aria-label="Back to home">
+      {/* <button className="journey2-selection-back" type="button" onClick={() => navigate('/')} aria-label="Back to home">
         <ArrowLeft size={16} /> Back
-      </button>
+      </button> */}
 
       <div className="journey2-selection-grid">
         <main className="journey2-selection-card">
@@ -65,7 +65,7 @@ function DomainSelection() {
 
           <div className="journey2-selection-actions">
             <p>{!selectedCareer && !error && !isLoading ? 'Choose a career path to continue.' : ''}</p>
-            <Button onClick={handleContinue} variant="dark" size="lg" disabled={!selectedCareer || isLoading || Boolean(error)}>Continue →</Button>
+            <Button onClick={handleContinue} variant="secondary" size="lg" disabled={!selectedCareer || isLoading || Boolean(error)}>Continue →</Button>
           </div>
         </main>
 
