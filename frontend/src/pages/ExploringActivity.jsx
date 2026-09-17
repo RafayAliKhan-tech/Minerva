@@ -229,9 +229,6 @@ function ExploringActivity() {
       contentClassName="max-w-none"
       className="journey1-assessment-layout"
     >
-      <button className="journey1-assessment-back" type="button" onClick={handlePrevious} aria-label="Go back">
-        <ArrowLeft size={16} /> Back
-      </button>
 
       <div className="journey1-assessment-grid">
         <main className="journey1-assessment-card">
