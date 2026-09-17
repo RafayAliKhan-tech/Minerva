@@ -31,7 +31,9 @@ function AssessmentLayout({
         )} */}
 
         {/* Progress bar */}
-        {showProgress && (
+
+
+        {/* {showProgress && (
           <div className="mb-10 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold tracking-wide text-brown-light">
@@ -52,7 +54,7 @@ function AssessmentLayout({
               />
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Header */}
         {(title || subtitle) && (
