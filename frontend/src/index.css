@@ -2649,7 +2649,20 @@ a {
   }
 
   .journey1-assessment-card {
+    position: relative;
     padding: 22px 33px 18px;
+  }
+
+  .journey1-timer-top {
+    position: absolute;
+    top: 20px;
+    right: 28px;
+    z-index: 1;
+  }
+
+  .journey1-timer-top > div {
+    color: #d76725;
+    font-weight: 700;
   }
 
   .journey1-assessment-card-top {
@@ -2845,6 +2858,8 @@ a {
   .journey1-progress-card,
   .journey1-overview-card { padding: 17px 14px; }
 
+  .journey1-progress-card { margin-top: 28px; }
+
   .journey1-sidebar-heading {
     display: flex;
     align-items: flex-start;
@@ -2954,6 +2969,7 @@ a {
 
   @media (max-width: 600px) {
     .journey1-assessment-card { padding: 17px 15px; }
+    .journey1-timer-top { top: 15px; right: 15px; }
     .journey1-assessment-card-top { align-items: flex-start; flex-direction: column; }
     .journey1-assessment-mode { align-self: flex-end; }
     .journey1-assessment-card h1 { font-size: 1.55rem; }

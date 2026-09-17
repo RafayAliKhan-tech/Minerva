@@ -8,7 +8,7 @@ import PriorityBoard from '../components/assessment/PriorityBoard'
 import UIInspection from '../components/assessment/UIInspection'
 import MultipleChoice from '../components/assessment/MultipleChoice'
 import { useJourney1Assessment } from '../auth/Journey1AssessmentContext'
-import { ArrowLeft, Brain, CheckCircle2, ClipboardList, Flag, Lightbulb, Sparkles, Target, Trophy } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, ClipboardList, Flag, Lightbulb, Sparkles, Target, Trophy } from 'lucide-react'
 
 function ExploringActivity() {
   const { activityNum } = useParams()
@@ -232,10 +232,7 @@ function ExploringActivity() {
 
       <div className="journey1-assessment-grid">
         <main className="journey1-assessment-card">
-          <div className="journey1-assessment-card-top">
-            <div className="journey1-assessment-badge"><ClipboardList size={16} /> Journey 1 Assessment</div>
-            <div className="journey1-assessment-mode"><Brain size={18} /><span><strong>AI &amp; Machine Learning</strong><small>Exploring Mode</small></span></div>
-          </div>
+          <div className="journey1-timer-top"><Timer duration={180} storageKey={`minerva:journey1:timer:${activity.id || activity.question_id}`} onTimeUp={() => setTimeUp(true)} isActive={!submitted} /></div>
           <div className="journey1-assessment-question-meta">Question {activityIndex + 1} of {questions.length}</div>
           <h1>{activity.title}</h1>
           <p className="journey1-assessment-description">{activity.description}</p>
@@ -265,7 +262,6 @@ function ExploringActivity() {
             <div className="journey1-assessment-step"><span><i style={{ width: `${((activityIndex + 1) / questions.length) * 100}%` }} /></span>{activityIndex + 1} / {questions.length}</div>
             {timeUp && <div className="journey1-assessment-timeup">Time's up! Your response was saved automatically.</div>}
             <div className="journey1-assessment-actions">
-              <Timer duration={180} storageKey={`minerva:journey1:timer:${activity.id || activity.question_id}`} onTimeUp={() => setTimeUp(true)} isActive={!submitted} />
               <Button onClick={handleNext} variant="dark" size="md" disabled={!canContinue}>{isLastActivity ? 'See Analysis →' : 'Next Question →'}</Button>
             </div>
           </div>
