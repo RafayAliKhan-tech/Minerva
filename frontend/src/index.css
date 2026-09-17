@@ -2218,6 +2218,513 @@ a {
 .resume-analysis-result-card-dark .resume-analysis-result-card-link { color: #f2dfc7; }
 .resume-analysis-result-card-light .resume-analysis-result-card-link { color: #9a6846; }
 
+.resume-results-layout {
+  background:
+    radial-gradient(circle at 4% 5%, rgba(195, 141, 102, .08), transparent 18%),
+    radial-gradient(circle at 98% 84%, rgba(195, 141, 102, .08), transparent 22%),
+    #f7f8f8;
+}
+
+.resume-results-layout > .container {
+  max-width: 1240px;
+}
+
+.resume-results-layout > .container > .mb-8 {
+  margin-bottom: 18px;
+}
+
+.resume-results-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(310px, .88fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.resume-results-main {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+}
+
+.resume-results-score-card,
+.resume-results-evaluation,
+.resume-results-insight-card,
+.resume-results-skills,
+.resume-results-profile {
+  border: 1px solid #e3e7e8;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 12px 30px rgba(31, 42, 49, .055);
+}
+
+.resume-results-score-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) 150px minmax(210px, .8fr);
+  gap: 22px;
+  align-items: center;
+  padding: 19px 22px;
+}
+
+.resume-results-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #b6764a;
+  background: #fbf1e8;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.resume-results-kicker {
+  margin: 22px 0 4px;
+  color: #bd7d4f;
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .17em;
+}
+
+.resume-results-score-copy h1 {
+  margin: 0;
+  color: #27353e;
+  font-size: clamp(1.35rem, 2.7vw, 1.7rem);
+  font-weight: 700;
+}
+
+.resume-results-score-copy > p:last-child {
+  max-width: 450px;
+  margin: 5px 0 0;
+  color: #6b7b85;
+  font-size: .75rem;
+  line-height: 1.5;
+}
+
+.resume-results-score-value {
+  margin-top: 10px;
+  color: #c47b49;
+  font-size: 2.55rem;
+  font-weight: 700;
+}
+
+.resume-results-score-value span {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #29985a;
+  background: #e5f7ea;
+  font-size: .7rem;
+  vertical-align: middle;
+}
+
+.resume-results-ring {
+  display: flex;
+  width: 116px;
+  height: 116px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 11px solid #c98552;
+  border-left-color: #f0d8c4;
+  border-radius: 50%;
+  color: #26343d;
+  transform: rotate(35deg);
+}
+
+.resume-results-ring strong,
+.resume-results-ring small {
+  transform: rotate(-35deg);
+}
+
+.resume-results-ring strong {
+  font-size: 1.2rem;
+}
+
+.resume-results-ring small {
+  font-size: .58rem;
+}
+
+.resume-results-metrics {
+  display: grid;
+  gap: 11px;
+  padding-left: 14px;
+  border-left: 1px solid #e6e9ea;
+}
+
+.resume-results-metrics > div {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 5px;
+  align-items: center;
+  color: #50616d;
+  font-size: .65rem;
+}
+
+.resume-results-metrics span {
+  color: #bd7d4f;
+}
+
+.resume-results-metrics b {
+  font-size: .61rem;
+}
+
+.resume-results-metrics i {
+  grid-column: 2 / -1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e9edef;
+}
+
+.resume-results-metrics em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #62a6e8;
+}
+
+.resume-results-evaluation {
+  padding: 13px 20px 15px;
+}
+
+.resume-results-section-heading,
+.resume-results-profile > header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.resume-results-section-heading > span,
+.resume-results-profile > header > span {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border-radius: 50%;
+  color: #bd7d4f;
+  background: #fbf0e5;
+}
+
+.resume-results-section-heading h2,
+.resume-results-profile h2 {
+  margin: 0;
+  color: #2b3942;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.resume-results-section-heading p,
+.resume-results-profile header p {
+  margin: 2px 0 0;
+  color: #89959c;
+  font-size: .61rem;
+}
+
+.resume-results-evaluation-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-top: 14px;
+}
+
+.resume-results-evaluation-grid > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-right: 1px solid #e2e8ea;
+  text-align: center;
+}
+
+.resume-results-evaluation-grid > div:last-child {
+  border-right: 0;
+}
+
+.resume-results-evaluation-grid > div > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: #27a45d;
+  background: #e5f7ea;
+}
+
+.resume-results-evaluation-grid > div > span.is-wrong {
+  color: #ec6666;
+  background: #ffebeb;
+}
+
+.resume-results-evaluation-grid strong {
+  color: #71808b;
+  font-size: .61rem;
+}
+
+.resume-results-evaluation-grid b {
+  color: #26343d;
+  font-size: .76rem;
+}
+
+.resume-results-evaluation-grid small {
+  color: #8c989e;
+  font-size: .57rem;
+}
+
+.resume-results-insights {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.resume-results-insight-card {
+  overflow: hidden;
+}
+
+.resume-results-insight-card header {
+  display: flex;
+  gap: 11px;
+  padding: 12px;
+}
+
+.resume-results-insight-card header > span {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.resume-results-insight-card h2 {
+  margin: 0;
+  font-size: .8rem;
+}
+
+.resume-results-insight-card header p {
+  margin: 2px 0 0;
+  color: #829098;
+  font-size: .6rem;
+}
+
+.resume-results-insight-card.strengths header {
+  color: #17854c;
+  background: #effaf2;
+}
+
+.resume-results-insight-card.strengths header > span {
+  background: #dbf5e4;
+}
+
+.resume-results-insight-card.weaknesses header {
+  color: #d95353;
+  background: #fff0f0;
+}
+
+.resume-results-insight-card.weaknesses header > span {
+  background: #ffe0e0;
+}
+
+.resume-results-insight-card ul {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+  padding: 14px 15px 16px;
+  list-style: none;
+}
+
+.resume-results-insight-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #283741;
+  font-size: .65rem;
+}
+
+.resume-results-insight-card li > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #25a75e;
+  fill: #25a75e;
+  stroke: #fff;
+}
+
+.resume-results-insight-card.weaknesses li > svg {
+  color: #ed7070;
+  fill: #ed7070;
+}
+
+.resume-results-insight-card li strong {
+  display: block;
+}
+
+.resume-results-insight-card li small {
+  display: block;
+  margin-top: 2px;
+  color: #8b989f;
+  font-size: .58rem;
+}
+
+.resume-results-skills {
+  padding: 16px;
+}
+
+.resume-results-skills h2 {
+  margin: 0 0 12px;
+  color: #2b3942;
+  font-size: .9rem;
+}
+
+.resume-results-skills > div {
+  display: grid;
+  gap: 8px;
+}
+
+.resume-results-skills .resume-analysis-result-card {
+  display: none;
+}
+
+.resume-results-profile {
+  overflow: hidden;
+  padding: 18px 13px 0;
+  background: linear-gradient(160deg, #fffdfa, #fffaf5 72%, #fbf0e5);
+}
+
+.resume-results-profile > header {
+  padding: 0 7px 12px;
+}
+
+.resume-profile-list {
+  display: grid;
+  gap: 0;
+  padding: 0 11px;
+  border: 1px solid #eee7df;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .35);
+}
+
+.resume-profile-list > div {
+  display: grid;
+  grid-template-columns: 25px 1fr;
+  gap: 4px 9px;
+  padding: 11px 0;
+  border-bottom: 1px solid #eee7df;
+  color: #71808b;
+}
+
+.resume-profile-list > div:last-child {
+  border-bottom: 0;
+}
+
+.resume-profile-list svg {
+  grid-row: span 2;
+  color: #8a98a0;
+}
+
+.resume-profile-list b {
+  font-size: .62rem;
+  font-weight: 500;
+}
+
+.resume-profile-list strong {
+  color: #35434c;
+  font-size: .66rem;
+}
+
+.resume-results-next {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 13px;
+  border-radius: 10px;
+  color: #a8663c;
+  background: rgba(195, 141, 102, .1);
+}
+
+.resume-results-next h3 {
+  margin: 0;
+  font-size: .7rem;
+}
+
+.resume-results-next p {
+  margin: 4px 0 0;
+  color: #71808b;
+  font-size: .62rem;
+  line-height: 1.45;
+}
+
+.resume-results-profile .resume-analysis-result-card {
+  margin: 0;
+  padding: 13px;
+  border: 0;
+  border-top: 1px solid #eee7df;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.resume-results-profile .resume-analysis-result-card-content,
+.resume-results-profile .resume-analysis-result-card-link {
+  display: none;
+}
+
+.resume-results-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resume-results-actions > * {
+  flex: 1;
+}
+
+@media (max-width: 950px) {
+  .resume-results-score-card {
+    grid-template-columns: minmax(0, 1fr) 125px;
+  }
+
+  .resume-results-metrics {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, 1fr);
+    padding: 14px 0 0;
+    border-top: 1px solid #e6e9ea;
+    border-left: 0;
+  }
+
+  .resume-results-page {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .resume-results-score-card {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-results-ring {
+    margin: 0 auto;
+  }
+
+  .resume-results-evaluation-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 0;
+  }
+
+  .resume-results-evaluation-grid > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .resume-results-insights,
+  .resume-results-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-results-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 .resume-assessment-layout {
   background:
     radial-gradient(circle at 8% 5%, rgba(195, 141, 102, .08), transparent 18%),

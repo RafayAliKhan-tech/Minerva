@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Zap } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Zap, BarChart3, BriefcaseBusiness, Check, FileText, GraduationCap, Lightbulb, Mail, MapPin, Phone, Star, Target, UserRound } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
@@ -108,6 +108,11 @@ function ResumeResults() {
   const list = (value) => Array.isArray(value) ? value : []
   const evaluations = list(data.evaluations || data.evaluation_results || data.answerEvaluations || data.answer_evaluations || data.evaluationResults || data.answers)
   const renderList = (items) => items.map((item, idx) => <div key={idx} className="rounded-xl border border-beige-border bg-white p-4 text-brown">{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</div>)
+  const score = getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score'])
+  const strengths = list(data.strengths)
+  const weaknesses = list(data.weaknesses || data.areasToImprove)
+  const skills = list(data.categorizedSkills || data.categorized_skills || data.skills || data.skillProfile || data.skill_profile)
+  const profile = data.profile || data.resumeProfile || data.resume_profile || {}
 
   const handleGenerateRoadmap = async () => {
     const journeyOutput = unwrapResult(result)
@@ -152,77 +157,41 @@ function ResumeResults() {
     }
   }
 
+  const renderInsightItems = (items, Icon) => items.map((item, idx) => <li key={idx}><Icon size={15} /> <div><strong>{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</strong>{typeof item !== 'string' && item.description && <small>{item.description}</small>}</div></li>)
+
   return (
-    <AssessmentLayout onBack={() => navigate(-1)} showProgress={false} contentClassName="max-w-none">
-      <div className="space-y-10">
-        {/* Score Card */}
-        <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8">
-          <p className="text-sm font-semibold uppercase tracking-wider text-orange">Backend Resume Score</p>
-          <h2 className="mt-4 text-5xl font-bold text-orange">{getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score']) ?? '--'}</h2>
-          <p className="mt-4 text-base text-brown-light">Highest scored role: {getHighestRole(data) || '--'}</p>
-          {getField(data, ['atsCompatibility', 'ats_compatibility']) !== undefined && <p className="mt-2 text-base text-brown-light">ATS compatibility: {typeof getField(data, ['atsCompatibility', 'ats_compatibility']) === 'object' ? JSON.stringify(getField(data, ['atsCompatibility', 'ats_compatibility'])) : getField(data, ['atsCompatibility', 'ats_compatibility'])}</p>}
-        </div>
+    <AssessmentLayout onBack={() => navigate(-1)} showProgress={false} contentClassName="max-w-none" className="resume-results-layout">
+      <div className="resume-results-page">
+        <main className="resume-results-main">
+          <section className="resume-results-score-card">
+            <div className="resume-results-score-copy">
+              <div className="resume-results-badge"><FileText size={17} /> Journey 3 Results</div>
+              <p className="resume-results-kicker">RESUME ANALYSIS</p>
+              <h1>Your Resume Score</h1>
+              <div className="resume-results-score-value">{score ?? '--'} <span>↑ Good</span></div>
+              <p>Your resume shows a good overall profile. Keep building on your strengths and work on the areas for improvement.</p>
+            </div>
+            <div className="resume-results-ring"><strong>{score ?? '--'}</strong><small>/ 100</small></div>
+            <div className="resume-results-metrics">
+              {skills.slice(0, 5).map((item, idx) => <div key={idx}><span><BarChart3 size={15} /></span><strong>{typeof item === 'string' ? item : item.name || item.title || 'Skill'}</strong><b>{typeof item === 'object' ? item.score || '' : ''}</b><i><em style={{ width: `${Math.max(10, 80 - idx * 13)}%` }} /></i></div>)}
+            </div>
+          </section>
 
-        {/* Skill Gaps */}
-        {list(data.categorizedSkills || data.categorized_skills || data.skills || data.skillProfile || data.skill_profile).length > 0 && (
-          <div className="rounded-3xl border border-beige-border bg-white p-8">
-            <h3 className="text-xl font-semibold text-brown mb-6">Categorized Skills</h3>
-            <div className="space-y-3">{renderList(list(data.categorizedSkills || data.categorized_skills || data.skills || data.skillProfile || data.skill_profile))}</div>
+          {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Answer Evaluation</h2><p>How well you performed in the assessment</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <div key={idx}><span className={item.is_correct === false ? 'is-wrong' : 'is-correct'}>{item.is_correct === false ? <XCircle size={19} /> : <CheckCircle2 size={19} />}</span><strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong><b>{item.is_correct === false ? 'Needs Work' : 'Good'}</b>{item.reasoning && <small>{item.reasoning}</small>}</div>)}</div></section>}
+
+          <div className="resume-results-insights">
+            {strengths.length > 0 && <section className="resume-results-insight-card strengths"><header><span><Star size={18} /></span><div><h2>Strengths</h2><p>Your key strengths based on the resume analysis.</p></div></header><ul>{renderInsightItems(strengths, Check)}</ul></section>}
+            {weaknesses.length > 0 && <section className="resume-results-insight-card weaknesses"><header><span><XCircle size={18} /></span><div><h2>Weaknesses</h2><p>Areas you can improve for a stronger profile.</p></div></header><ul>{renderInsightItems(weaknesses, XCircle)}</ul></section>}
           </div>
-        )}
 
-        {/* Recommendations */}
-        {evaluations.length > 0 && (
-          <div className="rounded-3xl border border-journey-green bg-journey-green/10 p-8">
-            <h3 className="text-xl font-semibold text-brown mb-6">Answer Evaluation</h3>
-            <div className="space-y-3">{evaluations.map((item, idx) => <div key={idx} className="rounded-xl border border-beige-border bg-white p-4"><div className="flex items-center gap-2 text-brown"><strong>{item.skill_id || item.skillId || item.skill || item.questionId}</strong>{item.is_correct === true ? <CheckCircle2 className="text-green-600" size={18} /> : item.is_correct === false ? <XCircle className="text-red-600" size={18} /> : null}</div>{item.reasoning && <p className="mt-2 text-sm text-brown-light">{item.reasoning}</p>}</div>)}</div>
-          </div>
-        )}
+          {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
+          <ResumeAnalysisResultCard analysis={data} />
+          {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
+          <div className="resume-results-actions"><Button onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="dark" size="lg" icon={Zap}>{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button><Button to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button></div>
+          <div className="flex justify-center pt-2"><Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
+        </main>
 
-        {list(data.strengths).length > 0 && <div className="rounded-3xl border border-journey-green bg-journey-green/10 p-8"><h3 className="text-xl font-semibold text-brown mb-6">Strengths</h3><div className="space-y-3">{renderList(list(data.strengths))}</div></div>}
-        {list(data.weaknesses || data.areasToImprove).length > 0 && <div className="rounded-3xl border border-orange-pill bg-orange-pill/20 p-8"><h3 className="text-xl font-semibold text-brown mb-6">Weaknesses</h3><div className="space-y-3">{renderList(list(data.weaknesses || data.areasToImprove))}</div></div>}
-
-        <ResumeAnalysisResultCard analysis={data} />
-
-        {/* CTA */}
-        {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            onClick={handleGenerateRoadmap}
-            disabled={isGeneratingRoadmap}
-            variant="dark"
-            size="lg"
-            icon={Zap}
-            className="flex-1"
-          >
-            {isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}
-          </Button>
-          <Button
-            to="/dashboard"
-            variant="ghost"
-            size="lg"
-            className="flex-1"
-          >
-            Back to Dashboard
-          </Button>
-        </div>
-        <div className="flex justify-center pt-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              sessionStorage.removeItem('route3AttemptId')
-              sessionStorage.removeItem('route3Questions')
-              sessionStorage.removeItem('route3Answers')
-              sessionStorage.removeItem('route3Result')
-              sessionStorage.removeItem('route3StartResult')
-              sessionStorage.removeItem('route3PendingSubmission')
-              navigate('/explore/resume')
-            }}
-          >
-            Reassess / Start New Assessment
-          </Button>
-        </div>
+        <aside className="resume-results-profile"><header><span><UserRound size={20} /></span><div><h2>Resume Profile</h2><p>Key information extracted from your resume</p></div></header><div className="resume-profile-list"><div><UserRound size={16} /><b>Name</b><strong>{profile.name || data.name || user?.name || user?.userName || 'Not provided'}</strong></div><div><Mail size={16} /><b>Email</b><strong>{profile.email || data.email || user?.email || 'Not provided'}</strong></div><div><Phone size={16} /><b>Phone</b><strong>{profile.phone || data.phone || 'Not provided'}</strong></div><div><MapPin size={16} /><b>Location</b><strong>{profile.location || data.location || 'Not provided'}</strong></div><div><GraduationCap size={16} /><b>Education</b><strong>{profile.education || data.education || 'Not provided'}</strong></div><div><BriefcaseBusiness size={16} /><b>Experience</b><strong>{profile.experience || data.experience || 'Not provided'}</strong></div></div><div className="resume-results-next"><Lightbulb size={18} /><div><h3>Next Steps</h3><p>Improve your resume by adding certifications, including more specific achievements, and filling in missing details like phone number and professional experience.</p></div></div><ResumeAnalysisResultCard analysis={data} /></aside>
       </div>
     </AssessmentLayout>
   )

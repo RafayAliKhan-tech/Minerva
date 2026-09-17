@@ -45,11 +45,6 @@ function ResumeAssessment() {
   return (
     <AssessmentLayout
       onBack={() => navigate('/explore/resume/analysis')}
-      showProgress={true}
-      currentStep={currentQuestion + 1}
-      totalSteps={questions.length}
-      contentClassName="max-w-none"
-      className="resume-assessment-layout"
     >
       <div className="resume-assessment-page">
         <section className="resume-assessment-card">
