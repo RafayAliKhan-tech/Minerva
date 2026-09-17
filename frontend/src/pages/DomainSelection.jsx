@@ -32,6 +32,8 @@ function DomainSelection() {
       contentClassName="max-w-none"
       className="journey2-selection-layout"
     >
+      <br></br>
+      <br></br>
       {/* <button className="journey2-selection-back" type="button" onClick={() => navigate('/')} aria-label="Back to home">
         <ArrowLeft size={16} /> Back
       </button> */}
