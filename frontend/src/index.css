@@ -3747,7 +3747,7 @@ a {
 
 .resume-assessment-page {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(300px, .92fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 15px;
   align-items: stretch;
 }
