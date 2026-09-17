@@ -51,7 +51,6 @@ function FooterSection({ name, links, onAnchorClick }) {
 
 function Footer({ compact = false }) {
   const location = useLocation()
-  const isWhiteFooterPage = location.pathname === '/' || location.pathname === '/dashboard'
 
   const handleAnchorClick = (event, href) => {
     if (!href.startsWith('/#') || location.pathname !== '/') return
@@ -65,7 +64,7 @@ function Footer({ compact = false }) {
 
   if (compact) {
     return (
-      <footer className="auth-footer border-t border-[#E0E0E0] bg-transparent">
+      <footer className="auth-footer border-t border-[#E0E0E0] bg-white">
         <Container className="auth-footer-inner">
           <p>&copy; {new Date().getFullYear()} Minerva. All rights reserved.</p>
         </Container>
@@ -74,7 +73,7 @@ function Footer({ compact = false }) {
   }
 
   return (
-    <footer className={`site-footer border-t border-[#dedbd6] ${isWhiteFooterPage ? 'bg-white' : 'bg-transparent'}`} id="about">
+    <footer className="site-footer border-t border-[#dedbd6] bg-white" id="about">
       <Container className="py-12 sm:py-14 lg:py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
