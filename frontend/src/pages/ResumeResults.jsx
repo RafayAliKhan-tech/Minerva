@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Zap, BarChart3, BriefcaseBusiness, Check, FileText, GraduationCap, Lightbulb, Mail, MapPin, Phone, Star, Target, UserRound } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Zap, BriefcaseBusiness, Check, FileText, GraduationCap, Mail, MapPin, Phone, Star, Target, UserRound } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
@@ -108,6 +108,9 @@ function ResumeResults() {
   const data = { ...getAnalysis(startResult), ...unwrapResult(result) }
   const list = (value) => Array.isArray(value) ? value : []
   const evaluations = list(data.evaluations || data.evaluation_results || data.answerEvaluations || data.answer_evaluations || data.evaluationResults || data.answers)
+  const assessmentScore = evaluations.length
+    ? Math.round((evaluations.filter((item) => item?.is_correct !== false).length / evaluations.length) * 100)
+    : null
   const renderList = (items) => items.map((item, idx) => <div key={idx} className="rounded-xl border border-beige-border bg-white p-4 text-brown">{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</div>)
   const score = getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score'])
   const strengths = list(data.strengths)
@@ -167,32 +170,36 @@ function ResumeResults() {
           <section className="resume-results-score-card">
             <div className="resume-results-score-copy">
               <div className="resume-results-badge"><FileText size={17} /> Journey 3 Results</div>
-              <p className="resume-results-kicker">RESUME ANALYSIS</p>
-              <h1>Your Resume Score</h1>
-              <div className="resume-results-score-value">{score ?? '--'} <span>↑ Good</span></div>
-              <p>Your resume shows a good overall profile. Keep building on your strengths and work on the areas for improvement.</p>
+              <p className="resume-results-kicker">ASSESSMENT PERFORMANCE</p>
+              <h1>Your Assessment Score</h1>
+              <div className="resume-results-score-value">{assessmentScore ?? '--'} <span>{assessmentScore !== null ? 'Answer accuracy' : 'Awaiting evaluation'}</span></div>
+              <p>This score reflects how well you performed across the resume-based assessment questions.</p>
             </div>
-            <div className="resume-results-ring"><strong>{score ?? '--'}</strong><small>/ 100</small></div>
+            <div className="resume-results-ring"><strong>{assessmentScore ?? '--'}</strong><small>/ 100</small></div>
             <div className="resume-results-metrics">
-              {skills.slice(0, 5).map((item, idx) => <div key={idx}><span><BarChart3 size={15} /></span><strong>{typeof item === 'string' ? item : item.name || item.title || 'Skill'}</strong><b>{typeof item === 'object' ? item.score || '' : ''}</b><i><em style={{ width: `${Math.max(10, 80 - idx * 13)}%` }} /></i></div>)}
+              <div><span><Target size={15} /></span><strong>Questions reviewed</strong><b>{evaluations.length}</b><i><em style={{ width: '100%' }} /></i></div>
+              <div><span><CheckCircle2 size={15} /></span><strong>Answers on track</strong><b>{evaluations.filter((item) => item?.is_correct !== false).length}</b><i><em style={{ width: `${assessmentScore || 0}%` }} /></i></div>
             </div>
           </section>
 
-          {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Answer Evaluation</h2><p>How well you performed in the assessment</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <div key={idx}><span className={item.is_correct === false ? 'is-wrong' : 'is-correct'}>{item.is_correct === false ? <XCircle size={19} /> : <CheckCircle2 size={19} />}</span><strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong><b>{item.is_correct === false ? 'Needs Work' : 'Good'}</b>{item.reasoning && <small>{item.reasoning}</small>}</div>)}</div></section>}
+          {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Answer Evaluation</h2><p>Review each response and the reasoning behind its result.</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <article key={idx} className={item.is_correct === false ? 'is-evaluation-wrong' : 'is-evaluation-correct'}><header><span>{item.is_correct === false ? <XCircle size={20} /> : <CheckCircle2 size={20} />}<strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong></span><b>{item.is_correct === false ? 'Needs work' : 'On track'}</b></header>{item.reasoning ? <p>{item.reasoning}</p> : <p>No additional feedback was provided for this response.</p>}</article>)}</div></section>}
 
-          <div className="resume-results-insights">
-            {strengths.length > 0 && <section className="resume-results-insight-card strengths"><header><span><Star size={18} /></span><div><h2>Strengths</h2><p>Your key strengths based on the resume analysis.</p></div></header><ul>{renderInsightItems(strengths, Check)}</ul></section>}
-            {weaknesses.length > 0 && <section className="resume-results-insight-card weaknesses"><header><span><XCircle size={18} /></span><div><h2>Weaknesses</h2><p>Areas you can improve for a stronger profile.</p></div></header><ul>{renderInsightItems(weaknesses, XCircle)}</ul></section>}
-          </div>
-
-          {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
-          <ResumeAnalysisResultCard analysis={data} />
+          <section className="resume-analysis-results-section">
+            <div className="resume-results-section-heading"><span><FileText size={17} /></span><div><h2>Resume Analysis</h2><p>Your resume insights, separate from your assessment performance.</p></div></div>
+            <div className="resume-analysis-results-score"><span>Resume score</span><strong>{score ?? '--'}<small>/100</small></strong><i><em style={{ width: `${Math.max(0, Math.min(100, Number(score) || 0))}%` }} /></i></div>
+            <div className="resume-results-insights">
+              {strengths.length > 0 && <section className="resume-results-insight-card strengths"><header><span><Star size={18} /></span><div><h2>Strengths</h2><p>Key strengths identified in your resume.</p></div></header><ul>{renderInsightItems(strengths, Check)}</ul></section>}
+              {weaknesses.length > 0 && <section className="resume-results-insight-card weaknesses"><header><span><XCircle size={18} /></span><div><h2>Weaknesses</h2><p>Areas to improve in your resume.</p></div></header><ul>{renderInsightItems(weaknesses, XCircle)}</ul></section>}
+            </div>
+            {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
+            <ResumeAnalysisResultCard analysis={data} />
+            <div className="resume-results-profile"><header><span><UserRound size={20} /></span><div><h2>Resume Details</h2><p>Key information extracted from your resume</p></div></header><div className="resume-profile-list"><div><UserRound size={16} /><b>Name</b><strong>{profile.name || data.name || user?.name || user?.userName || 'Not provided'}</strong></div><div><Mail size={16} /><b>Email</b><strong>{profile.email || data.email || user?.email || 'Not provided'}</strong></div><div><Phone size={16} /><b>Phone</b><strong>{profile.phone || data.phone || 'Not provided'}</strong></div><div><MapPin size={16} /><b>Location</b><strong>{profile.location || data.location || 'Not provided'}</strong></div><div><GraduationCap size={16} /><b>Education</b><strong>{profile.education || data.education || 'Not provided'}</strong></div><div><BriefcaseBusiness size={16} /><b>Experience</b><strong>{profile.experience || data.experience || 'Not provided'}</strong></div></div></div>
+          </section>
           {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
           <div className="resume-results-actions"><Button onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="dark" size="lg" icon={Zap}>{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button><Button to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button></div>
           <div className="flex justify-center pt-2"><Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
         </main>
 
-        <aside className="resume-results-profile"><header><span><UserRound size={20} /></span><div><h2>Resume Profile</h2><p>Key information extracted from your resume</p></div></header><div className="resume-profile-list"><div><UserRound size={16} /><b>Name</b><strong>{profile.name || data.name || user?.name || user?.userName || 'Not provided'}</strong></div><div><Mail size={16} /><b>Email</b><strong>{profile.email || data.email || user?.email || 'Not provided'}</strong></div><div><Phone size={16} /><b>Phone</b><strong>{profile.phone || data.phone || 'Not provided'}</strong></div><div><MapPin size={16} /><b>Location</b><strong>{profile.location || data.location || 'Not provided'}</strong></div><div><GraduationCap size={16} /><b>Education</b><strong>{profile.education || data.education || 'Not provided'}</strong></div><div><BriefcaseBusiness size={16} /><b>Experience</b><strong>{profile.experience || data.experience || 'Not provided'}</strong></div></div><div className="resume-results-next"><Lightbulb size={18} /><div><h3>Next Steps</h3><p>Improve your resume by adding certifications, including more specific achievements, and filling in missing details like phone number and professional experience.</p></div></div><ResumeAnalysisResultCard analysis={data} /></aside>
       </div>
     </AssessmentLayout>
   )
