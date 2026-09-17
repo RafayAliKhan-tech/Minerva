@@ -229,9 +229,11 @@ function DomainAssessment() {
       contentClassName="max-w-none"
       className="journey2-assessment-layout"
     >
-      <button className="journey2-assessment-back" type="button" onClick={handlePrevious} aria-label="Go back">
+      <br></br>
+      <br></br>
+      {/* <button className="journey2-assessment-back" type="button" onClick={handlePrevious} aria-label="Go back">
         <ArrowLeft size={16} /> Back
-      </button>
+      </button> */}
 
       <div className="journey2-assessment-grid">
         <main className="journey2-assessment-card">
