@@ -3747,7 +3747,7 @@ a {
 
 .resume-assessment-page {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, .9fr);
   gap: 15px;
   align-items: stretch;
 }
@@ -3758,6 +3758,7 @@ a {
   border-radius: 14px;
   background: rgba(255, 255, 255, .96);
   box-shadow: 0 14px 34px rgba(31, 42, 49, .06);
+  margin-top : 28px;
 }
 
 .resume-assessment-card {
