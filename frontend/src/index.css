@@ -3025,6 +3025,7 @@ a {
     border-radius: 13px;
     background: #fff;
     box-shadow: 0 13px 30px rgba(35, 51, 60, .06);
+    margin-top: 28px;
   }
 
   .journey2-assessment-card { padding: 23px 31px 17px; }
