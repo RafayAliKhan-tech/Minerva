@@ -3096,6 +3096,9 @@ a {
 
   .journey2-assessment-card { padding: 23px 31px 17px; }
 
+  .journey2-assessment-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+  .journey2-assessment-timer { flex: 0 0 auto; }
+
   .journey2-assessment-badge {
     display: inline-flex;
     align-items: center;
@@ -3211,6 +3214,7 @@ a {
 
   @media (max-width: 600px) {
     .journey2-assessment-card { padding: 18px 15px; }
+    .journey2-assessment-header { align-items: center; }
     .journey2-assessment-card h1 { font-size: 1.55rem; }
     .journey2-assessment-description { font-size: .8rem; }
     .journey2-assessment-content button.group { grid-template-columns: 22px 33px minmax(0, 1fr); gap: 9px; padding: 10px; }

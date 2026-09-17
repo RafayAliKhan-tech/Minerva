@@ -23,7 +23,7 @@ function Layout({ showFooter = true }) {
         <Outlet />
       </main>
       {shouldShowFooter && !isChatPage && <Footer compact={isAuthPage} />}
-      {(!hideChatbotForGuests || isAuthenticated) && <Link to="/chat" aria-label="Open Minerva chat" className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#c38d66] text-white shadow-lg transition-transform hover:-translate-y-1"><MessageCircle size={23} /></Link>}
+      {!isChatPage && (!hideChatbotForGuests || isAuthenticated) && <Link to="/chat" aria-label="Open Minerva chat" className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#c38d66] text-white shadow-lg transition-transform hover:-translate-y-1"><MessageCircle size={23} /></Link>}
     </div>
   )
 }

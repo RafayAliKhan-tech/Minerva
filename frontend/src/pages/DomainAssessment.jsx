@@ -237,7 +237,12 @@ function DomainAssessment() {
 
       <div className="journey2-assessment-grid">
         <main className="journey2-assessment-card">
-          <div className="journey2-assessment-badge"><BriefcaseBusiness size={16} /> Journey 2 Assessment</div>
+          <div className="journey2-assessment-header">
+            <div className="journey2-assessment-badge"><BriefcaseBusiness size={16} /> Journey 2 Assessment</div>
+            <div className="journey2-assessment-timer">
+              <Timer duration={180} storageKey={`minerva:journey2:timer:${activity.id || activity.activityId || activity.questionId}`} onTimeUp={() => setTimeUp(true)} isActive={!saved} />
+            </div>
+          </div>
           <div className="journey2-assessment-meta">Question {activityIndex + 1} of {activities.length}</div>
           <h1>{activity.title}</h1>
           <p className="journey2-assessment-description">{activity.description}</p>
@@ -398,7 +403,6 @@ function DomainAssessment() {
             <div className="journey2-assessment-step"><span><i style={{ width: `${((activityIndex + 1) / activities.length) * 100}%` }} /></span>{activityIndex + 1} / {activities.length}</div>
             {timeUp && <div className="journey2-assessment-timeup">Time's up! Your response was saved automatically.</div>}
             <div className="journey2-assessment-actions">
-              <Timer duration={180} storageKey={`minerva:journey2:timer:${activity.id || activity.activityId || activity.questionId}`} onTimeUp={() => setTimeUp(true)} isActive={!saved} />
               <Button onClick={handleNext} variant="dark" size="md" disabled={!canContinue}>{isLastActivity ? 'See Results →' : 'Next Question →'}</Button>
             </div>
           </div>
