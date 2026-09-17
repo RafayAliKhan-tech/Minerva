@@ -57,7 +57,7 @@ function AssessmentLayout({
         )} */}
 
         {/* Header */}
-        {(title || subtitle) && (
+        {/* {(title || subtitle) && (
           <div className="mb-12 max-w-2xl">
             {title && (
               <h1 className="font-serif text-3xl font-semibold leading-tight text-brown sm:text-4xl">
@@ -70,7 +70,7 @@ function AssessmentLayout({
               </p>
             )}
           </div>
-        )}
+        )} */}
 
         {/* Main content */}
         <div className={contentClassName}>{children}</div>
