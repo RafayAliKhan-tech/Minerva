@@ -7,7 +7,7 @@ import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultC
 import { useAuth } from '../auth/AuthContext'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 import { generateRoadmap, getRoute3Result } from '../api/minervaApi'
-import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
+import { saveLatestAssessment, saveAssessmentOutput, saveRoadmap } from '../utils/userData'
 
 const unwrapResult = (value) => value?.data || value?.result || value || {}
 const firstValue = (value, keys) => keys.reduce((found, key) => found ?? value?.[key], undefined)
@@ -69,6 +69,7 @@ function ResumeResults() {
       if (!backendResult || typeof backendResult !== 'object') throw new Error('Route 3 returned an invalid result.')
       setResult(backendResult)
       const data = { ...getAnalysis(startResult), ...unwrapResult(backendResult) }
+      saveAssessmentOutput(user, 'journey3', data)
       saveLatestAssessment(user, { type: 'resume', label: 'Resume & Role Assessment', domain: getHighestRole(data) || 'Route 3 assessment', score: getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score']), attemptId })
     } catch (err) {
         console.error('Failed to load results:', err)

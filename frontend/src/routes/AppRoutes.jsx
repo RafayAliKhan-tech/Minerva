@@ -13,6 +13,7 @@ import RoadmapPage from '../pages/RoadmapPage'
 import ChatPage from '../pages/ChatPage'
 import MockInterviewPage from '../pages/MockInterviewPage'
 import InterviewResults from '../pages/InterviewResults'
+import SkillProfilePage from '../pages/SkillProfilePage'
 
 // Exploring flow pages
 import ExploringIntro from '../pages/ExploringIntro'
@@ -82,6 +83,7 @@ function AppRoutes() {
 
         <Route path="profile" element={<ProfilePage />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="skill-profile" element={<SkillProfilePage />} />
         <Route path="explore/roadmap" element={<RoadmapPage />} />
         <Route path="roadmap-detail/:roadmapId" element={<RoadmapPage />} />
         <Route path="chat" element={<ChatPage />} />

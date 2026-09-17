@@ -7,7 +7,7 @@ import { ArrowLeft, BarChart3, CheckCircle2, ClipboardList, Flag, Lightbulb, Shi
 import { generateRoadmap, getJourney2Result } from '../api/minervaApi'
 import { useAuth } from '../auth/AuthContext'
 import { useJourney2Assessment } from '../auth/Journey2AssessmentContext'
-import { saveLatestAssessment, saveRoadmap } from '../utils/userData'
+import { saveLatestAssessment, saveAssessmentOutput, saveRoadmap } from '../utils/userData'
 
 const unwrap = (payload) => {
   let value = payload
@@ -73,6 +73,7 @@ function DomainResults() {
         console.debug('[Journey2] Extracted profile:', profile)
         if (!profile || typeof profile !== 'object') throw new Error('The Journey 2 result response is invalid.')
         setResult(backendResult)
+        saveAssessmentOutput(user, 'journey2', profile)
         const matches = getMatches(profile)
         console.debug('[Journey2] Extracted matches:', matches)
         saveLatestAssessment(user, {

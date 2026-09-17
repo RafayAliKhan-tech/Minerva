@@ -115,3 +115,20 @@ export const getJourney1Result = (user) => {
     return null
   }
 }
+
+export const saveAssessmentOutput = (user, journey, result) => {
+  try {
+    localStorage.setItem(`minervaAssessmentOutput:${getUserKey(user)}:${journey}`, JSON.stringify(result))
+  } catch {
+    console.error(`Failed to save ${journey} assessment output`)
+  }
+}
+
+export const getAssessmentOutput = (user, journey) => {
+  try {
+    const raw = localStorage.getItem(`minervaAssessmentOutput:${getUserKey(user)}:${journey}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}

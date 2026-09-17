@@ -16,6 +16,15 @@ const readStored = (key) => {
   }
 }
 
+const readLocal = (key) => {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 const findProperty = (value, names) => {
   if (!value || typeof value !== 'object') return null
   for (const [key, child] of Object.entries(value)) {
@@ -58,6 +67,7 @@ export const normalizeSkillProfile = (...sources) => {
       'preliminary_current_skill_profile',
       'currentskillprofile',
       'current_skill_profile',
+      'skills',
     ])
     const normalized = normalizeValue(value)
     if (normalized) return normalized
@@ -74,6 +84,159 @@ export const getStoredSkillProfile = () => normalizeSkillProfile(
   readStored('journey2Result'),
   readStored('journey1Result'),
 )
+
+const asNumber = (value) => {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
+const getSkillRecords = (source) => {
+  const value = findProperty(unwrap(source), [
+    'skillprofile',
+    'skill_profile',
+    'normalizedskillprofile',
+    'normalized_skill_profile',
+    'preliminarycurrentskillprofile',
+    'preliminary_current_skill_profile',
+    'currentskillprofile',
+    'current_skill_profile',
+    'skills',
+  ])
+  return Array.isArray(value) ? value : []
+}
+
+const careerLabel = (value) => {
+  const labels = {
+    ai: 'AI & Machine Learning',
+    cyber: 'Cybersecurity',
+    data: 'Data & Analytics',
+    development: 'Software Development',
+    ui_ux: 'UI/UX Design',
+  }
+  const id = String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+  return labels[id] || String(value || '').replace(/[_-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+const normalizeCareerId = (value) => {
+  const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+  return {
+    'data_analytics': 'data',
+    'ai_machine_learning': 'ai',
+    'cybersecurity': 'cyber',
+    'software_development': 'development',
+    'ui_ux_design': 'ui_ux',
+  }[normalized] || normalized
+}
+
+const getCareerScores = (source) => {
+  const data = unwrap(source)
+  const scores = findProperty(data, ['deterministiccareerscores', 'deterministic_career_scores', 'fieldscores', 'field_scores', 'rolescores', 'role_scores'])
+  if (Array.isArray(scores)) return scores.map((item) => ({ id: item?.career_id || item?.career || item?.field || item?.name, score: asNumber(item?.percentage ?? item?.score ?? item?.value) })).filter((item) => item.id)
+  if (scores && typeof scores === 'object') return Object.entries(scores).map(([id, value]) => ({ id, score: asNumber(typeof value === 'object' ? value?.percentage ?? value?.score ?? value?.value : value) })).filter((item) => item.score !== null)
+  return []
+}
+
+const getRoadmapFields = (roadmaps) => roadmaps
+  .map((roadmap) => roadmap?.domain || roadmap?.career || roadmap?.target_role || roadmap?.targetRole)
+  .filter(Boolean)
+  .filter((field, index, fields) => fields.findIndex((item) => normalizeCareerId(item) === normalizeCareerId(field)) === index)
+
+const getCareerMessage = (source) => {
+  const scores = getCareerScores(source)
+  if (!scores.length) return null
+  const highest = Math.max(...scores.map((item) => item.score))
+  if (highest === 0) return 'Your results are not yet compatible with a specific field. Use a roadmap to explore a direction from the foundations up.'
+  const winners = scores.filter((item) => item.score === highest)
+  return winners.map((item) => careerLabel(item.id)).join(' · ')
+}
+
+const normalizeSkill = (skill) => ({
+  ...skill,
+  name: skill?.skill_name || skill?.skillName || skill?.name || skill?.skill_id || 'Unnamed skill',
+  current: asNumber(skill?.current_level ?? skill?.currentLevel),
+  target: asNumber(skill?.target_level ?? skill?.targetLevel),
+  gap: asNumber(skill?.gap),
+})
+
+const translateSource = (source, journey, roadmaps) => {
+  const raw = unwrap(source)
+  const skills = getSkillRecords(raw).map(normalizeSkill)
+  const roadmapFields = getRoadmapFields(roadmaps)
+  const isJourney1 = journey === 1
+  const fields = isJourney1
+    ? roadmapFields
+    : [raw?.career || raw?.career_id || raw?.careerId || findProperty(raw, ['highestscoredfield', 'highest_scored_field', 'highestscoredrole', 'highest_scored_role']) || getCareerScores(raw).sort((a, b) => (b.score || 0) - (a.score || 0))[0]?.id].filter(Boolean)
+  const grouped = fields.map((field) => {
+    const fieldSkills = skills.filter((skill) => !skill.career || normalizeCareerId(skill.career) === normalizeCareerId(field))
+    const strengths = fieldSkills.filter((skill) => skill.current !== null && skill.target !== null && skill.current >= skill.target - 1)
+      .sort((a, b) => (b.current || 0) - (a.current || 0))
+    const weakAreas = fieldSkills.filter((skill) => skill.current === null || (skill.target !== null && skill.current < skill.target - 1) || skill.gap > 0)
+      .sort((a, b) => (b.gap || 0) - (a.gap || 0))
+    return { id: field, label: careerLabel(field), skills: fieldSkills, strengths, weakAreas }
+  })
+  return {
+    journey,
+    journeyLabel: journey === 1 ? 'Journey 1 · Exploring' : journey === 2 ? 'Journey 2 · Career in mind' : 'Journey 3 · Resume',
+    careers: isJourney1 ? (getCareerMessage(raw) || 'No career match yet') : fields.map(careerLabel).join(' · ') || 'Career not provided',
+    fields: grouped,
+    roadmapFields,
+    missingCareer: journey === 3 && !fields.length,
+  }
+}
+
+const getCompletedHours = (roadmap, completed) => {
+  const source = roadmap?.result && typeof roadmap.result === 'object' ? roadmap.result : roadmap
+  const milestones = source?.milestones || source?.curriculum?.phases || source?.phases || []
+  const allItems = milestones.flatMap((phase, phaseIndex) => {
+    const tasks = phase.tasks || phase.objectives || phase.topics || phase.lessons || []
+    const phaseTasks = tasks.map((task) => {
+      const label = typeof task === 'string' ? task : task?.title || task?.name || task?.label || 'Milestone task'
+      return { key: String(label), hours: Number(phase.estimatedHours || phase.estimated_hours || phase.hours || 0) / Math.max(tasks.length, 1) }
+    })
+    const weeks = phase.weeks || phase.weekly_goals || phase.weeklyGoals || []
+    const weekTasks = weeks.flatMap((week, weekIndex) => {
+      const goals = week.goals || week.tasks || week.objectives || week.activities || []
+      return goals.map((goal, goalIndex) => ({
+      key: `week:${phaseIndex}:${weekIndex}:${goalIndex}`,
+      hours: Number(week.estimatedHours || week.estimated_hours || week.hours || phase.estimatedHours || phase.estimated_hours || 0) / Math.max(goals.length, 1),
+      }))
+    })
+    return [...phaseTasks, ...weekTasks, { key: `phase:${phaseIndex}`, hours: Number(phase.estimatedHours || phase.estimated_hours || phase.hours || 0) }]
+  })
+  return allItems.reduce((sum, item) => completed.includes(item.key) ? sum + (Number.isFinite(item.hours) ? item.hours : 0) : sum, 0)
+}
+
+export const getStoredSkillProfileView = (user) => {
+  const key = (journey) => `minervaAssessmentOutput:${userKey(user)}:${journey}`
+  const journey1 = getJourney1Stored(user)
+  const journey2 = readLocal(key(2)) || readStored('journey2Result')
+  const journey3 = readLocal(key(3)) || readStored('route3Result')
+  const roadmaps = readRoadmaps(user)
+  const sources = [
+    journey1 && translateSource(journey1, 1, roadmaps),
+    journey2 && translateSource(journey2, 2, roadmaps),
+    journey3 && translateSource(journey3, 3, roadmaps),
+  ].filter(Boolean)
+  const hours = roadmaps.reduce((sum, roadmap) => {
+    const completed = readLocalStorage(`${getRoadmapStorageKey(user, roadmap.id)}`)
+    return sum + getCompletedHours(roadmap, Array.isArray(completed) ? completed : [])
+  }, 0)
+  return { sources, roadmaps, completedHours: Math.round(hours * 10) / 10 }
+}
+
+const readLocalStorage = (key) => {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+const userKey = (user) => String(user?.Email || user?.email || user?.userEmail || user?.emailAddress || 'guest').trim().toLowerCase() || 'guest'
+const readRoadmaps = (user) => readLocal(`minervaRoadmaps:${userKey(user)}`) || []
+const getRoadmapStorageKey = (user, id) => `minervaRoadmap:${userKey(user)}:${id}`
+const getJourney1Stored = (user) => readLocal(`minervaJourney1Result:${userKey(user)}`) || readStored('journey1Result')
 
 export const getStoredHighestScoredField = () => {
   const sources = [
