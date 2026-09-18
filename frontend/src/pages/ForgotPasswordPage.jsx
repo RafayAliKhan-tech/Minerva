@@ -63,6 +63,7 @@ function ForgotPasswordPage() {
           )}
         </div>
       </Container>
+      <p className="auth-copyright">&copy; {new Date().getFullYear()} Minerva. All rights reserved.</p>
     </section>
   )
 }

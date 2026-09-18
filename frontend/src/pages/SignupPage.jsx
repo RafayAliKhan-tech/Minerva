@@ -70,7 +70,7 @@ function SignupPage() {
         </Button>
       </form><p className="auth-switch">Already have an account? <Button to="/login" variant="ghost" size="sm" className="auth-link">Log in</Button></p>
     </div><div className="auth-art"><img src="/register.png" alt="Minerva AI career journey dashboard" /></div>
-  </Container></section>
+  </Container><p className="auth-copyright">&copy; {new Date().getFullYear()} Minerva. All rights reserved.</p></section>
 }
 
 export default SignupPage
