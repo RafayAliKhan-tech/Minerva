@@ -37,9 +37,7 @@ function SkillProfilePage() {
       <Container>
         <button type="button" className="back-link" onClick={() => navigate('/dashboard')}><ArrowLeft size={16} /> Back to dashboard</button>
         <header className="skill-profile-hero">
-          <div className="skill-profile-hero-icon" aria-hidden="true"><Target size={26} /></div>
           <div className="skill-profile-hero-copy">
-            <p className="dashboard-kicker">YOUR DEVELOPMENT SNAPSHOT</p>
             <h1>Your skills, translated into a clearer next step.</h1>
             <p>One view of the strengths you bring, the skills to build, and the progress you have already made.</p>
           </div>

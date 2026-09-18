@@ -99,7 +99,7 @@ function ResumeInsights() {
           </div>
         </header>
 
-        <section className="resume-insights-profile">
+        {/* <section className="resume-insights-profile">
           <div className="resume-insights-section-heading"><span><UserRound size={18} /></span><div><h2>Resume profile</h2><p>Key information extracted from your resume.</p></div></div>
           <div className="resume-insights-profile-grid">
             {[
@@ -111,7 +111,7 @@ function ResumeInsights() {
               [Briefcase, 'Experience', profile?.experience || analysis?.experience || 'Not provided'],
             ].map(([Icon, label, value]) => <div key={label}><Icon size={16} /><span><b>{label}</b><strong>{value}</strong></span></div>)}
           </div>
-        </section>
+        </section> */}
 
         <section className="resume-insights-grid">
           <article className="resume-insights-panel strengths">
@@ -138,7 +138,17 @@ function ResumeInsights() {
           <Button to="/explore/resume/assessment/1" variant="secondary" size="lg" icon={ArrowRight}>Start Job Assessment</Button>
         </section>
 
-        <div className="resume-insights-actions"><Button to="/dashboard" variant="ghost" size="lg" icon={ArrowLeft} iconPosition="left">Back</Button></div>
+        <div className="resume-insights-actions">
+          <Button
+            to="/dashboard"
+            variant="ghost"
+            size="lg"
+            icon={ArrowLeft}
+            iconPosition="left"
+          >
+            Back
+          </Button>
+        </div>
       </main>
     </AssessmentLayout>
   )

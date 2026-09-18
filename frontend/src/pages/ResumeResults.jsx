@@ -195,7 +195,7 @@ function ResumeResults() {
 
             {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Detailed Insights</h2><p>Review each response and the reasoning behind its result.</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <article key={idx} className={item.is_correct === false ? 'is-evaluation-wrong' : 'is-evaluation-correct'}><header><span className="resume-results-question-label"><b>{idx + 1}</b><strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong></span><b>{item.is_correct === false ? 'Incorrect' : 'Correct'}</b></header>{item.reasoning ? <p>{item.reasoning}</p> : <p>No additional feedback was provided for this response.</p>}</article>)}</div></section>}
 
-            <section className="resume-analysis-results-section">
+            {/* <section className="resume-analysis-results-section">
               <div className="resume-results-section-heading"><span><FileText size={17} /></span><div><h2>Resume Analysis</h2><p>Your resume insights, separate from your assessment performance.</p></div></div>
               <div className="resume-analysis-results-score"><span>Resume score</span><strong>{score ?? '--'}<small>/100</small></strong><i><em style={{ width: `${Math.max(0, Math.min(100, Number(score) || 0))}%` }} /></i></div>
               <div className="resume-results-insights">
@@ -203,11 +203,15 @@ function ResumeResults() {
                 {weaknesses.length > 0 && <section className="resume-results-insight-card weaknesses"><header><span><XCircle size={18} /></span><div><h2>Areas to improve</h2><p>Opportunities to strengthen your resume.</p></div></header><ul>{renderInsightItems(weaknesses, XCircle)}</ul></section>}
               </div>
               {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
-            </section>
+            </section> */}
 
             {roadmapError && <p className="resume-results-error rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-            <div className="resume-results-actions"><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="secondary" size="lg">{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'} <ArrowRight size={17} /></Button></div>
-            <div className="resume-results-secondary-actions"><Button variant="secondary" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
+            <div className="resume-results-actions">
+              <Button to="/" variant="ghost" size="lg" className="resume-back-button" icon={ArrowLeft} iconPosition="left">
+              Back to Home
+              </Button>
+              <Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="secondary" size="lg">{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'} <ArrowRight size={17} /></Button>
+            </div>
           </div>
 
           <aside className="resume-results-sidebar">
