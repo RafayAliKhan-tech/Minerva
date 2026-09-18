@@ -15,6 +15,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "Verify Journey 3 results build",
+			"type": "shell",
+			"command": "npm run build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
 		}
 	]
 }

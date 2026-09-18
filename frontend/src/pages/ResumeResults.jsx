@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Zap, Check, FileText, Star, Target, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Check, FileText, Star, Target, ArrowRight } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
-import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
 import { useAuth } from '../auth/AuthContext'
 import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 import { generateRoadmap, getRoute3Result } from '../api/minervaApi'
@@ -117,6 +116,7 @@ function ResumeResults() {
   const strengths = list(data.strengths)
   const weaknesses = list(data.weaknesses || data.areasToImprove)
   const skills = list(data.categorizedSkills || data.categorized_skills || data.skills || data.skillProfile || data.skill_profile)
+  const resumeDescription = data.resumeDescription || data.resume_description || data.summary || data.profileSummary || data.profile_summary || 'Your resume insights are ready. Review your strengths, skills, and next steps to keep building momentum.'
 
   const handleGenerateRoadmap = async () => {
     const journeyOutput = unwrapResult(result)
@@ -164,7 +164,7 @@ function ResumeResults() {
   const renderInsightItems = (items, Icon) => items.map((item, idx) => <li key={idx}><Icon size={15} /> <div><strong>{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</strong>{typeof item !== 'string' && item.description && <small>{item.description}</small>}</div></li>)
 
   return (
-    <AssessmentLayout onBack={() => navigate(-1)} showProgress={false} contentClassName="max-w-none" className="resume-results-layout">
+    <AssessmentLayout showProgress={false} contentClassName="max-w-none" className="resume-results-layout">
       <div className="resume-results-page">
         <header className="resume-results-hero">
           <div>
@@ -172,41 +172,59 @@ function ResumeResults() {
             <h1>Your Assessment Results</h1>
             <p>See how your resume-based assessment performed and where your skills can grow.</p>
           </div>
-          <Button className="resume-results-hero-action text-white" to="/explore/resume/insights" state={{ analysis: data }} variant="secondary" size="md" icon={ArrowRight}>View Resume Analysis</Button>
+          <div className="resume-results-hero-meta">
+            <span className="resume-results-hero-meta-dot" />
+            <span>Assessment complete</span>
+          </div>
         </header>
         <main className="resume-results-main">
-          <section className="resume-results-score-card">
-            <div className="resume-results-score-copy">
-              <div className="resume-results-badge"><FileText size={17} /> Journey 3 Results</div>
-              <p className="resume-results-kicker">ASSESSMENT PERFORMANCE</p>
-              <h1>Your Assessment Score</h1>
-              <div className="resume-results-score-value">{assessmentScore ?? '--'} <span>{assessmentScore !== null ? 'Answer accuracy' : 'Awaiting evaluation'}</span></div>
-              <p>This score reflects how well you performed across the resume-based assessment questions.</p>
-            </div>
-            <div className="resume-results-ring"><strong>{assessmentScore ?? '--'}</strong><small>/ 5</small></div>
-            <div className="resume-results-metrics">
-              <div><span><Target size={15} /></span><strong>Questions reviewed</strong><b>{evaluations.length}</b><i><em style={{ width: '100%' }} /></i></div>
-              <div><span><CheckCircle2 size={15} /></span><strong>Answers on track</strong><b>{correctAnswers}</b><i><em style={{ width: `${evaluations.length ? (correctAnswers / evaluations.length) * 100 : 0}%` }} /></i></div>
-            </div>
-          </section>
+          <div className="resume-results-primary">
+            <section className="resume-results-score-card">
+              <div className="resume-results-score-copy">
+                <p className="resume-results-kicker">ASSESSMENT PERFORMANCE</p>
+                <h2>Your Assessment Score</h2>
+                <div className="resume-results-score-value">{assessmentScore ?? '--'} <span>{assessmentScore !== null ? 'Answer accuracy' : 'Awaiting evaluation'}</span></div>
+                <p>This score reflects how well you performed across the resume-based assessment questions.</p>
+              </div>
+              <div className="resume-results-ring"><strong>{assessmentScore ?? '--'}</strong><small>/ 5</small></div>
+              <div className="resume-results-metrics">
+                <div><span><Target size={15} /></span><strong>Questions reviewed</strong><b>{evaluations.length}</b><i><em style={{ width: '100%' }} /></i></div>
+                <div><span><CheckCircle2 size={15} /></span><strong>Answers on track</strong><b>{correctAnswers}</b><i><em style={{ width: `${evaluations.length ? (correctAnswers / evaluations.length) * 100 : 0}%` }} /></i></div>
+              </div>
+            </section>
 
-          {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Answer Evaluation</h2><p>Review each response and the reasoning behind its result.</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <article key={idx} className={item.is_correct === false ? 'is-evaluation-wrong' : 'is-evaluation-correct'}><header><span>{item.is_correct === false ? <XCircle size={20} /> : <CheckCircle2 size={20} />}<strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong></span><b>{item.is_correct === false ? 'Needs work' : 'On track'}</b></header>{item.reasoning ? <p>{item.reasoning}</p> : <p>No additional feedback was provided for this response.</p>}</article>)}</div></section>}
+            {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Detailed Insights</h2><p>Review each response and the reasoning behind its result.</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <article key={idx} className={item.is_correct === false ? 'is-evaluation-wrong' : 'is-evaluation-correct'}><header><span className="resume-results-question-label"><b>{idx + 1}</b><strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong></span><b>{item.is_correct === false ? 'Incorrect' : 'Correct'}</b></header>{item.reasoning ? <p>{item.reasoning}</p> : <p>No additional feedback was provided for this response.</p>}</article>)}</div></section>}
 
-          <section className="resume-analysis-results-section">
-            <div className="resume-results-section-heading"><span><FileText size={17} /></span><div><h2>Resume Analysis</h2><p>Your resume insights, separate from your assessment performance.</p></div></div>
-            <div className="resume-analysis-results-score"><span>Resume score</span><strong>{score ?? '--'}<small>/100</small></strong><i><em style={{ width: `${Math.max(0, Math.min(100, Number(score) || 0))}%` }} /></i></div>
-            <div className="resume-results-insights">
-              {strengths.length > 0 && <section className="resume-results-insight-card strengths"><header><span><Star size={18} /></span><div><h2>Strengths</h2><p>Key strengths identified in your resume.</p></div></header><ul>{renderInsightItems(strengths, Check)}</ul></section>}
-              {weaknesses.length > 0 && <section className="resume-results-insight-card weaknesses"><header><span><XCircle size={18} /></span><div><h2>Weaknesses</h2><p>Areas to improve in your resume.</p></div></header><ul>{renderInsightItems(weaknesses, XCircle)}</ul></section>}
-            </div>
-            {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
-            <ResumeAnalysisResultCard analysis={data} />
-          </section>
-          {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-          <div className="resume-results-actions"><Button className="resume-results-dashboard-action resume-back-button" to="/dashboard" variant="ghost" size="lg" icon={ArrowLeft} iconPosition="left">Back</Button><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="secondary" size="lg">{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button></div>
-          <div className="resume-results-secondary-actions"><Button variant="secondary" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
+            <section className="resume-analysis-results-section">
+              <div className="resume-results-section-heading"><span><FileText size={17} /></span><div><h2>Resume Analysis</h2><p>Your resume insights, separate from your assessment performance.</p></div></div>
+              <div className="resume-analysis-results-score"><span>Resume score</span><strong>{score ?? '--'}<small>/100</small></strong><i><em style={{ width: `${Math.max(0, Math.min(100, Number(score) || 0))}%` }} /></i></div>
+              <div className="resume-results-insights">
+                {strengths.length > 0 && <section className="resume-results-insight-card strengths"><header><span><Star size={18} /></span><div><h2>Strengths</h2><p>Key strengths identified in your resume.</p></div></header><ul>{renderInsightItems(strengths, Check)}</ul></section>}
+                {weaknesses.length > 0 && <section className="resume-results-insight-card weaknesses"><header><span><XCircle size={18} /></span><div><h2>Areas to improve</h2><p>Opportunities to strengthen your resume.</p></div></header><ul>{renderInsightItems(weaknesses, XCircle)}</ul></section>}
+              </div>
+              {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
+            </section>
+
+            {roadmapError && <p className="resume-results-error rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
+            <div className="resume-results-actions"><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="secondary" size="lg">{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'} <ArrowRight size={17} /></Button></div>
+            <div className="resume-results-secondary-actions"><Button variant="secondary" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
+          </div>
+
+          <aside className="resume-results-sidebar">
+            <section className="resume-results-side-card">
+              <div className="resume-results-side-heading"><span><FileText size={18} /></span><div><h2>Resume Analysis</h2><p>Your resume insights, separate from your assessment performance.</p></div></div>
+              <div className="resume-results-document-preview"><FileText size={38} /></div>
+              <h3>{score !== null ? 'Resume Analysis Complete' : 'Resume Analysis Ready'}</h3>
+              <p>We've analyzed your resume and extracted key skills, experience, and qualifications.</p>
+              <Button className="resume-results-side-action" to="/explore/resume/insights" state={{ analysis: data }} variant="secondary" size="sm">View Full Analysis <ArrowRight size={15} /></Button>
+            </section>
+            <section className="resume-results-side-card resume-results-description-card">
+              <div className="resume-results-side-heading"><span><FileText size={18} /></span><div><h2>Resume Description</h2><p>A quick snapshot of your professional background.</p></div></div>
+              <p className="resume-results-description">{resumeDescription}</p>
+              {skills.length > 0 && <div className="resume-results-skill-pills">{skills.slice(0, 8).map((item, idx) => <span key={idx}>{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</span>)}</div>}
+            </section>
+          </aside>
         </main>
-
       </div>
     </AssessmentLayout>
   )
