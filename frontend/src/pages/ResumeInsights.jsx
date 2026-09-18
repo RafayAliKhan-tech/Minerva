@@ -1,132 +1,144 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
-import SkillBar from '../components/assessment/SkillBar'
 import Button from '../components/common/Button'
+import { useAuth } from '../auth/AuthContext'
+import { getAssessmentOutput } from '../utils/userData'
 import {
-  Code2,
-  Database,
-  Palette,
-  Book,
-  Briefcase,
-  Award,
   ArrowRight,
+  Award,
+  Briefcase,
+  CheckCircle2,
+  GraduationCap,
+  Mail,
+  MapPin,
+  Phone,
+  Star,
+  UserRound,
+  X,
 } from 'lucide-react'
+
+const unwrap = (value) => value?.data || value?.result || value || {}
+
+const getAnalysis = (value) => {
+  const data = unwrap(value)
+  return unwrap(data.analysisResult || data.analysis_result || data.resumeAnalysis || data.resume_analysis)
+}
+
+const firstValue = (value, keys) => keys.reduce((found, key) => found ?? value?.[key], undefined)
+
+const getScore = (value) => {
+  const analysis = getAnalysis(value)
+  const score = firstValue(analysis, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score'])
+  if (score !== null && score !== undefined && typeof score !== 'object') return score
+  return firstValue(score, ['value', 'score', 'final_score', 'finalScore', 'overall_score', 'overallScore'])
+}
+
+const getItems = (value, keys) => {
+  const items = firstValue(getAnalysis(value), keys)
+  return Array.isArray(items) ? items : []
+}
+
+const getText = (item) => typeof item === 'string' ? item : item?.name || item?.title || item?.text || item?.description
+
+const getProfile = (value) => {
+  const analysis = getAnalysis(value)
+  return analysis?.profile || analysis?.resumeProfile || analysis?.resume_profile || analysis
+}
+
+const getStoredAnalysis = (user) => {
+  try {
+    return JSON.parse(sessionStorage.getItem('route3Result') || 'null') || getAssessmentOutput(user, 'journey3')
+  } catch {
+    return getAssessmentOutput(user, 'journey3')
+  }
+}
 
 function ResumeInsights() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { state } = useLocation()
-  const analysis = state?.analysis
-
-  const skills = [
-    { name: 'HTML/CSS', percentage: 85 },
-    { name: 'JavaScript', percentage: 78 },
-    { name: 'React', percentage: 54 },
-    { name: 'SQL', percentage: 62 },
-  ]
-
+  const analysis = state?.analysis || getStoredAnalysis(user)
+  const score = getScore(analysis)
+  const resumeScore = Number(score)
+  const strengths = getItems(analysis, ['strengths'])
+  const weaknesses = getItems(analysis, ['weaknesses', 'areasToImprove', 'areas_to_improve'])
+  const rawSkills = getItems(analysis, ['categorizedSkills', 'categorized_skills', 'skills', 'skillProfile', 'skill_profile'])
+  const skills = rawSkills.length
+    ? rawSkills.map((skill) => ({
+      name: getText(skill),
+      percentage: Number(skill?.percentage ?? skill?.score ?? skill?.value ?? skill?.current_level ?? 0),
+    }))
+    : [
+      { name: 'HTML/CSS', percentage: 85 },
+      { name: 'JavaScript', percentage: 78 },
+      { name: 'React', percentage: 54 },
+      { name: 'SQL', percentage: 62 },
+    ]
+  const profile = getProfile(analysis)
   const sections = [
-    { icon: Book, label: 'Education', value: 'B.S. Computer Science' },
-    { icon: Briefcase, label: 'Experience', value: '2 years in tech' },
-    { icon: Award, label: 'Certifications', value: '3 certifications' },
+    { icon: GraduationCap, label: 'Education', value: profile?.education || 'B.S. Computer Science' },
+    { icon: Briefcase, label: 'Experience', value: profile?.experience || '2 years in tech' },
+    { icon: Award, label: 'Certifications', value: profile?.certifications || '3 certifications' },
   ]
-
-  const strengths = [
-    'Frontend Development',
-    'Database Design',
-    'UI Implementation',
-  ]
+  const displayedStrengths = strengths.length ? strengths : ['Frontend Development', 'Database Design', 'UI Implementation']
 
   return (
-    <AssessmentLayout onBack={() => navigate('/dashboard')} showProgress={false}>
-      <div className="rounded-3xl border border-beige-border bg-white p-8 shadow-card sm:p-12 lg:p-16">
-        <div className="max-w-3xl">
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="font-serif text-4xl font-semibold text-brown sm:text-5xl">
-              Your Current Skill Profile
-            </h1>
-            <p className="mt-4 text-base text-brown-light">
-              {analysis ? 'Your latest resume analysis and identified strengths.' : 'Based on your resume analysis'}
-            </p>
+    <AssessmentLayout onBack={() => navigate('/explore/resume/results')} showProgress={false}>
+      <main className="resume-insights-page">
+        <header className="resume-insights-hero">
+          <div>
+            <p className="resume-results-kicker">RESUME ANALYSIS</p>
+            <h1>Your resume, translated into your next opportunity.</h1>
+            <p>Review the score, evidence, and profile details identified from your resume.</p>
           </div>
-
-          {/* Skills */}
-          <div className="mb-12 space-y-6">
-            <h2 className="font-serif text-2xl font-semibold text-brown">Technical Skills</h2>
-            {skills.map((skill) => (
-              <SkillBar key={skill.name} skill={skill.name} percentage={skill.percentage} />
-            ))}
+          <div className="resume-insights-score">
+            <span>Resume score</span>
+            <strong>{score ?? '--'}<small>/100</small></strong>
+            <i><em style={{ width: `${Math.max(0, Math.min(100, Number.isFinite(resumeScore) ? resumeScore : 0))}%` }} /></i>
           </div>
+        </header>
 
-          {/* Summary sections */}
-          <div className="mb-12 grid gap-4 md:grid-cols-3">
-            {sections.map((section) => {
-              const Icon = section.icon
-              return (
-                <div
-                  key={section.label}
-                  className="rounded-xl border border-beige-border bg-cream-dark p-6"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-pill text-orange">
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                    </div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-brown-light">
-                      {section.label}
-                    </h3>
-                  </div>
-                  <p className="font-semibold text-brown">{section.value}</p>
-                </div>
-              )
-            })}
+        <section className="resume-insights-profile">
+          <div className="resume-insights-section-heading"><span><UserRound size={18} /></span><div><h2>Resume profile</h2><p>Key information extracted from your resume.</p></div></div>
+          <div className="resume-insights-profile-grid">
+            {[
+              [UserRound, 'Name', profile?.name || analysis?.name || user?.name || user?.userName || 'Not provided'],
+              [Mail, 'Email', profile?.email || analysis?.email || user?.email || 'Not provided'],
+              [Phone, 'Phone', profile?.phone || analysis?.phone || 'Not provided'],
+              [MapPin, 'Location', profile?.location || analysis?.location || 'Not provided'],
+              [GraduationCap, 'Education', profile?.education || analysis?.education || 'Not provided'],
+              [Briefcase, 'Experience', profile?.experience || analysis?.experience || 'Not provided'],
+            ].map(([Icon, label, value]) => <div key={label}><Icon size={16} /><span><b>{label}</b><strong>{value}</strong></span></div>)}
           </div>
+        </section>
 
-          {/* Strongest areas */}
-          <div className="mb-12">
-            <h2 className="font-serif text-2xl font-semibold text-brown mb-6">
-              Your Strongest Areas
-            </h2>
-            <div className="flex flex-wrap gap-3">
-              {strengths.map((strength) => (
-                <div
-                  key={strength}
-                  className="inline-flex items-center gap-2 rounded-full bg-journey-green px-4 py-2 text-sm font-medium text-journey-green-dark"
-                >
-                  <span>✓</span>
-                  {strength}
-                </div>
-              ))}
-            </div>
-          </div>
+        <section className="resume-insights-grid">
+          <article className="resume-insights-panel strengths">
+            <div className="resume-insights-section-heading"><span><Star size={18} /></span><div><h2>Strengths</h2><p>Signals that make your resume stand out.</p></div></div>
+            <ul>{displayedStrengths.map((item, index) => <li key={`${getText(item)}-${index}`}><CheckCircle2 size={16} /> <span><strong>{getText(item)}</strong>{item?.description && <small>{item.description}</small>}</span></li>)}</ul>
+          </article>
+          <article className="resume-insights-panel weaknesses">
+            <div className="resume-insights-section-heading"><span><X size={18} /></span><div><h2>Weaknesses</h2><p>Areas that could improve your next application.</p></div></div>
+            <ul>{(weaknesses.length ? weaknesses : ['Add more measurable outcomes to your experience descriptions.']).map((item, index) => <li key={`${getText(item)}-${index}`}><X size={16} /> <span><strong>{getText(item)}</strong>{item?.description && <small>{item.description}</small>}</span></li>)}</ul>
+          </article>
+        </section>
 
-          {/* Divider */}
-          <div className="mb-12 h-px bg-beige-border" />
+        <section className="resume-insights-panel">
+          <div className="resume-insights-section-heading"><span><Star size={18} /></span><div><h2>Technical skills</h2><p>Skills identified or inferred from your resume.</p></div></div>
+          <div className="resume-insights-skills">{skills.map((skill) => <div key={skill.name}><div><strong>{skill.name}</strong><b>{skill.percentage}%</b></div><i><em style={{ width: `${Math.max(0, Math.min(100, skill.percentage || 0))}%` }} /></i></div>)}</div>
+        </section>
 
-          {/* Next step info */}
-          <div className="mb-12 rounded-2xl bg-orange-pill p-6">
-            <p className="text-sm text-brown">
-              <span className="font-semibold">Next:</span> See career matches based on your
-              current skills and identify what you need to learn to reach your goals.
-            </p>
-          </div>
+        <section className="resume-insights-summary">
+          {sections.map(({ icon: Icon, label, value }) => <div key={label}><Icon size={18} /><span><b>{label}</b><strong>{value}</strong></span></div>)}
+        </section>
 
-          {/* CTA */}
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              to="/explore/resume/assessment/1"
-              variant="dark"
-              size="lg"
-              icon={ArrowRight}
-              className="flex-1"
-            >
-              Start Job Assessment
-            </Button>
-            <Button to="/dashboard" variant="ghost" size="lg" className="flex-1">
-              Back to Home
-            </Button>
-          </div>
-        </div>
-      </div>
+        <section className="resume-insights-next">
+          <div><p className="resume-results-kicker">NEXT STEP</p><h2>Turn these insights into a focused career plan.</h2><p>See career matches based on your current skills and identify what you need to learn to reach your goals.</p></div>
+          <Button to="/explore/resume/assessment/1" variant="dark" size="lg" icon={ArrowRight}>Start Job Assessment</Button>
+        </section>
+
+        <div className="resume-insights-actions"><Button to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button></div>
+      </main>
     </AssessmentLayout>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Zap, BriefcaseBusiness, Check, FileText, GraduationCap, Mail, MapPin, Phone, Star, Target, UserRound } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Zap, Check, FileText, Star, Target } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
@@ -108,15 +108,15 @@ function ResumeResults() {
   const data = { ...getAnalysis(startResult), ...unwrapResult(result) }
   const list = (value) => Array.isArray(value) ? value : []
   const evaluations = list(data.evaluations || data.evaluation_results || data.answerEvaluations || data.answer_evaluations || data.evaluationResults || data.answers)
+  const correctAnswers = evaluations.filter((item) => item?.is_correct !== false).length
   const assessmentScore = evaluations.length
-    ? Math.round((evaluations.filter((item) => item?.is_correct !== false).length / evaluations.length) * 100)
+    ? Math.round((correctAnswers / evaluations.length) * 5 * 10) / 10
     : null
   const renderList = (items) => items.map((item, idx) => <div key={idx} className="rounded-xl border border-beige-border bg-white p-4 text-brown">{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</div>)
   const score = getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score'])
   const strengths = list(data.strengths)
   const weaknesses = list(data.weaknesses || data.areasToImprove)
   const skills = list(data.categorizedSkills || data.categorized_skills || data.skills || data.skillProfile || data.skill_profile)
-  const profile = data.profile || data.resumeProfile || data.resume_profile || {}
 
   const handleGenerateRoadmap = async () => {
     const journeyOutput = unwrapResult(result)
@@ -175,10 +175,10 @@ function ResumeResults() {
               <div className="resume-results-score-value">{assessmentScore ?? '--'} <span>{assessmentScore !== null ? 'Answer accuracy' : 'Awaiting evaluation'}</span></div>
               <p>This score reflects how well you performed across the resume-based assessment questions.</p>
             </div>
-            <div className="resume-results-ring"><strong>{assessmentScore ?? '--'}</strong><small>/ 100</small></div>
+            <div className="resume-results-ring"><strong>{assessmentScore ?? '--'}</strong><small>/ 5</small></div>
             <div className="resume-results-metrics">
               <div><span><Target size={15} /></span><strong>Questions reviewed</strong><b>{evaluations.length}</b><i><em style={{ width: '100%' }} /></i></div>
-              <div><span><CheckCircle2 size={15} /></span><strong>Answers on track</strong><b>{evaluations.filter((item) => item?.is_correct !== false).length}</b><i><em style={{ width: `${assessmentScore || 0}%` }} /></i></div>
+              <div><span><CheckCircle2 size={15} /></span><strong>Answers on track</strong><b>{correctAnswers}</b><i><em style={{ width: `${evaluations.length ? (correctAnswers / evaluations.length) * 100 : 0}%` }} /></i></div>
             </div>
           </section>
 
@@ -193,10 +193,9 @@ function ResumeResults() {
             </div>
             {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
             <ResumeAnalysisResultCard analysis={data} />
-            <div className="resume-results-profile"><header><span><UserRound size={20} /></span><div><h2>Resume Details</h2><p>Key information extracted from your resume</p></div></header><div className="resume-profile-list"><div><UserRound size={16} /><b>Name</b><strong>{profile.name || data.name || user?.name || user?.userName || 'Not provided'}</strong></div><div><Mail size={16} /><b>Email</b><strong>{profile.email || data.email || user?.email || 'Not provided'}</strong></div><div><Phone size={16} /><b>Phone</b><strong>{profile.phone || data.phone || 'Not provided'}</strong></div><div><MapPin size={16} /><b>Location</b><strong>{profile.location || data.location || 'Not provided'}</strong></div><div><GraduationCap size={16} /><b>Education</b><strong>{profile.education || data.education || 'Not provided'}</strong></div><div><BriefcaseBusiness size={16} /><b>Experience</b><strong>{profile.experience || data.experience || 'Not provided'}</strong></div></div></div>
           </section>
           {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-          <div className="resume-results-actions"><Button onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="dark" size="lg" icon={Zap}>{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button><Button to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button></div>
+          <div className="resume-results-actions"><Button onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="dark" size="lg" icon={Zap}>{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button><Button to="/explore/resume/insights" state={{ analysis: data }} variant="ghost" size="lg">View Resume Analysis</Button><Button to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button></div>
           <div className="flex justify-center pt-2"><Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
         </main>
 

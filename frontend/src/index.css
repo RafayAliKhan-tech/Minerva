@@ -3308,6 +3308,304 @@ a {
   margin-bottom: 18px;
 }
 
+.resume-insights-page {
+  display: grid;
+  gap: 18px;
+  max-width: 1120px;
+  margin: 0 auto;
+  color: #27353e;
+}
+
+.resume-insights-hero,
+.resume-insights-profile,
+.resume-insights-panel,
+.resume-insights-summary,
+.resume-insights-next {
+  border: 1px solid #e3e7e8;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .97);
+  box-shadow: 0 16px 38px rgba(31, 42, 49, .06);
+}
+
+.resume-insights-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 28px;
+  align-items: center;
+  padding: 34px;
+  background: linear-gradient(135deg, #fffaf5, #fff);
+}
+
+.resume-insights-hero h1 {
+  max-width: 680px;
+  margin: 0;
+  color: #27353e;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.08;
+}
+
+.resume-insights-hero > div:first-child > p:last-child {
+  max-width: 580px;
+  margin: 14px 0 0;
+  color: #6b7b85;
+  line-height: 1.6;
+}
+
+.resume-insights-score {
+  display: grid;
+  gap: 10px;
+  padding: 24px;
+  border-radius: 15px;
+  background: #27353e;
+  color: #fff;
+}
+
+.resume-insights-score span {
+  color: #d8e0e3;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.resume-insights-score strong {
+  color: #f0b47e;
+  font-size: 2.8rem;
+}
+
+.resume-insights-score small {
+  margin-left: 4px;
+  color: #d8e0e3;
+  font-size: .8rem;
+  font-weight: 500;
+}
+
+.resume-insights-score i,
+.resume-insights-skills i {
+  display: block;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e8edef;
+}
+
+.resume-insights-score i {
+  background: rgba(255, 255, 255, .2);
+}
+
+.resume-insights-score em,
+.resume-insights-skills em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d9945e, #f0b47e);
+}
+
+.resume-insights-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resume-insights-section-heading > span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: #bd7040;
+  background: #fff0e4;
+}
+
+.resume-insights-section-heading h2 {
+  margin: 0;
+  color: #27353e;
+  font-size: 1.1rem;
+}
+
+.resume-insights-section-heading p {
+  margin: 3px 0 0;
+  color: #829098;
+  font-size: .75rem;
+}
+
+.resume-insights-profile,
+.resume-insights-panel {
+  padding: 24px;
+}
+
+.resume-insights-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.resume-insights-profile-grid > div,
+.resume-insights-summary > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 15px;
+  border-radius: 12px;
+  background: #fbf8f4;
+}
+
+.resume-insights-profile-grid svg,
+.resume-insights-summary svg {
+  flex: 0 0 auto;
+  color: #bd7040;
+}
+
+.resume-insights-profile-grid span,
+.resume-insights-summary span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.resume-insights-profile-grid b,
+.resume-insights-summary b {
+  color: #829098;
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.resume-insights-profile-grid strong,
+.resume-insights-summary strong {
+  overflow-wrap: anywhere;
+  color: #27353e;
+  font-size: .78rem;
+}
+
+.resume-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.resume-insights-panel ul {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resume-insights-panel li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #3d4e58;
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.resume-insights-panel li > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.resume-insights-panel.strengths li > svg {
+  color: #24965a;
+}
+
+.resume-insights-panel.weaknesses li > svg {
+  color: #d95353;
+}
+
+.resume-insights-panel li span {
+  display: grid;
+  gap: 3px;
+}
+
+.resume-insights-panel li small {
+  color: #829098;
+  font-size: .72rem;
+}
+
+.resume-insights-skills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 28px;
+  margin-top: 22px;
+}
+
+.resume-insights-skills > div > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  color: #3d4e58;
+  font-size: .78rem;
+}
+
+.resume-insights-skills b {
+  color: #bd7040;
+}
+
+.resume-insights-skills i {
+  height: 8px;
+  background: #f0dfd0;
+}
+
+.resume-insights-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+  background: #f8f5f1;
+  box-shadow: none;
+}
+
+.resume-insights-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px;
+  background: #fff1e4;
+}
+
+.resume-insights-next h2 {
+  margin: 0;
+  color: #27353e;
+  font-size: 1.35rem;
+}
+
+.resume-insights-next p:last-child {
+  max-width: 650px;
+  margin: 8px 0 0;
+  color: #6b7b85;
+  font-size: .82rem;
+  line-height: 1.6;
+}
+
+.resume-insights-actions {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  .resume-insights-hero {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+
+  .resume-insights-profile-grid,
+  .resume-insights-summary,
+  .resume-insights-grid,
+  .resume-insights-skills {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-insights-next {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 .resume-results-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
