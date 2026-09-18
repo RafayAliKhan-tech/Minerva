@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Zap, Check, FileText, Star, Target } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Zap, Check, FileText, Star, Target, ArrowRight } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
@@ -172,7 +172,7 @@ function ResumeResults() {
             <h1>Your Assessment Results</h1>
             <p>See how your resume-based assessment performed and where your skills can grow.</p>
           </div>
-          <Button to="/explore/resume/insights" state={{ analysis: data }} variant="ghost" size="md">View Resume Analysis</Button>
+          <Button className="resume-results-hero-action" to="/explore/resume/insights" state={{ analysis: data }} variant="ghost" size="md" icon={ArrowRight}>View Resume Analysis</Button>
         </header>
         <main className="resume-results-main">
           <section className="resume-results-score-card">
@@ -203,8 +203,8 @@ function ResumeResults() {
             <ResumeAnalysisResultCard analysis={data} />
           </section>
           {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-          <div className="resume-results-actions"><Button onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="dark" size="lg" icon={Zap}>{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button><Button to="/explore/resume/insights" state={{ analysis: data }} variant="ghost" size="lg">View Resume Analysis</Button><Button to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button></div>
-          <div className="flex justify-center pt-2"><Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
+          <div className="resume-results-actions"><Button className="resume-results-dashboard-action" to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="dark" size="lg" icon={Zap}>{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button></div>
+          <div className="resume-results-secondary-actions"><Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
         </main>
 
       </div>
