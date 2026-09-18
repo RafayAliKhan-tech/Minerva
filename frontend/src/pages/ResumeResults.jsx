@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Zap, Check, FileText, Star, Target, ArrowRight } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Zap, Check, FileText, Star, Target, ArrowLeft, ArrowRight } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
@@ -203,7 +203,7 @@ function ResumeResults() {
             <ResumeAnalysisResultCard analysis={data} />
           </section>
           {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-          <div className="resume-results-actions"><Button resume-results-dashboard-action resume-back-button to="/dashboard" variant="ghost" size="lg" icon={ArrowLeft} iconPosition="left">Back</Button><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="secondary" size="lg">{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button></div>
+          <div className="resume-results-actions"><Button className="resume-results-dashboard-action resume-back-button" to="/dashboard" variant="ghost" size="lg" icon={ArrowLeft} iconPosition="left">Back</Button><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="secondary" size="lg">{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button></div>
           <div className="resume-results-secondary-actions"><Button variant="secondary" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
         </main>
 
