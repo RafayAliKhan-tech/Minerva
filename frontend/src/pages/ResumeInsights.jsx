@@ -134,10 +134,10 @@ function ResumeInsights() {
 
         <section className="resume-insights-next">
           <div><p className="resume-results-kicker">NEXT STEP</p><h2>Turn these insights into a focused career plan.</h2><p>See career matches based on your current skills and identify what you need to learn to reach your goals.</p></div>
-          <Button to="/explore/resume/assessment/1" variant="dark" size="lg" icon={ArrowRight}>Start Job Assessment</Button>
+          <Button to="/explore/resume/assessment/1" variant="secondary" size="lg" icon={ArrowRight}>Start Job Assessment</Button>
         </section>
 
-        <div className="resume-insights-actions"><Button to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button></div>
+        <div className="resume-insights-actions"><Button to="/dashboard" variant="ghost" size="lg" icon={ArrowLeft} iconPosition="left">Back</Button></div>
       </main>
     </AssessmentLayout>
   )
