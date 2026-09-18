@@ -166,6 +166,14 @@ function ResumeResults() {
   return (
     <AssessmentLayout onBack={() => navigate(-1)} showProgress={false} contentClassName="max-w-none" className="resume-results-layout">
       <div className="resume-results-page">
+        <header className="resume-results-hero">
+          <div>
+            <div className="resume-results-badge"><FileText size={17} /> Journey 3 Results</div>
+            <h1>Your Assessment Results</h1>
+            <p>See how your resume-based assessment performed and where your skills can grow.</p>
+          </div>
+          <Button to="/explore/resume/insights" state={{ analysis: data }} variant="ghost" size="md">View Resume Analysis</Button>
+        </header>
         <main className="resume-results-main">
           <section className="resume-results-score-card">
             <div className="resume-results-score-copy">

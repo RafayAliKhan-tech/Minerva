@@ -27,6 +27,7 @@
   --shadow-card-hover: 0 20px 48px rgba(26, 26, 26, 0.08);
   --shadow-float: 0 18px 44px rgba(26, 26, 26, 0.07);
 }
+
 .roadmap-heading-actions { display: grid; gap: 14px; justify-items: end; }
 .roadmap-heading-actions .dashboard-outline-action { display: inline-flex; align-items: center; gap: 8px; }
 .roadmap-info-card { margin-top: 18px; padding: 18px; border: 1px solid rgba(245, 240, 234, 0.1); background: rgba(0, 0, 0, 0.12); border-radius: 14px; }
@@ -3599,6 +3600,25 @@ a {
 }
 
 @media (max-width: 760px) {
+  .resume-results-page {
+    grid-template-columns: 1fr;
+  }
+  .resume-results-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .resume-results-hero > .button {
+    width: 100%;
+    justify-content: center;
+  }
+  .resume-results-score-card,
+  .resume-results-evaluation,
+  .resume-analysis-results-section,
+  .resume-results-actions,
+  .resume-results-page > .flex {
+    grid-column: 1;
+    grid-row: auto;
+  }
   .resume-insights-hero {
     grid-template-columns: 1fr;
     padding: 24px;
@@ -3619,12 +3639,40 @@ a {
 
 .resume-results-page {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, .9fr);
+  gap: 14px 16px;
   align-items: start;
 }
 
+.resume-results-hero {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 2px 8px 10px;
+}
+.resume-results-hero h1 {
+  margin: 10px 0 4px;
+  color: #173451;
+  font-size: clamp(1.8rem, 3.4vw, 2.45rem);
+  font-weight: 700;
+}
+.resume-results-hero p {
+  margin: 0;
+  color: #71889a;
+  font-size: .82rem;
+}
+.resume-results-hero > .button {
+  flex: 0 0 auto;
+  border: 1px solid #efcaa9;
+  border-radius: 999px;
+  color: #405d72;
+  background: #fff;
+}
+
 .resume-results-main {
-  display: grid;
+  display: contents;
   gap: 13px;
   min-width: 0;
 }
@@ -3641,6 +3689,7 @@ a {
 }
 
 .resume-results-score-card {
+  grid-column: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) 150px minmax(210px, .8fr);
   gap: 22px;
@@ -3768,6 +3817,7 @@ a {
 }
 
 .resume-results-evaluation {
+  grid-column: 1;
   padding: 13px 20px 15px;
 }
 
@@ -3879,6 +3929,8 @@ a {
 }
 
 .resume-analysis-results-section {
+  grid-column: 2;
+  grid-row: 2 / span 2;
   display: grid;
   gap: 14px;
   padding: 18px;
@@ -4131,9 +4183,14 @@ a {
 }
 
 .resume-results-actions {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.resume-results-page > .flex {
+  grid-column: 1 / -1;
 }
 
 .resume-results-actions > * {
