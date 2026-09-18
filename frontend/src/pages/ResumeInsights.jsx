@@ -4,6 +4,7 @@ import Button from '../components/common/Button'
 import { useAuth } from '../auth/AuthContext'
 import { getAssessmentOutput } from '../utils/userData'
 import {
+  ArrowLeft,
   ArrowRight,
   Award,
   Briefcase,
