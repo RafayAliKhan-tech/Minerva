@@ -83,7 +83,7 @@ function ResumeInsights() {
   const displayedStrengths = strengths.length ? strengths : ['Frontend Development', 'Database Design', 'UI Implementation']
 
   return (
-    <AssessmentLayout onBack={() => navigate('/explore/resume/results')} showProgress={false}>
+    <AssessmentLayout onBack={() => navigate('/explore/resume/results')} showProgress={false} contentClassName="max-w-none" className="resume-insights-layout">
       <main className="resume-insights-page">
         <header className="resume-insights-hero">
           <div>

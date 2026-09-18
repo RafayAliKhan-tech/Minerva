@@ -172,7 +172,7 @@ function ResumeResults() {
             <h1>Your Assessment Results</h1>
             <p>See how your resume-based assessment performed and where your skills can grow.</p>
           </div>
-          <Button className="resume-results-hero-action" to="/explore/resume/insights" state={{ analysis: data }} variant="ghost" size="md" icon={ArrowRight}>View Resume Analysis</Button>
+          <Button className="resume-results-hero-action text-white" to="/explore/resume/insights" state={{ analysis: data }} variant="secondary" size="md" icon={ArrowRight}>View Resume Analysis</Button>
         </header>
         <main className="resume-results-main">
           <section className="resume-results-score-card">
@@ -203,8 +203,8 @@ function ResumeResults() {
             <ResumeAnalysisResultCard analysis={data} />
           </section>
           {roadmapError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
-          <div className="resume-results-actions"><Button className="resume-results-dashboard-action" to="/dashboard" variant="ghost" size="lg">Back to Dashboard</Button><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="dark" size="lg" icon={Zap}>{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button></div>
-          <div className="resume-results-secondary-actions"><Button variant="ghost" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
+          <div className="resume-results-actions"><Button resume-results-dashboard-action resume-back-button to="/dashboard" variant="ghost" size="lg" icon={ArrowLeft} iconPosition="left">Back</Button><Button className="resume-results-roadmap-action" onClick={handleGenerateRoadmap} disabled={isGeneratingRoadmap} variant="secondary" size="lg">{isGeneratingRoadmap ? 'Generating roadmap...' : 'Generate Personalized Roadmap'}</Button></div>
+          <div className="resume-results-secondary-actions"><Button variant="secondary" size="sm" onClick={() => { sessionStorage.removeItem('route3AttemptId'); sessionStorage.removeItem('route3Questions'); sessionStorage.removeItem('route3Answers'); sessionStorage.removeItem('route3Result'); sessionStorage.removeItem('route3StartResult'); sessionStorage.removeItem('route3PendingSubmission'); navigate('/explore/resume') }}>Reassess / Start New Assessment</Button></div>
         </main>
 
       </div>
