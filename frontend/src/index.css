@@ -2,6 +2,8 @@
 @import 'tailwindcss';
 
 @theme {
+  --color-secondary: #c38d66;
+  --color-secondary-hover: #b98157;
   --color-surface: #f5f5f5;
   --color-border: #e0e0e0;
   --color-text: #1a1a1a;
@@ -9,16 +11,17 @@
   --color-cream: #f5f5f5;
   --color-cream-dark: #ececec;
   --color-cream-footer: #f5f5f5;
-  --color-orange: #1a1a1a;
-  --color-orange-light: #707070;
-  --color-orange-muted: #e0e0e0;
-  --color-orange-pill: #ffffff;
+  /* Keep legacy orange utilities aligned with the shared secondary accent. */
+  --color-orange: var(--color-secondary);
+  --color-orange-light: var(--color-secondary-hover);
+  --color-orange-muted: #f0dfd0;
+  --color-orange-pill: #fff8f1;
   --color-brown: #1a1a1a;
   --color-brown-light: #707070;
   --color-beige-border: #e0e0e0;
   --color-journey-green: #f5f5f5;
   --color-journey-tan: #ececec;
-  --color-journey-orange: #e5e5e5;
+  --color-journey-orange: var(--color-secondary);
 
   --font-serif: 'Inter', system-ui, sans-serif;
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -120,8 +123,10 @@
   --text-soft: #707070;
   --text-muted: #707070;
   --soft-black: #1a1a1a;
-  --accent: #1a1a1a;
-  --accent-soft: #e0e0e0;
+  --secondary: #c38d66;
+  --secondary-hover: #b98157;
+  --accent: var(--secondary);
+  --accent-soft: #f0dfd0;
   --charcoal: #1a1a1a;
   --taupe: #d2cdc6;
   --warm-mist: #f5f5f5;
