@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Check, FileText, Star, Target, ArrowRight } from 'lucide-react'
+import { Loader, CheckCircle2, XCircle, Check, FileText, Star, Target, ArrowLeft, ArrowRight } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { useAuth } from '../auth/AuthContext'
