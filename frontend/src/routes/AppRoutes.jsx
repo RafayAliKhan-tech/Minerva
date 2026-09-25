@@ -37,6 +37,7 @@ import CareerMatch from '../pages/CareerMatch'
 import SkillGap from '../pages/SkillGap'
 import ProtectedRoute from '../auth/ProtectedRoute'
 import PublicOnlyRoute from '../auth/PublicOnlyRoute'
+import AssessmentAccessRoute from '../auth/AssessmentAccessRoute'
 
 function AppRoutes() {
   const location = useLocation()
@@ -59,25 +60,31 @@ function AppRoutes() {
 
         <Route element={<ProtectedRoute />}>
 
-        {/* I'm Exploring Flow */}
+        <Route element={<AssessmentAccessRoute />}>
+        {/* Assessment entry and participation routes are one-time per account. */}
         <Route path="explore/assessment" element={<ExploringIntro />} />
         <Route path="explore/assessment/activity/:activityNum" element={<ExploringActivity />} />
         <Route path="explore/assessment/analysis" element={<ExploringAnalysis />} />
-        <Route path="explore/assessment/results" element={<ExploringResults />} />
 
         {/* I Have a Domain in Mind Flow */}
         <Route path="explore/domain-selection" element={<DomainSelection />} />
         <Route path="explore/domain-assessment/:domainId" element={<DomainAssessment />} />
         <Route path="explore/domain-assessment/:domainId/:activityNum" element={<DomainAssessment />} />
         <Route path="explore/domain-assessment/:domainId/analysis" element={<DomainAnalysis />} />
+
+        {/* Job Hunting assessment routes; standalone resume analysis stays available. */}
+        <Route path="explore/resume" element={<ResumeUpload />} />
+        <Route path="explore/resume/analysis" element={<ResumeAnalysis />} />
+        <Route path="explore/resume/assessment/:activityNum" element={<ResumeAssessment />} />
+        </Route>
+
+        {/* Completed results remain available. */}
+        <Route path="explore/assessment/results" element={<ExploringResults />} />
         <Route path="explore/domain-assessment/:domainId/results" element={<DomainResults />} />
 
         {/* My Resume Flow */}
-        <Route path="explore/resume" element={<ResumeUpload />} />
         <Route path="analyze-resume" element={<ResumeUpload analyzeOnly />} />
-        <Route path="explore/resume/analysis" element={<ResumeAnalysis />} />
         <Route path="explore/resume/insights" element={<ResumeInsights />} />
-        <Route path="explore/resume/assessment/:activityNum" element={<ResumeAssessment />} />
         <Route path="explore/resume/results" element={<ResumeResults />} />
         <Route path="explore/resume/career-match" element={<CareerMatch />} />
         <Route path="explore/resume/skill-gap/:careerId" element={<SkillGap />} />

@@ -7,14 +7,67 @@ export const getDisplayName = (user) => {
 }
 
 const getUserKey = (user) => getUserEmail(user).trim().toLowerCase() || 'guest'
+const getAssessmentCompletionKey = (user) => `minervaAssessmentCompletion:${getUserKey(user)}`
 
 export const saveLatestAssessment = (user, assessment) => {
+  let hasStoredCompletion = false
+  try {
+    hasStoredCompletion = Boolean(
+      localStorage.getItem(getAssessmentCompletionKey(user))
+      || localStorage.getItem(`minervaLatestAssessment:${getUserKey(user)}`)
+    )
+  } catch {
+    hasStoredCompletion = false
+  }
+
+  const legacyCompletion = hasStoredCompletion ? null : getAssessmentCompletion(user)
+  if (hasStoredCompletion || (legacyCompletion && legacyCompletion.source !== assessment.source)) {
+    window.dispatchEvent(new Event('minerva:assessment-completed'))
+    return
+  }
+
   try {
     const completed = { ...assessment, completedAt: new Date().toISOString() }
     localStorage.setItem(`minervaLatestAssessment:${getUserKey(user)}`, JSON.stringify(completed))
     localStorage.setItem(`minervaJourneyAssessment:${getUserKey(user)}:${assessment.type}`, JSON.stringify(completed))
+    localStorage.setItem(getAssessmentCompletionKey(user), JSON.stringify(completed))
   } catch {
     // Ignore unavailable storage.
+  }
+  window.dispatchEvent(new Event('minerva:assessment-completed'))
+}
+
+export const getAssessmentCompletion = (user) => {
+  try {
+    const marker = localStorage.getItem(getAssessmentCompletionKey(user))
+    if (marker) return JSON.parse(marker)
+
+    const latest = localStorage.getItem(`minervaLatestAssessment:${getUserKey(user)}`)
+    if (latest) return JSON.parse(latest)
+
+    const legacyCandidates = [
+      ['journey3', `minervaAssessmentOutput:${getUserKey(user)}:journey3`, 'resume'],
+      ['journey2', `minervaAssessmentOutput:${getUserKey(user)}:journey2`, 'domain'],
+      ['journey1', `minervaJourney1Result:${getUserKey(user)}`, 'exploring'],
+    ]
+    const legacy = legacyCandidates.find(([, key]) => localStorage.getItem(key))
+    if (!legacy) return null
+    return { source: legacy[0], type: legacy[2] }
+  } catch {
+    return null
+  }
+}
+
+export const hasCompletedAnyAssessment = (user) => {
+  try {
+    if (localStorage.getItem(getAssessmentCompletionKey(user))) return true
+    if (localStorage.getItem(`minervaLatestAssessment:${getUserKey(user)}`)) return true
+    return ['journey1', 'journey2', 'journey3'].some((journey) => (
+      Boolean(localStorage.getItem(`minervaAssessmentOutput:${getUserKey(user)}:${journey}`))
+      || (journey === 'journey1' && Boolean(localStorage.getItem(`minervaJourney1Result:${getUserKey(user)}`)))
+    ))
+  } catch {
+    return false
   }
 }
 

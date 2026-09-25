@@ -69,7 +69,7 @@ function ResumeResults() {
       setResult(backendResult)
       const data = { ...getAnalysis(startResult), ...unwrapResult(backendResult) }
       saveAssessmentOutput(user, 'journey3', data)
-      saveLatestAssessment(user, { type: 'resume', label: 'Resume & Role Assessment', domain: getHighestRole(data) || 'Route 3 assessment', score: getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score']), attemptId })
+      saveLatestAssessment(user, { type: 'resume', source: 'journey3', label: 'Resume & Role Assessment', domain: getHighestRole(data) || 'Route 3 assessment', score: getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score']), attemptId })
     } catch (err) {
         console.error('Failed to load results:', err)
         setError(err?.response?.data?.message || err?.response?.data?.error || err.message || contextError || 'Unable to complete Journey 3.')

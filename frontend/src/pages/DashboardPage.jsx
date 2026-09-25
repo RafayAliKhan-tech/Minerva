@@ -4,7 +4,7 @@ import { ArrowUpRight, BriefcaseBusiness, MessageCircle, PlayCircle, Telescope, 
 import Container from '../components/common/Container'
 import ResumeAnalysisResultCard from '../components/common/ResumeAnalysisResultCard'
 import { useAuth } from '../auth/AuthContext'
-import { getJourneyAssessment, getResumeFile, getRoadmaps, deleteRoadmap } from '../utils/userData'
+import { getJourneyAssessment, getResumeFile, getRoadmaps, deleteRoadmap, hasCompletedAnyAssessment } from '../utils/userData'
 
 function DashboardPage() {
   const { user } = useAuth()
@@ -28,6 +28,7 @@ function DashboardPage() {
   const exploring = getJourneyAssessment(user, 'exploring')
   const careerInMind = getJourneyAssessment(user, 'domain')
   const resumeAssessment = getJourneyAssessment(user, 'resume')
+  const assessmentLocked = hasCompletedAnyAssessment(user)
   const journeyCards = [
     {
       title: 'I am exploring',
@@ -81,17 +82,22 @@ function DashboardPage() {
         </div>
 
         <section className="dashboard-grid dashboard-top-grid">
-          {journeyCards.map(({ title, description, icon: Icon, completed, route, startRoute, completedLabel, action, accent }) => (
-            <article className={`dashboard-card dashboard-journey-card ${accent}`} key={title}>
-              <div className="dashboard-card-top"><span>{completed ? 'JOURNEY COMPLETE' : 'YOUR NEXT JOURNEY'}</span><Icon size={20} /></div>
-              <div className="dashboard-journey-icon"><Icon size={25} /></div>
-              <h2>{title}</h2>
-              <p>{completed ? `${completedLabel}. Your result is saved to this account.` : description}</p>
-              <Link to={completed ? route : startRoute} className="dashboard-journey-action">
-                {completed ? 'View Result' : action} <ArrowUpRight size={15} />
-              </Link>
-            </article>
-          ))}
+          {journeyCards.map(({ title, description, icon: Icon, completed, route, startRoute, completedLabel, action, accent }) => {
+            const unavailable = assessmentLocked && !completed
+            return (
+              <article className={`dashboard-card dashboard-journey-card ${accent}`} key={title}>
+                <div className="dashboard-card-top"><span>{completed ? 'JOURNEY COMPLETE' : unavailable ? 'ASSESSMENT LOCKED' : 'YOUR NEXT JOURNEY'}</span><Icon size={20} /></div>
+                <div className="dashboard-journey-icon"><Icon size={25} /></div>
+                <h2>{title}</h2>
+                <p>{completed ? `${completedLabel}. Your result is saved to this account.` : unavailable ? 'Your one-time assessment has been used. You can still view its saved results.' : description}</p>
+                {completed
+                  ? <Link to={route} className="dashboard-journey-action">View Result <ArrowUpRight size={15} /></Link>
+                  : unavailable
+                    ? <span className="dashboard-journey-action" aria-disabled="true">Assessment unavailable</span>
+                    : <Link to={startRoute} className="dashboard-journey-action">{action} <ArrowUpRight size={15} /></Link>}
+              </article>
+            )
+          })}
         </section>
 
         {roadmaps.length > 0 && (

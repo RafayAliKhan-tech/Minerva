@@ -1,3 +1,5 @@
+import { getAssessmentCompletion } from './userData'
+
 const unwrap = (value) => {
   if (!value || typeof value !== 'object') return value
   if (value.data !== undefined && value.data !== null) return unwrap(value.data)
@@ -215,15 +217,22 @@ const getCompletedHours = (roadmap, completed) => {
 
 export const getStoredSkillProfileView = (user) => {
   const key = (journey) => `minervaAssessmentOutput:${userKey(user)}:${journey}`
+  const completion = getAssessmentCompletion(user)
+  const completedJourney = completion?.source || ({
+    exploring: 'journey1',
+    domain: 'journey2',
+    resume: 'journey3',
+  }[completion?.type])
   const journey1 = getJourney1Stored(user)
-  const journey2 = readLocal(key(2)) || readStored('journey2Result')
-  const journey3 = readLocal(key(3)) || readStored('route3Result')
+  const journey2 = readLocal(key('journey2')) || readStored('journey2Result')
+  const journey3 = readLocal(key('journey3')) || readStored('route3Result')
   const roadmaps = readRoadmaps(user)
-  const sources = [
-    journey1 && translateSource(journey1, 1, roadmaps),
-    journey2 && translateSource(journey2, 2, roadmaps),
-    journey3 && translateSource(journey3, 3, roadmaps),
-  ].filter(Boolean)
+  const selectedSource = {
+    journey1: journey1 && translateSource(journey1, 1, roadmaps),
+    journey2: journey2 && translateSource(journey2, 2, roadmaps),
+    journey3: journey3 && translateSource(journey3, 3, roadmaps),
+  }[completedJourney]
+  const sources = selectedSource ? [selectedSource] : []
   const hours = roadmaps.reduce((sum, roadmap) => {
     const completed = readLocalStorage(`${getRoadmapStorageKey(user, roadmap.id)}`)
     return sum + getCompletedHours(roadmap, Array.isArray(completed) ? completed : [])
