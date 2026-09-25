@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader, CheckCircle2, XCircle, Check, FileText, Star, Target, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Loader, CheckCircle2, FileText, Target, ArrowLeft, ArrowRight } from 'lucide-react'
 import AssessmentLayout from '../components/assessment/AssessmentLayout'
 import Button from '../components/common/Button'
 import { useAuth } from '../auth/AuthContext'
@@ -8,15 +8,24 @@ import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 import { generateRoadmap, getRoute3Result } from '../api/minervaApi'
 import { saveLatestAssessment, saveAssessmentOutput, saveRoadmap } from '../utils/userData'
 
-const unwrapResult = (value) => value?.data || value?.result || value || {}
+const unwrapResult = (value) => {
+  let current = value
+  for (let depth = 0; depth < 4; depth += 1) {
+    const nested = current?.data || current?.result
+    if (!nested || typeof nested !== 'object') break
+    current = nested
+  }
+  return current || {}
+}
 const firstValue = (value, keys) => keys.reduce((found, key) => found ?? value?.[key], undefined)
 
 const getAnalysis = (value) => {
   const data = unwrapResult(value)
-  return unwrapResult(data.analysisResult || data.analysis_result || data.resumeAnalysis || data.resume_analysis)
+  const nested = data.analysisResult || data.analysis_result || data.resumeAnalysis || data.resume_analysis
+  return nested ? unwrapResult(nested) : data
 }
 
-const getField = (value, keys) => firstValue(value, keys) ?? firstValue(getAnalysis(value), keys)
+const getField = (value, keys) => firstValue(value, keys) ?? firstValue(unwrapResult(value), keys) ?? firstValue(getAnalysis(value), keys)
 const formatCareerField = (field) => ({
   development: 'Development',
   ai: 'AI and Machine Learning',
@@ -114,16 +123,16 @@ function ResumeResults() {
   const data = { ...getAnalysis(startResult), ...unwrapResult(result) }
   const list = (value) => Array.isArray(value) ? value : []
   const evaluations = list(data.evaluations || data.evaluation_results || data.answerEvaluations || data.answer_evaluations || data.evaluationResults || data.answers)
-  const correctAnswers = evaluations.filter((item) => item?.is_correct !== false).length
-  const assessmentScore = evaluations.length
-    ? Math.round((correctAnswers / evaluations.length) * 5 * 10) / 10
+  const evaluatedAnswers = evaluations.filter((item) => typeof item?.is_correct === 'boolean')
+  const correctAnswers = evaluatedAnswers.filter((item) => item.is_correct).length
+  const assessmentScore = evaluatedAnswers.length
+    ? Math.round((correctAnswers / evaluatedAnswers.length) * 5 * 10) / 10
     : null
-  const renderList = (items) => items.map((item, idx) => <div key={idx} className="rounded-xl border border-beige-border bg-white p-4 text-brown">{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</div>)
   const score = getScalar(data, ['resumeScore', 'resume_score', 'overallScore', 'overall_score', 'score', 'final_score'])
-  const strengths = list(data.strengths)
-  const weaknesses = list(data.weaknesses || data.areasToImprove)
-  const skills = list(data.categorizedSkills || data.categorized_skills || data.skills || data.skillProfile || data.skill_profile)
-  const resumeDescription = data.resumeDescription || data.resume_description || data.summary || data.profileSummary || data.profile_summary || 'Your resume insights are ready. Review your strengths, skills, and next steps to keep building momentum.'
+  const skillGroups = Array.isArray(data.skills)
+    ? [{ name: 'Identified skills', skills: data.skills }]
+    : Object.entries(data.skills || {}).filter(([, values]) => Array.isArray(values)).map(([name, values]) => ({ name, skills: values }))
+  const scoreBreakdown = getField(data, ['resumeScore', 'resume_score'])?.breakdown
   const assessedField = getField(startResult, ['career', 'careerName', 'career_name', 'targetRole', 'target_role'])
     || getField(data, ['career', 'careerName', 'career_name', 'targetRole', 'target_role'])
 
@@ -170,8 +179,6 @@ function ResumeResults() {
     }
   }
 
-  const renderInsightItems = (items, Icon) => items.map((item, idx) => <li key={idx}><Icon size={15} /> <div><strong>{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</strong>{typeof item !== 'string' && item.description && <small>{item.description}</small>}</div></li>)
-
   return (
     <AssessmentLayout showProgress={false} contentClassName="max-w-none" className="resume-results-layout">
       <div className="resume-results-page">
@@ -201,21 +208,11 @@ function ResumeResults() {
               <div className="resume-results-ring"><strong>{assessmentScore ?? '--'}</strong><small>/ 5</small></div>
               <div className="resume-results-metrics">
                 <div><span><Target size={15} /></span><strong>Questions reviewed</strong><b>{evaluations.length}</b><i><em style={{ width: '100%' }} /></i></div>
-                <div><span><CheckCircle2 size={15} /></span><strong>Answers on track</strong><b>{correctAnswers}</b><i><em style={{ width: `${evaluations.length ? (correctAnswers / evaluations.length) * 100 : 0}%` }} /></i></div>
+                <div><span><CheckCircle2 size={15} /></span><strong>Correct answers</strong><b>{correctAnswers}</b><i><em style={{ width: `${evaluatedAnswers.length ? (correctAnswers / evaluatedAnswers.length) * 100 : 0}%` }} /></i></div>
               </div>
             </section>
 
-            {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Detailed Insights</h2><p>Review each response and the reasoning behind its result.</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <article key={idx} className={item.is_correct === false ? 'is-evaluation-wrong' : 'is-evaluation-correct'}><header><span className="resume-results-question-label"><b>{idx + 1}</b><strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong></span><b>{item.is_correct === false ? 'Incorrect' : 'Correct'}</b></header>{item.reasoning ? <p>{item.reasoning}</p> : <p>No additional feedback was provided for this response.</p>}</article>)}</div></section>}
-
-            {/* <section className="resume-analysis-results-section">
-              <div className="resume-results-section-heading"><span><FileText size={17} /></span><div><h2>Resume Analysis</h2><p>Your resume insights, separate from your assessment performance.</p></div></div>
-              <div className="resume-analysis-results-score"><span>Resume score</span><strong>{score ?? '--'}<small>/100</small></strong><i><em style={{ width: `${Math.max(0, Math.min(100, Number(score) || 0))}%` }} /></i></div>
-              <div className="resume-results-insights">
-                {strengths.length > 0 && <section className="resume-results-insight-card strengths"><header><span><Star size={18} /></span><div><h2>Strengths</h2><p>Key strengths identified in your resume.</p></div></header><ul>{renderInsightItems(strengths, Check)}</ul></section>}
-                {weaknesses.length > 0 && <section className="resume-results-insight-card weaknesses"><header><span><XCircle size={18} /></span><div><h2>Areas to improve</h2><p>Opportunities to strengthen your resume.</p></div></header><ul>{renderInsightItems(weaknesses, XCircle)}</ul></section>}
-              </div>
-              {skills.length > 0 && <div className="resume-results-skills"><h2>Categorized Skills</h2><div>{renderList(skills)}</div></div>}
-            </section> */}
+            {evaluations.length > 0 && <section className="resume-results-evaluation"><div className="resume-results-section-heading"><span><Target size={17} /></span><div><h2>Detailed Insights</h2><p>Review each response and the reasoning behind its result.</p></div></div><div className="resume-results-evaluation-grid">{evaluations.map((item, idx) => <article key={idx} className={item.is_correct === true ? 'is-evaluation-correct' : item.is_correct === false ? 'is-evaluation-wrong' : ''}><header><span className="resume-results-question-label"><b>{idx + 1}</b><strong>{item.skill_id || item.skillId || item.skill || item.questionId || `Question ${idx + 1}`}</strong></span><b>{item.is_correct === true ? 'Correct' : item.is_correct === false ? 'Incorrect' : 'Not evaluated'}</b></header>{item.reasoning ? <p>{item.reasoning}</p> : <p>No additional feedback was provided for this response.</p>}</article>)}</div></section>}
 
             {roadmapError && <p className="resume-results-error rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{roadmapError}</p>}
             <div className="resume-results-actions">
@@ -230,14 +227,16 @@ function ResumeResults() {
             <section className="resume-results-side-card">
               <div className="resume-results-side-heading"><span><FileText size={18} /></span><div><h2>Resume Analysis</h2><p>Your resume insights, separate from your assessment performance.</p></div></div>
               <div className="resume-results-document-preview"><FileText size={38} /></div>
-              <h3>{score !== null ? 'Resume Analysis Complete' : 'Resume Analysis Ready'}</h3>
-              <p>We've analyzed your resume and extracted key skills, experience, and qualifications.</p>
-              <Button className="resume-results-side-action" to="/explore/resume/insights" state={{ analysis: data }} variant="secondary" size="sm">View Full Analysis <ArrowRight size={15} /></Button>
+              <h3>Resume analyzer output</h3>
+              {score !== null && <p>Resume score: {score} / 100</p>}
+              {assessedField && <p>Highest-scoring field: {formatCareerField(assessedField)}</p>}
+              <Button className="resume-results-side-action" to="/explore/resume/insights" state={{ analysis: { analysis_result: getAnalysis(startResult) } }} variant="secondary" size="sm">View Full Analysis <ArrowRight size={15} /></Button>
             </section>
             <section className="resume-results-side-card resume-results-description-card">
-              <div className="resume-results-side-heading"><span><FileText size={18} /></span><div><h2>Resume Description</h2><p>A quick snapshot of your professional background.</p></div></div>
-              <p className="resume-results-description">{resumeDescription}</p>
-              {skills.length > 0 && <div className="resume-results-skill-pills">{skills.slice(0, 8).map((item, idx) => <span key={idx}>{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</span>)}</div>}
+              <div className="resume-results-side-heading"><span><FileText size={18} /></span><div><h2>Resume data</h2><p>Information returned by the resume analyzer.</p></div></div>
+              {Object.keys(scoreBreakdown || {}).length > 0 && <div className="resume-results-skill-pills">{Object.entries(scoreBreakdown).map(([category, value]) => <span key={category}>{category.replaceAll('_', ' ')}: {value}</span>)}</div>}
+              {skillGroups.map(({ name, skills: groupSkills }) => <div key={name} className="resume-results-skill-pills"><strong>{name.replaceAll('_', ' ')}:</strong>{groupSkills.map((item, idx) => <span key={`${name}-${idx}`}>{typeof item === 'string' ? item : item.name || item.title || item.text || item.description}</span>)}</div>)}
+              {Object.keys(scoreBreakdown || {}).length === 0 && skillGroups.length === 0 && <p>No additional resume data was returned.</p>}
             </section>
           </aside>
         </main>
