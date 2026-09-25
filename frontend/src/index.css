@@ -2460,13 +2460,18 @@ body:has(.analysis-loader-screen) .page-main-content {
 
 .dashboard-section-heading { margin: 82px 0 20px; align-items: end; }
 .dashboard-section-heading h2 { margin: 7px 0 0; color: #f5f1ec; font-size: clamp(1.7rem, 3vw, 2.6rem); letter-spacing: -0.045em; }
-.dashboard-action-grid { grid-template-columns: repeat(2, 1fr); }
+.dashboard-action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dashboard-profile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dashboard-function-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
 .dashboard-action-card { position: relative; min-height: 174px; padding: 22px; color: #f5f1ec; text-decoration: none; transition: transform 0.25s ease, border-color 0.25s ease; }
 .dashboard-action-card:hover { transform: translateY(-5px); border-color: rgba(215, 181, 143, 0.52); }
+.dashboard-function-grid .dashboard-action-card { display: flex; height: 100%; flex-direction: column; align-items: flex-start; }
 .dashboard-action-card svg:first-child { color: #d7b58f; }
 .dashboard-action-card span { display: block; margin-top: 26px; font-size: 1.1rem; font-weight: 700; }
 .dashboard-action-card p { max-width: 250px; margin: 8px 0 0; color: #aaa49e; font-size: 0.84rem; line-height: 1.5; }
 .dashboard-action-card > svg:last-child { position: absolute; top: 22px; right: 22px; color: #aaa49e; }
+.dashboard-function-grid .dashboard-action-card p { flex: 1; }
+.dashboard-function-grid .dashboard-action-card > svg:last-child { top: 22px; right: 22px; }
 
 .skill-profile-page { min-height: 100vh; padding: 92px 0 64px; color: #23211f; }
 .skill-profile-hero { max-width: 760px; margin: 34px 0 36px; }
@@ -6537,6 +6542,8 @@ body {
   }
 
   .dashboard-top-grid,
+  .dashboard-profile-grid,
+  .dashboard-function-grid,
   .dashboard-action-grid,
   .results-grid,
   .roadmap-layout,
