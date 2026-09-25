@@ -17,6 +17,13 @@ const getAnalysis = (value) => {
 }
 
 const getField = (value, keys) => firstValue(value, keys) ?? firstValue(getAnalysis(value), keys)
+const formatCareerField = (field) => ({
+  development: 'Development',
+  ai: 'AI and Machine Learning',
+  ui_ux: 'UI/UX',
+  data: 'Data Analysis',
+  cyber: 'CyberSecurity',
+}[field.toLowerCase()] || field)
 const getScalar = (value, keys) => {
   const field = getField(value, keys)
   if (field === null || field === undefined) return null
@@ -117,6 +124,8 @@ function ResumeResults() {
   const weaknesses = list(data.weaknesses || data.areasToImprove)
   const skills = list(data.categorizedSkills || data.categorized_skills || data.skills || data.skillProfile || data.skill_profile)
   const resumeDescription = data.resumeDescription || data.resume_description || data.summary || data.profileSummary || data.profile_summary || 'Your resume insights are ready. Review your strengths, skills, and next steps to keep building momentum.'
+  const assessedField = getField(startResult, ['career', 'careerName', 'career_name', 'targetRole', 'target_role'])
+    || getField(data, ['career', 'careerName', 'career_name', 'targetRole', 'target_role'])
 
   const handleGenerateRoadmap = async () => {
     const journeyOutput = unwrapResult(result)
@@ -171,6 +180,9 @@ function ResumeResults() {
             <div className="resume-results-badge"><FileText size={17} /> Journey 3 Results</div>
             <h1>Your Assessment Results</h1>
             <p>See how your resume-based assessment performed and where your skills can grow.</p>
+            {typeof assessedField === 'string' && assessedField.trim() && (
+              <p className="resume-results-assessed-field"><strong>Field assessed:</strong> {formatCareerField(assessedField)}</p>
+            )}
           </div>
           <div className="resume-results-hero-meta">
             <span className="resume-results-hero-meta-dot" />
