@@ -3,7 +3,7 @@ import { ArrowLeft, BookOpen, Clock3, Compass, ShieldAlert, Star, Target } from 
 import { useNavigate } from 'react-router-dom'
 import Container from '../components/common/Container'
 import { useAuth } from '../auth/AuthContext'
-import { getStoredSkillProfileView } from '../utils/skillProfile'
+import { getStoredSkillProfileView, normalizeCareerId } from '../utils/skillProfile'
 
 const MAX_SKILL_LEVEL = 4
 const proficiency = (value) => {
@@ -31,6 +31,16 @@ function SkillProfilePage() {
   const [selectedFields, setSelectedFields] = useState({})
 
   const selectField = (journey, value) => setSelectedFields((current) => ({ ...current, [journey]: value }))
+  const journey1Profile = view.sources.find((profile) => profile.journey === 1)
+  const journey1FieldId = selectedFields[1] || journey1Profile?.fields[0]?.id
+  const journey1Field = journey1Profile?.fields.find((item) => item.id === journey1FieldId) || journey1Profile?.fields[0]
+  const isJourney1FieldView = Boolean(journey1Field)
+  const completedHours = isJourney1FieldView
+    ? view.completedHoursByField[normalizeCareerId(journey1Field.id)] || 0
+    : view.completedHours
+  const trackedRoadmaps = isJourney1FieldView
+    ? view.roadmapCountByField[normalizeCareerId(journey1Field.id)] || 0
+    : view.roadmaps.length
 
   return (
     <main className="skill-profile-page">
@@ -86,8 +96,8 @@ function SkillProfilePage() {
         })}
 
         <section className="skill-profile-hours">
-          <div><Clock3 size={22} /><div><p className="dashboard-kicker">WORK HOURS</p><h2>{view.completedHours} hours completed</h2><p>Based on roadmap work you have marked complete.</p></div></div>
-          <div className="skill-profile-hours-detail"><BookOpen size={18} /> {view.roadmaps.length} roadmap{view.roadmaps.length === 1 ? '' : 's'} tracked</div>
+          <div><Clock3 size={22} /><div><p className="dashboard-kicker">WORK HOURS</p><h2>{completedHours} hours completed</h2><p>Based on roadmap work you have marked complete{isJourney1FieldView ? ` for ${journey1Field.label}` : ''}.</p></div></div>
+          <div className="skill-profile-hours-detail"><BookOpen size={18} /> {trackedRoadmaps} roadmap{trackedRoadmaps === 1 ? '' : 's'} tracked</div>
         </section>
       </Container>
     </main>

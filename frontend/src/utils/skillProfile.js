@@ -128,7 +128,7 @@ const careerLabel = (value) => {
   return labels[id] || String(value || '').replace(/[_-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
-const normalizeCareerId = (value) => {
+export const normalizeCareerId = (value) => {
   const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
   return {
     'data_analytics': 'data',
@@ -240,11 +240,30 @@ export const getStoredSkillProfileView = (user) => {
     journey3: journey3 && translateSource(journey3, 3, roadmaps),
   }[completedJourney]
   const sources = selectedSource ? [selectedSource] : []
-  const hours = roadmaps.reduce((sum, roadmap) => {
+  const roadmapHours = roadmaps.map((roadmap) => {
     const completed = readLocalStorage(`${getRoadmapStorageKey(user, roadmap.id)}`)
-    return sum + getCompletedHours(roadmap, Array.isArray(completed) ? completed : [])
-  }, 0)
-  return { sources, roadmaps, completedHours: Math.round(hours * 10) / 10 }
+    const field = roadmap?.domain || roadmap?.career || roadmap?.target_role || roadmap?.targetRole
+    return {
+      field: field ? normalizeCareerId(field) : null,
+      hours: getCompletedHours(roadmap, Array.isArray(completed) ? completed : []),
+    }
+  })
+  const hours = roadmapHours.reduce((sum, roadmap) => sum + roadmap.hours, 0)
+  const completedHoursByField = roadmapHours.reduce((totals, roadmap) => {
+    if (roadmap.field) totals[roadmap.field] = (totals[roadmap.field] || 0) + roadmap.hours
+    return totals
+  }, {})
+  const roadmapCountByField = roadmapHours.reduce((counts, roadmap) => {
+    if (roadmap.field) counts[roadmap.field] = (counts[roadmap.field] || 0) + 1
+    return counts
+  }, {})
+  return {
+    sources,
+    roadmaps,
+    completedHours: Math.round(hours * 10) / 10,
+    completedHoursByField: Object.fromEntries(Object.entries(completedHoursByField).map(([field, value]) => [field, Math.round(value * 10) / 10])),
+    roadmapCountByField,
+  }
 }
 
 const readLocalStorage = (key) => {
