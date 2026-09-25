@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, Mic2, Sparkles, Loader } from 'lucide-react'
 import Container from '../components/common/Container'
+import { useAuth } from '../auth/AuthContext'
 import { startInterview, submitInterview, getAllCareers, getJourney2Careers, getProfile } from '../api/minervaApi'
 import {
   apiErrorMessage,
@@ -18,6 +19,7 @@ const ATTEMPT_KEY = 'minervaInterviewAttemptId'
 
 function MockInterviewPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [fields, setFields] = useState([])
   const [selectedField, setSelectedField] = useState('')
   const [skillProfile, setSkillProfile] = useState(null)
@@ -32,14 +34,17 @@ function MockInterviewPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const loadFields = async () => {
+  const loadFields = useCallback(async () => {
     setLoadingFields(true)
     setError('')
     try {
       const [careerResponse, journeyResponse, profile] = await Promise.all([
         getAllCareers().catch((requestError) => requestError),
         getJourney2Careers().catch((requestError) => requestError),
-        getProfile(),
+        getProfile().catch((requestError) => {
+          console.warn('[MockInterview] Profile request failed; using saved assessment profile if available.', requestError)
+          return null
+        }),
       ])
 
       if (careerResponse instanceof Error && journeyResponse instanceof Error) {
@@ -59,7 +64,7 @@ function MockInterviewPage() {
 
       setFields(nextFields)
       const profileSkillProfile = normalizeSkillProfile(profile)
-      const storedSkillProfile = getStoredSkillProfile()
+      const storedSkillProfile = getStoredSkillProfile(user)
       const resolvedSkillProfile = storedSkillProfile || profileSkillProfile
       console.debug('[MockInterview] Skill profile resolved:', {
         source: storedSkillProfile ? 'stored-assessment' : (profileSkillProfile ? 'profile' : 'none'),
@@ -72,11 +77,11 @@ function MockInterviewPage() {
     } finally {
       setLoadingFields(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     loadFields()
-  }, [])
+  }, [loadFields])
 
   const beginInterview = async (event) => {
     event.preventDefault()
@@ -95,7 +100,7 @@ function MockInterviewPage() {
 
     try {
       if (!skillProfile?.length) {
-        throw new Error('No normalized skill profile is available. Complete an assessment before starting an interview.')
+        throw new Error('No skill profile is available from your completed assessment. Please contact support if this continues.')
       }
 
       const payload = {

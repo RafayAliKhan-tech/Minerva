@@ -1,4 +1,4 @@
-import { getAssessmentCompletion } from './userData'
+import { getAssessmentCompletion, getAssessmentOutput } from './userData'
 
 const unwrap = (value) => {
   if (!value || typeof value !== 'object') return value
@@ -80,12 +80,19 @@ export const normalizeSkillProfile = (...sources) => {
   return null
 }
 
-export const getStoredSkillProfile = () => normalizeSkillProfile(
-  readStored('route3Result'),
-  readStored('route3StartResult'),
-  readStored('journey2Result'),
-  readStored('journey1Result'),
-)
+export const getStoredSkillProfile = (user) => {
+  const completedJourney = getAssessmentCompletion(user)?.source
+  const savedAssessment = completedJourney ? getAssessmentOutput(user, completedJourney) : null
+  const sessionResults = completedJourney === 'journey3'
+    ? [readStored('route3Result'), readStored('route3StartResult')]
+    : completedJourney === 'journey2'
+      ? [readStored('journey2Result')]
+      : completedJourney === 'journey1'
+        ? [readStored('journey1Result')]
+        : [readStored('route3Result'), readStored('route3StartResult'), readStored('journey2Result'), readStored('journey1Result')]
+
+  return normalizeSkillProfile(savedAssessment, ...sessionResults)
+}
 
 const asNumber = (value) => {
   const number = Number(value)
