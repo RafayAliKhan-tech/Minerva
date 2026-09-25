@@ -74,6 +74,7 @@ function AppRoutes() {
 
         {/* My Resume Flow */}
         <Route path="explore/resume" element={<ResumeUpload />} />
+        <Route path="analyze-resume" element={<ResumeUpload analyzeOnly />} />
         <Route path="explore/resume/analysis" element={<ResumeAnalysis />} />
         <Route path="explore/resume/insights" element={<ResumeInsights />} />
         <Route path="explore/resume/assessment/:activityNum" element={<ResumeAssessment />} />

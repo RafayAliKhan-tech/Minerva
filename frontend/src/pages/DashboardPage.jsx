@@ -52,8 +52,8 @@ function DashboardPage() {
       accent: 'dashboard-journey-tan',
     },
     {
-      title: 'My resume',
-      description: 'Upload your resume to uncover role matches and skill gaps.',
+      title: 'Journey 3 · Job Hunting',
+      description: 'Complete a resume-based assessment and explore job-hunting next steps.',
       icon: BriefcaseBusiness,
       completed: resumeAssessment,
       route: '/explore/resume/results',
@@ -125,14 +125,13 @@ function DashboardPage() {
 
         <section className="dashboard-section-heading"><div><p className="dashboard-kicker">READY WHEN YOU ARE</p><h2>Choose your next move.</h2></div></section>
         <section className="dashboard-grid dashboard-action-grid">
-          {resume?.analysis ? <ResumeAnalysisResultCard analysis={resume.analysis} variant="dark" to={resumeAssessment ? '/explore/resume/results' : '/explore/resume/insights'} /> : (
-            <Link to="/explore/resume" className="dashboard-action-card">
-              <BriefcaseBusiness size={22} />
-              <span>Resume Analysis</span>
-              <p>Upload your resume to uncover role matches and skill gaps.</p>
-              <ArrowUpRight size={16} />
-            </Link>
-          )}
+          <Link to="/analyze-resume" className="dashboard-action-card">
+            <BriefcaseBusiness size={22} />
+            <span>Analyze Resume</span>
+            <p>Get a standalone resume analysis without starting Job Hunting.</p>
+            <ArrowUpRight size={16} />
+          </Link>
+          {resume?.analysis && <ResumeAnalysisResultCard analysis={resume.analysis} variant="dark" to="/explore/resume/insights" />}
           <Link to="/chat" className="dashboard-action-card"><MessageCircle size={22} /><span>Ask Minerva</span><p>Talk through a decision with your profile context in view.</p><ArrowUpRight size={16} /></Link>
           <Link to="/mock-interview" className="dashboard-action-card"><PlayCircle size={22} /><span>Practice an interview</span><p>Build confidence with a role-specific mock interview.</p><ArrowUpRight size={16} /></Link>
           <Link to="/skill-profile" className="dashboard-action-card"><UserRound size={22} /><span>View your skill profile</span><p>See your goals, strengths, weak areas, and roadmap progress in one place.</p><ArrowUpRight size={16} /></Link>

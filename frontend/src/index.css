@@ -4161,22 +4161,26 @@ a {
   margin-top: 22px;
 }
 
-.resume-insights-skills > div > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 7px;
+.resume-insights-skills > div > strong {
   color: #3d4e58;
   font-size: .78rem;
 }
 
-.resume-insights-skills b {
-  color: #bd7040;
+.resume-insights-skills ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.resume-insights-skills i {
-  height: 8px;
+.resume-insights-skills li {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #3d4e58;
   background: #f0dfd0;
+  font-size: .72rem;
 }
 
 .resume-insights-summary {

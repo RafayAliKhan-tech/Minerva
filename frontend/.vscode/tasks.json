@@ -24,6 +24,18 @@
 			"problemMatcher": [
 				"$tsc"
 			]
+		},
+		{
+			"label": "Temporary frontend production build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

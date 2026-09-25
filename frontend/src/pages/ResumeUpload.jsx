@@ -9,7 +9,7 @@ import { useRoute3Assessment } from '../auth/Route3AssessmentContext'
 import { saveResumeFile } from '../utils/userData'
 import { useAuth } from '../auth/AuthContext'
 
-function ResumeUpload() {
+function ResumeUpload({ analyzeOnly = false }) {
   const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -33,8 +33,6 @@ function ResumeUpload() {
       formData.append('file', selectedFile)
 
       const result = await uploadResume(formData)
-      setFile(selectedFile)
-      setUploadResult(result)
 
       // Store file info in session
       const resumeFile = {
@@ -46,6 +44,13 @@ function ResumeUpload() {
       sessionStorage.setItem('resumeFile', JSON.stringify(resumeFile))
       saveResumeFile(user, resumeFile)
 
+      if (analyzeOnly) {
+        navigate('/explore/resume/insights', { state: { analysis: result } })
+        return
+      }
+
+      setFile(selectedFile)
+      setUploadResult(result)
       navigate('/explore/resume/analysis')
     } catch (err) {
       console.error('Resume upload failed:', err)
@@ -63,8 +68,7 @@ function ResumeUpload() {
           <div className="resume-upload-eyebrow"><FileText size={18} /> Resume Analysis</div>
           <h1>Let's start with your<br className="hidden sm:block" /> resume.</h1>
           <p className="resume-upload-lede">
-            Upload your resume so Minerva can understand your current skills,
-            experience and career profile.
+            Upload your resume so Minerva can identify information contained in the document.
           </p>
 
           <FileUpload onFileSelect={handleFileSelect} className="resume-file-upload" />
@@ -77,7 +81,7 @@ function ResumeUpload() {
 
           <div className="resume-upload-next">
             <div className="resume-upload-next-icon"><Lightbulb size={18} /></div>
-            <p><strong>What happens next:</strong> We'll analyze your resume to identify your skills, projects, education, and experience. Then we'll show you career matches and skill gaps.</p>
+            <p><strong>What happens next:</strong> We'll analyze the information in your resume and show the findings returned by the resume analyzer.</p>
           </div>
 
           <div className="resume-upload-actions">
@@ -92,7 +96,7 @@ function ResumeUpload() {
               disabled={!selectedFile || loading}
               className="resume-analyze-button"
             >
-              {loading ? 'Uploading...' : 'Analyze My Resume'}
+              {loading ? (analyzeOnly ? 'Analyzing...' : 'Uploading...') : 'Analyze My Resume'}
             </Button>
           </div>
         </div>
@@ -100,10 +104,10 @@ function ResumeUpload() {
         <aside className="resume-upload-benefits">
           <h2><span className="resume-benefit-heading-icon"><FileText size={18} /></span>Why upload your resume?</h2>
           <div className="resume-benefit-list">
-            <div className="resume-benefit"><span><Target size={19} /></span><div><h3>Personalized Insights</h3><p>Get accurate skill analysis and career recommendations.</p></div></div>
-            <div className="resume-benefit"><span><BarChart3 size={19} /></span><div><h3>Better Matches</h3><p>Find careers that fit your skills, interests and goals.</p></div></div>
-            <div className="resume-benefit"><span><Star size={19} /></span><div><h3>Identify Skill Gaps</h3><p>See what you need to learn to reach your dream career.</p></div></div>
-            <div className="resume-benefit"><span><GitBranch size={19} /></span><div><h3>Build Your Roadmap</h3><p>Get a clear plan with courses, projects and next steps.</p></div></div>
+            <div className="resume-benefit"><span><Target size={19} /></span><div><h3>Resume Score</h3><p>See the score calculated from your resume.</p></div></div>
+            <div className="resume-benefit"><span><BarChart3 size={19} /></span><div><h3>Identified Skills</h3><p>Review the skills returned by the analyzer.</p></div></div>
+            <div className="resume-benefit"><span><Star size={19} /></span><div><h3>Strengths</h3><p>See the strengths found in your resume.</p></div></div>
+            <div className="resume-benefit"><span><GitBranch size={19} /></span><div><h3>Improvement Areas</h3><p>Review the improvement areas returned by the analyzer.</p></div></div>
           </div>
           <div className="resume-benefit-art" aria-hidden="true"><FileText size={116} strokeWidth={1.1} /></div>
         </aside>
