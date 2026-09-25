@@ -179,7 +179,7 @@ const translateSource = (source, journey, roadmaps) => {
     const fieldSkills = skills.filter((skill) => !skill.career || normalizeCareerId(skill.career) === normalizeCareerId(field))
     const strengths = fieldSkills.filter((skill) => skill.current !== null && skill.target !== null && skill.current >= skill.target - 1)
       .sort((a, b) => (b.current || 0) - (a.current || 0))
-    const weakAreas = fieldSkills.filter((skill) => skill.current === 0 || (skill.target !== null && skill.current < skill.target - 1) || skill.gap > 0)
+    const weakAreas = fieldSkills.filter((skill) => skill.current === 0 || (skill.target !== null && skill.current < skill.target - 1))
       .sort((a, b) => (b.gap || 0) - (a.gap || 0))
     return { id: field, label: careerLabel(field), skills: fieldSkills, strengths, weakAreas }
   })
