@@ -188,9 +188,25 @@ function RoadmapPage() {
         localStorage.setItem(lastRoadmapKey, nextRoadmap.id)
       } catch (error) {
         console.error('Failed to load roadmap result', error)
-        if (isJourney2Roadmap) setRoadmap({ ...fallback, milestones: [], curriculum: { phases: [], weeks: 0 } })
-        else setRoadmap(fallback)
-        setRouteError('We could not load the roadmap from the backend. Please generate it again from your assessment result.')
+        let cachedResult
+        try {
+          cachedResult = isJourney2Roadmap
+            ? JSON.parse(sessionStorage.getItem(`journey2RoadmapResult:${effectiveRoadmapId}`) || 'null')
+            : null
+        } catch (cacheError) {
+          console.error('Failed to read the cached Journey 2 roadmap', cacheError)
+        }
+
+        if (cachedResult) {
+          const nextRoadmap = normalizeRoadmap(cachedResult, { ...context, roadmapId: effectiveRoadmapId })
+          setRoadmap(nextRoadmap)
+          saveRoadmap(user, nextRoadmap)
+          localStorage.setItem(getRoadmapKey(user, nextRoadmap.id), JSON.stringify(completed))
+          localStorage.setItem(lastRoadmapKey, nextRoadmap.id)
+        } else {
+          setRoadmap(fallback)
+          setRouteError('We could not load the roadmap from the backend. Please generate it again from your assessment result.')
+        }
       } finally {
         setIsLoading(false)
       }

@@ -32,7 +32,10 @@ function LoginPage() {
   const { establishSession, completeOnboarding } = useAuth()
 
   useEffect(() => {
-    if (location.state?.registeredEmail) setEmail(location.state.registeredEmail)
+    if (location.state?.registeredEmail) {
+      setEmail(location.state.registeredEmail)
+      setFormSuccess('Account created successfully. You can now log in.')
+    }
     if (location.state?.resetSuccess) setFormSuccess(location.state.resetSuccess)
   }, [location.state])
 

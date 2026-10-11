@@ -61,6 +61,27 @@ function DomainResults() {
   useEffect(() => {
     const loadResult = async () => {
       try {
+        const cachedResult = sessionStorage.getItem('journey2Result')
+        if (cachedResult) {
+          const parsedResult = JSON.parse(cachedResult)
+          const cachedProfile = getProfile(parsedResult)
+          if (cachedProfile?.career === domainId) {
+            setResult(parsedResult)
+            saveAssessmentOutput(user, 'journey2', cachedProfile)
+            const cachedCareerId = selectedCareer?.career_id || selectedCareer?.careerId || selectedCareer?.id || domainId
+            const cachedMatches = getMatches(cachedProfile)
+            saveLatestAssessment(user, {
+              type: 'domain',
+              label: `${selectedCareer?.career_name || selectedCareer?.careerName || domainId} assessment`,
+              domain: selectedCareer?.career_name || selectedCareer?.careerName || domainId,
+              score: getScore(cachedMatches[0]),
+              source: 'journey2',
+              careerId: cachedCareerId,
+            })
+            return
+          }
+        }
+
         const careerId = selectedCareer?.career_id || selectedCareer?.careerId || selectedCareer?.id || domainId
         const backendResult = await getJourney2Result(careerId)
         console.groupCollapsed('[Journey2] Result response')
@@ -126,6 +147,7 @@ function DomainResults() {
       }
       const saved = { ...roadmap, id: roadmapId, domain: roadmap.domain || getName(match), domainId: careerId, source: 'journey2', status: roadmap.status || 'generated' }
       sessionStorage.setItem('journey2RoadmapId', String(roadmapId))
+      sessionStorage.setItem(`journey2RoadmapResult:${roadmapId}`, JSON.stringify(roadmap))
       saveRoadmap(user, saved)
       navigate(`/roadmap-detail/${roadmapId}`, { state: { ...saved, returnTo: { pathname: `/explore/domain-assessment/${careerId}/results` } } })
     } catch (roadmapError) {

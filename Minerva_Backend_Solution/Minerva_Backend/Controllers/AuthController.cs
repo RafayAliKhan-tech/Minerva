@@ -52,11 +52,5 @@ namespace Minerva_Backend.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPost("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmEmailDTO dto)
-        {
-            var result = await _authService.ConfirmEmail(dto);
-            return result.Status ? Ok(result) : BadRequest(result);
-        }
     }
 }

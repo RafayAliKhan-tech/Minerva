@@ -11,7 +11,6 @@ export const loginUser = (payload) => api.post('/api/auth/loginuser', payload).t
 export const requestPasswordReset = (payload) => api.post('/api/auth/requestpasswordreset', payload).then(unwrap)
 export const validatePasswordResetToken = (payload) => api.post('/api/auth/validatepasswordresettoken', payload).then(unwrap)
 export const resetPassword = (payload) => api.post('/api/auth/resetpassword', payload).then(unwrap)
-export const confirmEmail = (payload) => api.post('/api/auth/confirmemail', payload).then(unwrap)
 
 // Profile endpoints
 export const getProfile = () => api.get('/api/profile/getprofile').then(unwrap)
@@ -127,7 +126,6 @@ export default {
   requestPasswordReset,
   validatePasswordResetToken,
   resetPassword,
-  confirmEmail,
   // Profile
   getProfile,
   updateProfile,

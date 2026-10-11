@@ -1,0 +1,12 @@
+.\.venv\Scripts\Activate.ps1
+cd .\Minerva-VSCode
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+
+$env:MicroserviceBaseUrl = "http://localhost:8000"
+dotnet run --project .\Minerva_Backend_Solution\Minerva_Backend\Minerva_Backend.csproj --launch-profile http
+
+
+cd .\frontend
+$env:VITE_API_BASE_URL = "http://localhost:5088"
+npm run dev

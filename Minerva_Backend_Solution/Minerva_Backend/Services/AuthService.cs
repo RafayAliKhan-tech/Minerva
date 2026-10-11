@@ -53,26 +53,7 @@ namespace Minerva_Backend.Services
                     return Error(string.Join(" ", result.Errors.Select(e => e.Description)));
                 }
 
-                try
-                {
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-                    var confirmationUrl = BuildFrontendUrl(
-                        "/verify-email",
-                        ("userId", newUser.Id),
-                        ("token", token));
-                    await _emailSender.SendAsync(
-                        email,
-                        "Verify your Minerva account",
-                        BuildEmail("Verify your Minerva account", "Confirm your email address to activate your Minerva account.", confirmationUrl, "Verify email"));
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError(exception, "Unable to send the account verification email.");
-                    await _userManager.DeleteAsync(newUser);
-                    return Error("We could not send the verification email. Please try again later.");
-                }
-
-                return Success("Account created. Check your email to verify your account before logging in.");
+                return Success("Account created successfully. You can now log in.");
             }
 
             public async Task<ResponseResult<string>> LoginUser(LoginUserDTO dto)
@@ -92,15 +73,6 @@ namespace Minerva_Backend.Services
                 if (existingUser == null)
                 {
                     return Error("Invalid email or password.");
-                }
-
-                if (!_userManager.Options.SignIn.RequireConfirmedEmail || existingUser.EmailConfirmed)
-                {
-                    // Continue with normal password authentication.
-                }
-                else
-            {
-                    return Error("Please verify your email before logging in.");
                 }
 
                 var validUser = await _userManager.CheckPasswordAsync(existingUser, dto.Password!);
@@ -179,23 +151,6 @@ namespace Minerva_Backend.Services
                 }
 
                 return Success("Your password has been reset. You can now log in.");
-            }
-
-            public async Task<ResponseResult<string>> ConfirmEmail(ConfirmEmailDTO dto)
-            {
-                var user = await _userManager.FindByIdAsync(dto.UserId);
-                if (user == null || string.IsNullOrWhiteSpace(dto.Token))
-                {
-                    return Error("This verification link is invalid or has expired.");
-                }
-
-                var result = await _userManager.ConfirmEmailAsync(user, dto.Token);
-                if (!result.Succeeded && !user.EmailConfirmed)
-                {
-                    return Error("This verification link is invalid or has expired.");
-                }
-
-                return Success("Your email has been verified. You can now log in.");
             }
 
             private async Task<AppUser?> FindUserForToken(string? email)

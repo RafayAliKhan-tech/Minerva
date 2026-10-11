@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from 'react'
-import { getJourney2Careers, getJourney2Questions, getJourney2Result, submitJourney2 } from '../api/minervaApi'
+import { getJourney2Careers, getJourney2Questions, submitJourney2 } from '../api/minervaApi'
 
 const Journey2AssessmentContext = createContext(null)
 
@@ -133,13 +133,11 @@ export function Journey2AssessmentProvider({ children }) {
     setError('')
     try {
       const submission = await submitJourney2({ Career: String(careerId), Answers: answers })
-      const assessmentId = submission?.assessmentId || submission?.assessment_id || submission?.resultId || submission?.result_id || submission?.id || submission?.data?.assessmentId
-      if (!assessmentId && submission?.status === false) throw new Error(submission.message || 'Journey 2 submission was rejected.')
-      if (assessmentId) sessionStorage.setItem('journey2AssessmentId', String(assessmentId))
-      const result = await getJourney2Result(careerId)
-      if (!result || result.status === false) throw new Error(result?.message || 'The Journey 2 API returned no result.')
-      sessionStorage.setItem('journey2Result', JSON.stringify(result))
-      return result
+      if (!submission || typeof submission !== 'object' || submission.status === false) {
+        throw new Error(submission?.message || 'Journey 2 submission was rejected.')
+      }
+      sessionStorage.setItem('journey2Result', JSON.stringify(submission))
+      return submission
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError?.response?.data?.error || requestError.message || 'Unable to submit Journey 2 assessment.')
       throw requestError
