@@ -1,25 +1,18 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
 
 const variants = {
-  primary:
-    'bg-[#23211f] text-white hover:bg-[#1d1b1c] shadow-md hover:shadow-lg',
-  secondary:
-    'bg-[#c38d66] text-[#fdfaf8] hover:bg-[#b98157] shadow-md hover:shadow-lg',
-  outline:
-    'border border-[#d8cfc7] bg-transparent text-[#23211f] hover:border-[#c6b8ac] hover:bg-white/50',
-  ghost:
-    'bg-transparent text-[#23211f] hover:text-[#c38d66]',
-  dark:
-    'bg-[#23211f] text-white hover:bg-[#1d1b1c]',
-  light:
-    'bg-[#f5f3ef] text-[#23211f] hover:bg-white shadow-md hover:shadow-lg',
+  primary: 'btn-primary',
+  secondary: 'btn-secondary',
+  outline: 'btn-outline',
+  ghost: 'btn-ghost',
+  dark: 'btn-dark',
+  light: 'btn-light',
 }
 
 const sizes = {
-  sm: 'px-4 py-2 text-sm',
-  md: 'px-6 py-3 text-base',
-  lg: 'px-8 py-3.5 text-base',
+  sm: 'btn-sm',
+  md: 'btn-md',
+  lg: 'btn-lg',
 }
 
 function Button({
@@ -32,9 +25,10 @@ function Button({
   icon: Icon,
   iconPosition = 'right',
   type = 'button',
+  disabled = false,
   ...props
 }) {
-  const classes = `inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ${variants[variant]} ${sizes[size]} ${className}`
+  const classes = `btn ${variants[variant] || variants.primary} ${sizes[size] || sizes.md} ${className}`.trim()
 
   const content = (
     <>
@@ -44,7 +38,7 @@ function Button({
     </>
   )
 
-  if (to) {
+  if (to && !disabled) {
     return (
       <Link to={to} className={classes} {...props}>
         {content}
@@ -52,7 +46,7 @@ function Button({
     )
   }
 
-  if (href) {
+  if (href && !disabled) {
     return (
       <a href={href} className={classes} {...props}>
         {content}
@@ -61,7 +55,7 @@ function Button({
   }
 
   return (
-    <button type={type} className={classes} {...props}>
+    <button type={type} className={classes} disabled={disabled} {...props}>
       {content}
     </button>
   )

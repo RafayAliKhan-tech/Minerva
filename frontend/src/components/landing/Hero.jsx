@@ -1,50 +1,66 @@
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import Container from '../common/Container'
 
 function Hero() {
   return (
-    <section className="hero-section hero-scroll-shell">
-      <div className="hero-scene-layers">
-        <div className="hero-copy-glow" aria-hidden="true" />
-        <div className="container hero-inner">
-          <div className="hero-copy">
-            <div className="hero-badge">
-              <span aria-hidden="true">✦</span>
-              AI Career Compass
-            </div>
+    <section className="hero-section">
+      <Container>
+        <div className="hero-inner">
+          <div>
+            <div className="hero-eyebrow">AI career compass</div>
             <h1 className="hero-title">
-              <span className="hero-title-line">Find your <span className="hero-title-break">direction.</span></span>
-              <span className="hero-title-line hero-title-muted">Build your <span className="hero-title-break">future.</span></span>
+              Minerva
+              <span className="muted">Find direction. Build your next step.</span>
             </h1>
-
             <p className="hero-subtitle">
-              Minerva helps you understand your strengths, interests, skills, and goals, then turn
-              that clarity into career options and an achievable next step.
+              Understand your strengths, interests, and goals — then turn that clarity into career
+              options, skill gaps, and an achievable plan.
             </p>
-
             <div className="hero-actions">
-              <Link to="/signup" className="primary-cta">
-                Start Your Journey
-                <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" />
+              <Link to="/signup" className="btn btn-secondary btn-lg">
+                Start your journey
+                <ArrowRight size={16} aria-hidden="true" />
               </Link>
+              <a href="/#paths" className="btn btn-outline btn-lg">
+                Choose a path
+              </a>
             </div>
           </div>
 
-          <div className="hero-visual">
-            <div className="hero-visual-glow" aria-hidden="true" />
-            <div className="hero-visual-arc" aria-hidden="true" />
-            <div className="hero-transform">
-              <div className="hero-platform-glow" aria-hidden="true" />
-              <div className="hero-floor-fade" aria-hidden="true" />
-              <img
-                className="hero-character"
-                src="/laptop.png"
-                alt="Minerva career dashboard showing skills and job matches"
-              />
+          <aside className="hero-panel" aria-label="How Minerva works">
+            <p className="eyebrow">What you get</p>
+            <h2 style={{ margin: 0, fontSize: '1.35rem' }}>Clarity in four moves</h2>
+            <div className="hero-flow">
+              {[
+                'Map your profile',
+                'Explore fitting roles',
+                'Spot skill gaps',
+                'Follow a focused plan',
+              ].map((item, index) => (
+                <div className="hero-flow-item" key={item}>
+                  <i>{index + 1}</i>
+                  {item}
+                </div>
+              ))}
             </div>
-          </div>
+            <div className="hero-stat-grid">
+              <div className="hero-stat">
+                <strong>3</strong>
+                <span>Paths</span>
+              </div>
+              <div className="hero-stat">
+                <strong>AI</strong>
+                <span>Guidance</span>
+              </div>
+              <div className="hero-stat">
+                <strong>1</strong>
+                <span>Roadmap</span>
+              </div>
+            </div>
+          </aside>
         </div>
-      </div>
+      </Container>
     </section>
   )
 }

@@ -31,7 +31,7 @@ function DashboardPage() {
   const assessmentLocked = hasCompletedAnyAssessment(user)
   const journeyCards = [
     {
-      title: 'I am exploring',
+      title: "I'm exploring",
       description: 'Discover the career direction that fits your strengths and interests.',
       icon: Telescope,
       completed: exploring,
@@ -42,7 +42,7 @@ function DashboardPage() {
       accent: 'dashboard-journey-green',
     },
     {
-      title: 'Career in my mind',
+      title: 'I have a career in mind',
       description: 'Turn a target career into a practical, personalized plan.',
       icon: Compass,
       completed: careerInMind,
@@ -53,7 +53,7 @@ function DashboardPage() {
       accent: 'dashboard-journey-tan',
     },
     {
-      title: 'Journey 3 · Job Hunting',
+      title: "I'm job hunting",
       description: 'Complete a resume-based assessment and explore job-hunting next steps.',
       icon: BriefcaseBusiness,
       completed: resumeAssessment,
@@ -75,9 +75,9 @@ function DashboardPage() {
       <Container>
         <div className="dashboard-heading">
           <div>
-            <p className="dashboard-kicker">MINERVA COMMAND CENTER</p>
-            <h1>Your career, in motion.</h1>
-            <p className="dashboard-subtitle">A living view of your profile, next steps, and opportunities.</p>
+            <p className="dashboard-kicker">Dashboard</p>
+            <h1>Your career, in motion</h1>
+            <p className="dashboard-subtitle">Journeys, roadmaps, and tools — in one place.</p>
           </div>
         </div>
 

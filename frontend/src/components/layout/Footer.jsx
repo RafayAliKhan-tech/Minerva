@@ -1,47 +1,35 @@
-import { ArrowUpRight, Building2, Compass, Layers3, Sparkles } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import Logo from '../common/Logo'
 import Container from '../common/Container'
 import { footerLinks } from '../../data/footer'
+import { useAuth } from '../../auth/AuthContext'
 
-const sectionIcons = {
-  platform: Layers3,
-  company: Building2,
-  explore: Compass,
-}
+function FooterColumn({ title, links, isAuthenticated, onAnchorClick }) {
+  const visible = links.filter((link) => {
+    if (link.auth && !isAuthenticated) return false
+    if (link.guest && isAuthenticated) return false
+    return true
+  })
 
-function FooterLink({ link, onAnchorClick }) {
-  return (
-    <Link
-      to={link.href}
-      onClick={(event) => onAnchorClick(event, link.href)}
-      className="group inline-flex items-center gap-1.5 text-sm text-[#77736e] transition-colors hover:text-[#1A1A1A]"
-    >
-      {link.label}
-      <ArrowUpRight
-        size={13}
-        strokeWidth={1.8}
-        className="opacity-0 transition-opacity group-hover:opacity-100"
-        aria-hidden="true"
-      />
-    </Link>
-  )
-}
-
-function FooterSection({ name, links, onAnchorClick }) {
-  const Icon = sectionIcons[name]
-  const title = name === 'explore' ? 'Explore' : name[0].toUpperCase() + name.slice(1)
+  if (!visible.length) return null
 
   return (
     <div>
-      <h3 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#272522]">
-        <Icon size={14} strokeWidth={1.8} aria-hidden="true" />
-        {title}
-      </h3>
-      <ul className="space-y-3">
-        {links.map((link) => (
+      <h3>{title}</h3>
+      <ul>
+        {visible.map((link) => (
           <li key={link.label}>
-            <FooterLink link={link} onAnchorClick={onAnchorClick} />
+            {link.disabled ? (
+              <span className="is-disabled" title="Coming soon">
+                {link.label}
+              </span>
+            ) : link.href.startsWith('/#') ? (
+              <Link to={link.href} onClick={(event) => onAnchorClick(event, link.href)}>
+                {link.label}
+              </Link>
+            ) : (
+              <Link to={link.href}>{link.label}</Link>
+            )}
           </li>
         ))}
       </ul>
@@ -49,52 +37,51 @@ function FooterSection({ name, links, onAnchorClick }) {
   )
 }
 
-function Footer({ compact = false }) {
+function Footer() {
   const location = useLocation()
+  const { isAuthenticated } = useAuth()
 
   const handleAnchorClick = (event, href) => {
     if (!href.startsWith('/#') || location.pathname !== '/') return
-
     const target = document.getElementById(href.slice(2))
     if (!target) return
-
     event.preventDefault()
     target.scrollIntoView({ behavior: 'smooth' })
   }
 
-  if (compact) {
-    return (
-      <footer className="auth-footer">
-        <Container className="auth-footer-inner">
-          <p>&copy; {new Date().getFullYear()} Minerva. All rights reserved.</p>
-        </Container>
-      </footer>
-    )
-  }
-
   return (
-    <footer className="site-footer border-t border-[#dedbd6] bg-white" id="about">
-      <Container className="py-12 sm:py-14 lg:py-16">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-5">
+    <footer className="site-footer" id="about">
+      <Container>
+        <div className="footer-grid">
+          <div className="footer-brand">
             <Logo />
-            <div className="mt-5 flex items-start gap-3">
-              <Sparkles size={17} className="mt-1 shrink-0 text-[#c38d66]" aria-hidden="true" />
-              <p className="max-w-sm text-sm leading-7 text-[#77736e]">
-                AI-powered career clarity for discovering your strengths, planning your next step,
-                and growing with confidence.
-              </p>
-            </div>
+            <p>
+              AI-powered career clarity — understand your strengths, explore fitting roles, and
+              move forward with a practical plan.
+            </p>
           </div>
-
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-7 lg:gap-10">
-            <FooterSection name="platform" links={footerLinks.platform} onAnchorClick={handleAnchorClick} />
-            <FooterSection name="company" links={footerLinks.company} onAnchorClick={handleAnchorClick} />
-            <FooterSection name="explore" links={footerLinks.explore} onAnchorClick={handleAnchorClick} />
+          <div className="footer-cols">
+            <FooterColumn
+              title="Product"
+              links={footerLinks.product}
+              isAuthenticated={isAuthenticated}
+              onAnchorClick={handleAnchorClick}
+            />
+            <FooterColumn
+              title="Company"
+              links={footerLinks.company}
+              isAuthenticated={isAuthenticated}
+              onAnchorClick={handleAnchorClick}
+            />
+            <FooterColumn
+              title="Tools"
+              links={footerLinks.tools}
+              isAuthenticated={isAuthenticated}
+              onAnchorClick={handleAnchorClick}
+            />
           </div>
         </div>
-
-        <div className="mt-10 flex flex-col gap-3 border-t border-[#dedbd6] pt-6 text-xs text-[#8a857f] sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
+        <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} Minerva. All rights reserved.</p>
           <p>Discover. Plan. Grow.</p>
         </div>

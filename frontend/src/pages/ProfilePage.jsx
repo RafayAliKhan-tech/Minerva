@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import Container from '../components/common/Container'
 import Button from '../components/common/Button'
 import api from '../api/axiosInstance'
@@ -17,21 +19,35 @@ function ProfilePage() {
       try {
         const res = await api.get('/api/profile/getprofile')
         const data = res.data || {}
-        // unwrap common shapes
         const payload = data.data || data
         if (mounted && payload) {
           const firstName = payload.firstName || payload.FirstName || ''
           const lastName = payload.lastName || payload.LastName || ''
-          setProfile({ fullName: payload.fullName || payload.FullName || payload.displayName || payload.DisplayName || [firstName, lastName].filter(Boolean).join(' ') || payload.name || payload.userName || payload.UserName || '', email: payload.email || payload.Email || '' })
+          setProfile({
+            fullName:
+              payload.fullName ||
+              payload.FullName ||
+              payload.displayName ||
+              payload.DisplayName ||
+              [firstName, lastName].filter(Boolean).join(' ') ||
+              payload.name ||
+              payload.userName ||
+              payload.UserName ||
+              '',
+            email: payload.email || payload.Email || '',
+          })
         }
       } catch (err) {
         console.error('Failed to load profile', err)
+        if (mounted) setFormError('Unable to load profile from the server.')
       } finally {
         if (mounted) setLoading(false)
       }
     }
     load()
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const handleSave = async (e) => {
@@ -44,7 +60,6 @@ function ProfilePage() {
       const data = res.data || {}
       setFormMessage(data?.message || 'Profile updated successfully.')
     } catch (err) {
-      console.error(err)
       const msg = err?.response?.data?.message || 'Failed to save profile. Please try again.'
       setFormError(msg)
     } finally {
@@ -53,47 +68,62 @@ function ProfilePage() {
   }
 
   return (
-    <Container as="section" className="py-16">
-      <div className="mx-auto w-full max-w-xl">
-        <h1 className="mb-4 text-4xl font-display leading-tight text-brown">My Profile</h1>
-        {loading ? (
-          <p className="text-brown-light">Loading profile...</p>
-        ) : (
-          <form onSubmit={handleSave} className="space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-brown">Full Name</label>
-              <input
-                required
-                value={profile.fullName}
-                onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
-                placeholder="Enter your full name"
-                className="w-full rounded-lg border border-beige-border bg-white/80 px-4 py-3 text-sm text-brown placeholder:text-brown-light focus:outline-none focus:ring-2 focus:ring-orange/20"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-brown">Email Address</label>
-              <input
-                required
-                type="email"
-                value={profile.email}
-                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                placeholder="Enter your email"
-                className="w-full rounded-lg border border-beige-border bg-white/80 px-4 py-3 text-sm text-brown placeholder:text-brown-light focus:outline-none focus:ring-2 focus:ring-orange/20"
-              />
-            </div>
-
-            <div>
-              {formError && <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{formError}</p>}
-              {formMessage && <p className="mb-3 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700" role="status">{formMessage}</p>}
-              <Button type="submit" variant="dark" size="lg" className="w-full" disabled={saving}>
-                {saving ? 'Saving…' : 'Save Profile'}
-              </Button>
-            </div>
-          </form>
-        )}
-      </div>
-    </Container>
+    <main className="profile-page">
+      <Container>
+        <Link to="/dashboard" className="back-link">
+          <ArrowLeft size={16} /> Back to dashboard
+        </Link>
+        <div className="profile-card">
+          <p className="dashboard-kicker">Account</p>
+          <h1>My profile</h1>
+          <p className="dashboard-subtitle" style={{ marginBottom: '1rem' }}>
+            Update the name and email associated with your Minerva account.
+          </p>
+          {loading ? (
+            <p className="text-brown-light">Loading profile…</p>
+          ) : (
+            <form onSubmit={handleSave}>
+              <div className="field">
+                <label htmlFor="fullName">Full name</label>
+                <input
+                  id="fullName"
+                  required
+                  value={profile.fullName}
+                  onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+                  placeholder="Enter your full name"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="email">Email address</label>
+                <input
+                  id="email"
+                  required
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                  placeholder="Enter your email"
+                />
+              </div>
+              {formError && (
+                <p className="auth-form-error" role="alert" style={{ marginTop: '1rem' }}>
+                  {formError}
+                </p>
+              )}
+              {formMessage && (
+                <p className="auth-form-success" role="status" style={{ marginTop: '1rem' }}>
+                  {formMessage}
+                </p>
+              )}
+              <div style={{ marginTop: '1.25rem' }}>
+                <Button type="submit" variant="secondary" size="lg" className="w-full" disabled={saving}>
+                  {saving ? 'Saving…' : 'Save profile'}
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
+      </Container>
+    </main>
   )
 }
 

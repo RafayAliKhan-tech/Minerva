@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowUpRight, Check, ChevronDown, Circle, Clock3, Download, LockKeyhole, MessageCircle, Sparkles } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import Container from '../components/common/Container'
@@ -138,7 +138,6 @@ const resourceLink = (resource) => {
 
 function RoadmapPage() {
   const location = useLocation()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const { roadmapId: routeRoadmapId } = useParams()
   const context = useMemo(() => location.state || {}, [location.state])
@@ -243,9 +242,9 @@ function RoadmapPage() {
 
   const milestoneList = useMemo(() => isJourney2Roadmap && routeError ? [] : (roadmap.milestones || fallbackMilestones), [roadmap, isJourney2Roadmap, routeError])
   const total = milestoneList.reduce((sum, item, phaseIndex) => sum + (item.tasks || []).length + phaseGoals(item, phaseIndex).length + 1, 0)
-  const assessmentTarget = roadmap.domainId || context.domainId || context.roadmapId || 'ui_ux'
-
-  const backLabel = returnTarget.pathname?.includes('/explore/domain-assessment') ? 'Back to result' : 'Back to dashboard'
+  const backLabel = returnTarget.pathname?.includes('/explore/domain-assessment') || returnTarget.pathname?.includes('/explore/assessment') || returnTarget.pathname?.includes('/explore/resume')
+    ? 'Back to result'
+    : 'Back to dashboard'
   const downloadRoadmap = () => {
     const pdf = new jsPDF({ unit: 'pt', format: 'a4' })
     const margin = 44
@@ -310,8 +309,8 @@ function RoadmapPage() {
           </div>}
         </div>
       </article>
-    })}</div><aside className="roadmap-aside"><Clock3 size={22} /><p className="dashboard-kicker">ROADMAP AT A GLANCE</p><h2>{roadmap.timeline.total_estimated_hours ? `${roadmap.timeline.total_estimated_hours} hours of focused work.` : 'One focused hour beats a scattered day.'}</h2><p>{roadmap.timeline.hours_per_week ? `${roadmap.timeline.hours_per_week} hours per week across ${roadmap.timeline.total_duration_weeks || roadmap.timeline.weeks?.length || 0} weeks.` : 'Choose one task, make it visible, and let the next step become easier.'}</p>{sectionCard('Learning objectives', roadmap.learningObjectives)}{sectionCard('Certifications', roadmap.certifications)}{sectionCard('Job preparation', roadmap.jobPreparation)}{sectionCard('Recommended jobs', roadmap.recommendedJobs)}<button type="button" onClick={() => navigate(`/explore/domain-assessment/${assessmentTarget}`)} className="dashboard-primary-action" style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }}>Start assessment <ArrowUpRight size={15} /></button><Link to="/chat" className="dashboard-outline-action" style={{ marginTop: '1rem' }}>Ask for a plan <MessageCircle size={15} /></Link></aside></div>
-    <div className="roadmap-bottom-actions"><button type="button" onClick={() => navigate(`/explore/domain-assessment/${assessmentTarget}`)} className="dashboard-primary-action">Continue with your domain assessment <ArrowUpRight size={16} /></button><Link to={returnTarget} className="dashboard-text-link">{backLabel} <ArrowUpRight size={15} /></Link></div>
+    })}</div><aside className="roadmap-aside"><Clock3 size={22} /><p className="dashboard-kicker">ROADMAP AT A GLANCE</p><h2>{roadmap.timeline.total_estimated_hours ? `${roadmap.timeline.total_estimated_hours} hours of focused work.` : 'One focused hour beats a scattered day.'}</h2><p>{roadmap.timeline.hours_per_week ? `${roadmap.timeline.hours_per_week} hours per week across ${roadmap.timeline.total_duration_weeks || roadmap.timeline.weeks?.length || 0} weeks.` : 'Choose one task, make it visible, and let the next step become easier.'}</p>{sectionCard('Learning objectives', roadmap.learningObjectives)}{sectionCard('Certifications', roadmap.certifications)}{sectionCard('Job preparation', roadmap.jobPreparation)}{sectionCard('Recommended jobs', roadmap.recommendedJobs)}<Link to="/chat" className="dashboard-primary-action" style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }}>Ask Minerva <MessageCircle size={15} /></Link><Link to="/dashboard" className="dashboard-outline-action" style={{ marginTop: '0.75rem', width: '100%', justifyContent: 'center' }}>Back to dashboard <ArrowUpRight size={15} /></Link></aside></div>
+    <div className="roadmap-bottom-actions"><Link to="/dashboard" className="dashboard-primary-action">Open dashboard <ArrowUpRight size={16} /></Link><Link to={returnTarget} className="dashboard-text-link">{backLabel} <ArrowUpRight size={15} /></Link></div>
   </Container></main>
 }
 export default RoadmapPage

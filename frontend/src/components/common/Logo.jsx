@@ -1,16 +1,22 @@
 import { Link } from 'react-router-dom'
-import minervaLogo from '../../assets/logo/minerva-logo.png'
 
-function Logo({ className = '', showTagline = false }) {
+function Logo({ className = '', compact = false }) {
   return (
-    <Link to="/" className={`inline-flex items-center ${className}`} aria-label="Minerva home">
-      <img
-        src={minervaLogo}
-        alt="Minerva — Discover, Plan, Grow"
-        className="h-8 w-auto object-contain sm:h-15"
-      />
-      {showTagline && (
-        <span className="sr-only">Discover • Plan • Grow</span>
+    <Link
+      to="/"
+      className={`inline-flex items-center gap-2 ${className}`}
+      aria-label="Minerva home"
+    >
+      <span
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-accent)] text-sm font-bold text-white"
+        aria-hidden="true"
+      >
+        M
+      </span>
+      {!compact && (
+        <span className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight text-[var(--color-ink)]">
+          Minerva
+        </span>
       )}
     </Link>
   )

@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ArrowRight, LogOut } from 'lucide-react'
+import { Menu, X, ArrowRight, LogOut, UserRound } from 'lucide-react'
 import Logo from '../common/Logo'
 import Button from '../common/Button'
 import Container from '../common/Container'
-import { navLinks } from '../../data/navigation'
+import { navLinks, appNavLinks } from '../../data/navigation'
 import { useAuth } from '../../auth/AuthContext'
 import { getDisplayName } from '../../utils/userData'
 
-const SEAMLESS_NAV_ROUTES = new Set(['/login', '/signup', '/forgot-password', '/dashboard'])
-const AUTH_ACTION_ONLY_ROUTES = new Set(['/login', '/signup', '/forgot-password'])
+const AUTH_ONLY = new Set(['/login', '/signup', '/forgot-password', '/reset-password'])
 
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -18,21 +17,20 @@ function Navbar() {
   const location = useLocation()
   const { isAuthenticated, user, logout } = useAuth()
   const isLanding = location.pathname === '/'
+  const isAuthPage = AUTH_ONLY.has(location.pathname)
 
   useEffect(() => {
     let frameId = 0
-    const handleScroll = () => {
+    const onScroll = () => {
       if (frameId) return
       frameId = window.requestAnimationFrame(() => {
-        const nextScrolled = window.scrollY > 20
-        setScrolled((current) => (current === nextScrolled ? current : nextScrolled))
+        setScrolled(window.scrollY > 12)
         frameId = 0
       })
     }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', onScroll)
       if (frameId) window.cancelAnimationFrame(frameId)
     }
   }, [])
@@ -49,70 +47,53 @@ function Navbar() {
     }
   }, [mobileOpen])
 
-  const isActive = (link) => {
-    if (link.exact) return location.pathname === link.href
-    if (link.href.startsWith('/#')) return false
-    return location.pathname === link.href
+  const handleAnchor = (href) => {
+    if (!href.startsWith('/#')) return
+    if (location.pathname !== '/') return
+    const el = document.getElementById(href.replace('/#', ''))
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleNavClick = (href) => {
-    setMobileOpen(false)
-    if (href.startsWith('/#')) {
-      if (location.pathname !== '/') {
-        return
-      }
-      const id = href.replace('/#', '')
-      const el = document.getElementById(id)
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' })
-      }
-    }
-  }
+  const visibleLinks = isAuthenticated
+    ? appNavLinks
+    : isLanding
+      ? navLinks
+      : []
 
-  const headerClass = isLanding
-    ? scrolled || mobileOpen
-      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm'
-      : 'bg-transparent'
-    : scrolled || mobileOpen
-      ? 'border-b border-[#E0E0E0] bg-[#F5F5F5]/92 shadow-sm'
-      : 'bg-[#F5F5F5]/85'
-
-  const navbarTheme = isLanding && !scrolled && !mobileOpen ? 'navbar-dark' : 'navbar-light'
-  const isSeamlessPage = SEAMLESS_NAV_ROUTES.has(location.pathname)
-  const isAuthActionOnlyPage = AUTH_ACTION_ONLY_ROUTES.has(location.pathname)
-  const isChatPage = location.pathname === '/chat'
-  const visibleNavLinks = isLanding ? navLinks : []
   const displayName = getDisplayName(user)
-  const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'M'
-
-  const linkClass = (active) =>
-    isLanding
-      ? `rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors xl:px-4 ${
-          active ? 'text-[#1A1A1A]' : 'text-[#707070] hover:text-[#1A1A1A]'
-        }`
-      : `rounded-lg px-3 py-2 text-sm font-medium transition-colors xl:px-4 ${
-          active ? 'text-[#1A1A1A]' : 'text-[#707070] hover:text-[#1A1A1A]'
-        }`
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase() || 'M'
 
   return (
-    <header className={`site-navbar ${isChatPage ? 'chat-app-navbar' : 'fixed inset-x-0 top-0 z-50'} transition-[background-color,border-color,box-shadow] duration-200 ${isLanding ? 'landing-navbar' : ''} ${isSeamlessPage || isChatPage ? 'navbar-seamless-page navbar-dark' : navbarTheme} ${headerClass}`}>
+    <header
+      className={`site-navbar${isLanding ? ' landing-navbar' : ''}${scrolled || mobileOpen ? ' is-scrolled navbar-light' : ''}`}
+    >
       <Container>
-        <nav className="flex h-16 items-center justify-between sm:h-20" aria-label="Main navigation">
+        <nav className="navbar-inner" aria-label="Main navigation">
           <Logo />
 
-          <ul className="hidden items-center gap-1 lg:flex xl:gap-2">
-            {visibleNavLinks.map((link) => (
+          <ul className="navbar-links">
+            {visibleLinks.map((link) => (
               <li key={link.label}>
                 {link.href.startsWith('/#') ? (
                   <a
                     href={link.href}
-                    onClick={() => handleNavClick(link.href)}
-                    className={`nav-link ${linkClass(isActive(link))}`}
+                    className="nav-link"
+                    onClick={() => handleAnchor(link.href)}
                   >
                     {link.label}
                   </a>
                 ) : (
-                  <Link to={link.href} className={`nav-link ${linkClass(isActive(link))}`}>
+                  <Link
+                    to={link.href}
+                    className={`nav-link${location.pathname === link.href ? ' is-active' : ''}`}
+                  >
                     {link.label}
                   </Link>
                 )}
@@ -120,44 +101,57 @@ function Navbar() {
             ))}
           </ul>
 
-          <div className="hidden items-center gap-3 lg:flex">
+          <div className="navbar-actions">
             {isAuthenticated ? (
               <>
-                <Button to="/dashboard" variant="light" size="sm">Dashboard</Button>
+                <Button to="/dashboard" variant="light" size="sm">
+                  Dashboard
+                </Button>
                 <div className="relative">
-                  <button type="button" onClick={() => setAccountOpen((open) => !open)} className="navbar-avatar flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shadow-sm" aria-label="Open account menu" aria-expanded={accountOpen}>
+                  <button
+                    type="button"
+                    className="navbar-avatar"
+                    aria-label="Open account menu"
+                    aria-expanded={accountOpen}
+                    onClick={() => setAccountOpen((open) => !open)}
+                  >
                     {initials}
                   </button>
-                  {accountOpen && <div className="absolute right-0 top-12 z-50 w-52 rounded-xl border border-[#E0E0E0] bg-white p-2 text-[#1A1A1A] shadow-lg">
-                    <div className="border-b border-[#E0E0E0] px-3 py-2"><p className="text-xs uppercase tracking-wide text-[#707070]">Signed in as</p><p className="truncate text-sm font-semibold">{displayName}</p></div>
-                    <button type="button" onClick={logout} className="account-logout flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-red-50"><LogOut size={15} /> Logout</button>
-                  </div>}
+                  {accountOpen && (
+                    <div className="account-menu">
+                      <div className="account-menu-meta">
+                        <p>Signed in as</p>
+                        <p>{displayName}</p>
+                      </div>
+                      <Link to="/profile">
+                        <UserRound size={15} /> Profile
+                      </Link>
+                      <Link to="/skill-profile">
+                        <UserRound size={15} /> Skill profile
+                      </Link>
+                      <button type="button" className="account-logout" onClick={logout}>
+                        <LogOut size={15} /> Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
-            ) : isAuthActionOnlyPage ? (
+            ) : isAuthPage ? (
               <>
-                <Link to="/login" className="nav-link text-sm font-medium text-white transition-colors hover:text-white">
-                  Login
+                <Link to="/login" className="nav-link">
+                  Log in
                 </Link>
-                <Button to="/signup" variant="light" size="sm" icon={ArrowRight}>
-                  Get Started
+                <Button to="/signup" variant="secondary" size="sm" icon={ArrowRight}>
+                  Get started
                 </Button>
               </>
-            ) : isLanding ? (
-              <Link
-                to="/signup"
-                className="navbar-cta inline-flex items-center gap-2 rounded-full border border-[#E0E0E0] bg-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#1A1A1A] shadow-[0_8px_24px_rgba(26,26,26,0.06)] transition-transform hover:-translate-y-0.5"
-              >
-                Get Started
-                <ArrowRight size={14} />
-              </Link>
             ) : (
               <>
-                <Button to="/login" variant="light" size="sm">
-                  Log In
+                <Button to="/login" variant="ghost" size="sm">
+                  Log in
                 </Button>
-                <Button to="/signup" variant="light" size="sm" icon={ArrowRight}>
-                  Get Started
+                <Button to="/signup" variant="secondary" size="sm" icon={ArrowRight}>
+                  Get started
                 </Button>
               </>
             )}
@@ -165,65 +159,77 @@ function Navbar() {
 
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-lg p-2 text-[#1A1A1A] transition-colors hover:bg-[#ECECEC] lg:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            className="navbar-menu-btn"
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileOpen((open) => !open)}
           >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </nav>
       </Container>
 
-      <div
-        id="mobile-menu"
-        className={`fixed inset-0 top-16 z-40 lg:hidden ${
-          mobileOpen ? 'pointer-events-auto' : 'pointer-events-none'
-        }`}
-        aria-hidden={!mobileOpen}
-      >
-        <div
-          className={`absolute inset-0 bg-[#1A1A1A]/20 transition-opacity duration-200 ${
-            mobileOpen ? 'opacity-100' : 'opacity-0'
-          }`}
-          onClick={() => setMobileOpen(false)}
-          aria-hidden="true"
-        />
-        <div
-          className={`absolute inset-x-0 top-0 border-b border-[#E0E0E0] bg-[#F5F5F5] px-4 py-6 shadow-lg transition-[transform,opacity] duration-200 sm:px-6 ${
-            mobileOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-          }`}
-        >
-          <ul className="flex flex-col gap-1">
-            {visibleNavLinks.map((link) => (
-              <li key={link.label}>
-                {link.href.startsWith('/#') ? (
-                  <a
-                    href={link.href}
-                    onClick={() => handleNavClick(link.href)}
-                    className="block rounded-lg px-4 py-3 text-sm font-medium text-[#707070] transition-colors hover:bg-[#ECECEC] hover:text-[#1A1A1A]"
-                  >
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link
-                    to={link.href}
-                    className={`block rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-[#ECECEC] hover:text-[#1A1A1A] ${
-                      isActive(link) ? 'text-[#1A1A1A]' : 'text-[#707070]'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-6 flex flex-col gap-3 border-t border-[#E0E0E0] pt-6">
-            {isAuthenticated ? <><Button to="/dashboard" variant="light" size="md" className="w-full">Dashboard</Button><div className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-[#1A1A1A]"><span className="navbar-avatar flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold">{initials}</span><span className="truncate">{displayName}</span></div><button type="button" onClick={logout} className="account-logout flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-3 text-sm font-semibold"><LogOut size={16} /> Logout</button></> : isAuthActionOnlyPage ? <><Link to="/login" className="nav-link px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:text-white">Login</Link><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></> : <><Button to="/login" variant="outline" size="md" className="w-full">Log In</Button><Button to="/signup" variant="light" size="md" icon={ArrowRight} className="w-full">Get Started</Button></>}
+      {mobileOpen && (
+        <div id="mobile-menu" className="navbar-mobile" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="absolute inset-0"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="navbar-mobile-panel relative">
+            {visibleLinks.map((link) =>
+              link.href.startsWith('/#') ? (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="nav-link"
+                  onClick={() => {
+                    handleAnchor(link.href)
+                    setMobileOpen(false)
+                  }}
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="nav-link"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              )
+            )}
+            <div className="mt-3 flex flex-col gap-2 border-t border-[var(--color-border)] pt-3">
+              {isAuthenticated ? (
+                <>
+                  <Button to="/dashboard" variant="secondary" size="md" className="w-full">
+                    Dashboard
+                  </Button>
+                  <Button to="/profile" variant="outline" size="md" className="w-full">
+                    Profile
+                  </Button>
+                  <button type="button" className="btn btn-ghost btn-md account-logout" onClick={logout}>
+                    <LogOut size={16} /> Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Button to="/login" variant="outline" size="md" className="w-full">
+                    Log in
+                  </Button>
+                  <Button to="/signup" variant="secondary" size="md" className="w-full" icon={ArrowRight}>
+                    Get started
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </header>
   )
 }

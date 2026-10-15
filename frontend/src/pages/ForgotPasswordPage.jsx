@@ -40,9 +40,9 @@ function ForgotPasswordPage() {
     <section className="auth-stage">
       <Container className="auth-stage-inner">
         <div className="auth-form-column">
-          <p className="auth-eyebrow">MINERVA CAREER COMPASS</p>
-          <h1 className="auth-title">Reset Your Password</h1>
-          <p className="auth-description">Enter your email and we will send you a secure link to choose a new password.</p>
+          <p className="auth-eyebrow">Minerva</p>
+          <h1 className="auth-title">Reset your password</h1>
+          <p className="auth-description">Enter your email and we will send a secure link to choose a new password.</p>
           {state.success ? (
             <div className="auth-form">
               <p className="auth-form-success" role="status">{state.success}</p>
@@ -55,8 +55,8 @@ function ForgotPasswordPage() {
                 <input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email address" />
               </label>
               {state.error && <p className="auth-form-error" role="alert">{state.error}</p>}
-              <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight} disabled={state.loading} aria-busy={state.loading}>
-                {state.loading ? 'Sending...' : 'Send Reset Link'}
+              <Button type="submit" variant="secondary" size="lg" className="auth-submit" icon={ArrowRight} disabled={state.loading} aria-busy={state.loading}>
+                {state.loading ? 'Sending…' : 'Send reset link'}
               </Button>
               <p className="auth-switch"><Link to="/login" className="auth-link">Back to Login</Link></p>
             </form>

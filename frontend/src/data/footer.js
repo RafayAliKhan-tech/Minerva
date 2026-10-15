@@ -1,18 +1,18 @@
 export const footerLinks = {
-  platform: [
-    { label: 'How It Works', href: '/#how-it-works' },
-    { label: 'Features', href: '/#features' },
-    { label: 'Career Exploration', href: '/explore/assessment' },
-    { label: 'Resume Analysis', href: '/explore/resume/analysis' },
-    { label: 'Learning Roadmap', href: '/explore/roadmap' },
+  product: [
+    { label: 'How it works', href: '/#how-it-works' },
+    { label: 'Career paths', href: '/#paths' },
+    { label: 'Dashboard', href: '/dashboard', auth: true },
   ],
   company: [
     { label: 'Home', href: '/' },
-    { label: 'About Us', href: '/#about' },
-    { label: 'Get Started', href: '/signup' },
+    { label: 'About', href: '/#about' },
+    { label: 'Get started', href: '/signup' },
   ],
-  explore: [
-    { label: 'Mock Interviews', href: '/mock-interview' },
-    { label: 'Sign In', href: '/login' },
+  tools: [
+    { label: 'Ask Minerva', href: '/chat', auth: true },
+    { label: 'Mock interviews', href: '/mock-interview', auth: true },
+    { label: 'Analyze resume', href: '/analyze-resume', auth: true },
+    { label: 'Sign in', href: '/login', guest: true },
   ],
 }

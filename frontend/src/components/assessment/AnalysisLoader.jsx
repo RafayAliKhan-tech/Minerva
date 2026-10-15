@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, LoaderCircle, Sparkles } from 'lucide-react'
-import minervaLogo from '../../assets/logo/minerva-logo.png'
+import { Check, LoaderCircle } from 'lucide-react'
 
 const STEP_DURATION = 900
 const FINISH_DELAY = 500
@@ -49,32 +48,23 @@ function AnalysisLoader({ steps = [], onComplete }) {
 
   return (
     <main className="analysis-loader-screen" aria-live="polite">
-      <div className="analysis-loader-ambient analysis-loader-ambient-one" aria-hidden="true" />
-      <div className="analysis-loader-ambient analysis-loader-ambient-two" aria-hidden="true" />
-
       <section className="analysis-loader-content" aria-label="Analysis progress">
         <div className="analysis-loader-brand-mark" aria-hidden="true">
-          <span className="analysis-loader-halo analysis-loader-halo-one" />
-          <span className="analysis-loader-halo analysis-loader-halo-two" />
-          <span className="analysis-loader-orbit">
-            <i />
-          </span>
-          <span className="analysis-loader-logo">
-            <img src={minervaLogo} alt="" />
-          </span>
-          <Sparkles className="analysis-loader-sparkle" size={18} />
+          M
         </div>
 
         <header className="analysis-loader-heading">
-          <p className="analysis-loader-eyebrow">MINERVA · ANALYSIS</p>
+          <p className="analysis-loader-eyebrow">Minerva · Analysis</p>
           <h1>Analyzing your responses</h1>
-          <p>Moving through each stage in order to prepare your results.</p>
+          <p>Moving through each stage to prepare your results.</p>
         </header>
 
         <div className="analysis-loader-progress">
           <div className="analysis-loader-progress-label">
             <span>{isFinalizing ? currentLabel : `Now: ${currentLabel}`}</span>
-            <strong>{steps.length ? `${Math.min(activeStep + 1, steps.length)} / ${steps.length}` : 'Ready'}</strong>
+            <strong>
+              {steps.length ? `${Math.min(activeStep + 1, steps.length)} / ${steps.length}` : 'Ready'}
+            </strong>
           </div>
           <div
             className="analysis-loader-progress-track"
@@ -97,14 +87,15 @@ function AnalysisLoader({ steps = [], onComplete }) {
                 className={`analysis-loader-step${isComplete ? ' is-complete' : ''}${isCurrent ? ' is-current' : ''}`}
                 key={`${step}-${index}`}
                 aria-current={isCurrent ? 'step' : undefined}
-                style={{ animationDelay: `${0.22 + index * 0.06}s` }}
               >
                 <span className="analysis-loader-step-indicator">
-                  {isComplete
-                    ? <Check size={14} aria-hidden="true" />
-                    : isCurrent
-                      ? <LoaderCircle size={15} aria-hidden="true" />
-                      : <b>{String(index + 1).padStart(2, '0')}</b>}
+                  {isComplete ? (
+                    <Check size={14} aria-hidden="true" />
+                  ) : isCurrent ? (
+                    <LoaderCircle size={15} className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <b>{String(index + 1).padStart(2, '0')}</b>
+                  )}
                 </span>
                 <span className="analysis-loader-step-label">{step}</span>
                 <span className="analysis-loader-step-status">
@@ -116,7 +107,9 @@ function AnalysisLoader({ steps = [], onComplete }) {
         </ol>
 
         <p className="analysis-loader-footnote">
-          {isFinalizing ? 'Your result is on its way.' : 'Each step will complete before the next one begins.'}
+          {isFinalizing
+            ? 'Your result is on its way.'
+            : 'Each step completes before the next one begins.'}
         </p>
       </section>
     </main>

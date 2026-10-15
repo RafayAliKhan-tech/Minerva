@@ -63,8 +63,8 @@ function ResetPasswordPage() {
     <section className="auth-stage">
       <Container className="auth-stage-inner">
         <div className="auth-form-column">
-          <p className="auth-eyebrow">MINERVA CAREER COMPASS</p>
-          <h1 className="auth-title">Choose a New Password</h1>
+          <p className="auth-eyebrow">Minerva</p>
+          <h1 className="auth-title">Choose a new password</h1>
           {state.checking && <p className="auth-description">Validating your secure reset link...</p>}
           {!state.checking && !state.valid && <div className="auth-form"><p className="auth-form-error" role="alert">{state.error}</p><Link to="/forgot-password" className="auth-link">Request a new link</Link></div>}
           {!state.checking && state.valid && !state.success && (
@@ -72,8 +72,8 @@ function ResetPasswordPage() {
               <label className="auth-input"><LockKeyhole /><input required type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="New password" /></label>
               <label className="auth-input"><LockKeyhole /><input required type="password" autoComplete="new-password" value={confirm} onChange={(event) => setConfirm(event.target.value)} placeholder="Confirm new password" /></label>
               {state.error && <p className="auth-form-error" role="alert">{state.error}</p>}
-              <Button type="submit" variant="light" size="lg" className="auth-submit" icon={ArrowRight} disabled={state.loading} aria-busy={state.loading}>
-                {state.loading ? 'Resetting...' : 'Reset Password'}
+              <Button type="submit" variant="secondary" size="lg" className="auth-submit" icon={ArrowRight} disabled={state.loading} aria-busy={state.loading}>
+                {state.loading ? 'Resetting…' : 'Reset password'}
               </Button>
             </form>
           )}

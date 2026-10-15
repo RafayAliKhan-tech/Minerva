@@ -113,8 +113,8 @@ function DomainResults() {
     loadResult()
   }, [user, selectedCareer, domainId, contextError])
 
-  if (error) return <AssessmentLayout onBack={() => navigate('/explore/domain-selection')} showProgress={false}><div className="rounded-3xl border border-red-200 bg-white p-8 shadow-card"><h1 className="font-serif text-3xl font-semibold text-brown">Journey 2 result unavailable</h1><p className="mt-4 text-brown-light">{error}</p><Button onClick={() => navigate('/explore/domain-selection')} variant="dark" size="lg" className="mt-8">Start again</Button></div></AssessmentLayout>
-  if (!result) return <AssessmentLayout onBack={() => navigate('/explore/domain-selection')} showProgress={false}><p className="text-center text-brown-light">Loading backend result...</p></AssessmentLayout>
+  if (error) return <AssessmentLayout><div className="rounded-3xl border border-red-200 bg-white p-8 shadow-card"><h1 className="font-serif text-3xl font-semibold text-brown">Journey 2 result unavailable</h1><p className="mt-4 text-brown-light">{error}</p><Button onClick={() => navigate('/dashboard')} variant="secondary" size="lg" className="mt-8">Back to dashboard</Button></div></AssessmentLayout>
+  if (!result) return <AssessmentLayout><p className="text-center text-brown-light">Loading backend result...</p></AssessmentLayout>
 
   const profile = getProfile(result)
   const matches = getMatches(profile)
@@ -176,7 +176,7 @@ function DomainResults() {
           {traits.length > 0 && <section className="journey2-result-traits"><h2>Skill Insights</h2>{traits.map((trait, index) => <SkillBar key={`${trait.name || trait.label || index}`} skill={trait.name || trait.label} percentage={Number(trait.score ?? trait.percentage ?? 0)} size="md" />)}</section>}
           {insights.length > 0 && <section className="journey2-result-insights"><h2>Insights</h2>{insights.map((insight, index) => <div key={index}><CheckCircle2 size={17} /><p>{typeof insight === 'string' ? insight : insight.text || insight.description || insight.title}</p></div>)}</section>}
           {error && <p className="journey2-results-error" role="alert">{error}</p>}
-          <div className="journey2-results-actions"><Button onClick={() => navigate('/explore/domain-selection')} variant="ghost" size="md"><ArrowLeft size={15} /> Back </Button><Button onClick={() => handleBuildRoadmap()} disabled={isGenerating || !matches.length} variant="secondary" size="lg">{isGenerating ? 'Generating...' : 'View Detailed Insights →'}</Button></div>
+          <div className="journey2-results-actions"><Button onClick={() => navigate('/dashboard')} variant="ghost" size="md"><ArrowLeft size={15} /> Dashboard</Button><Button onClick={() => handleBuildRoadmap()} disabled={isGenerating || !matches.length} variant="secondary" size="lg">{isGenerating ? 'Generating…' : 'Build roadmap →'}</Button></div>
         </main>
         <aside className="journey2-results-sidebar">
           <section className="journey2-performance-card"><div className="journey2-sidebar-title"><span><BarChart3 size={17} /></span><h2>Performance Overview</h2></div><div className="journey2-performance-stats"><strong>{score}%<small>Overall Readiness</small></strong><strong>{correctAnswers}/{totalQuestions}<small>Correct Answers</small></strong></div></section>

@@ -983,20 +983,12 @@ function ExploringResults() {
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Button
               to="/dashboard"
-              variant="ghost"
+              variant="secondary"
               size="lg"
               className="flex-1"
-            >
-              Back to Home
-            </Button>
-            <Button
-              to="/explore/domain-selection"
-              variant="dark"
-              size="lg"
               icon={ArrowRight}
-              className="flex-1"
             >
-              Explore a Domain
+              Back to dashboard
             </Button>
           </div>
         </div>

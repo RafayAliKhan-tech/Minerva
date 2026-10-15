@@ -323,7 +323,7 @@ function ChatPage() {
               <strong>{getDisplayName(user)}</strong>
               <small>{getUserEmail(user) || 'Signed-in Minerva account'}</small>
               {profileReady && highestScoredField && <small>Focus: {highestScoredField}</small>}
-              <Link to="/dashboard">View profile <ArrowUpRight size={13} /></Link>
+              <Link to="/profile">View profile <ArrowUpRight size={13} /></Link>
             </div>
           </aside>
           <section className="chat-window">
