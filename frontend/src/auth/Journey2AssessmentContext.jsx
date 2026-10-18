@@ -35,7 +35,8 @@ const normalizeQuestion = (question, index) => ({
   options: (Array.isArray(question.options) ? question.options : (Array.isArray(question.Options) ? question.Options : (Array.isArray(question.choices) ? question.choices : (Array.isArray(question.Choices) ? question.Choices : [])))).map(normalizeOption),
   type: (() => {
     const type = String(question.interaction ?? question.type ?? question.questionType ?? question.question_type ?? 'multiple-choice').toLowerCase().replace(/[\s_]+/g, '-')
-    return ['mcq', 'multiplechoice', 'choice'].includes(type) ? 'multiple-choice' : type
+    // Temporary alias: AI_04 is a standard A-D question with a word_problem label; revisit when new interactive types are introduced.
+    return ['mcq', 'multiplechoice', 'choice', 'word-problem'].includes(type) ? 'multiple-choice' : type
   })(),
 })
 
